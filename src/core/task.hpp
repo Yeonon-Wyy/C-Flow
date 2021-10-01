@@ -8,6 +8,8 @@
 #include <vector>
 #include <initializer_list>
 
+#include "Dag.hpp"
+
 #define TASK_NAME_PREFIX "task_"
 
 namespace vtf {
@@ -21,7 +23,7 @@ enum TaskPriority {
 };
 
 template<typename ReturnType>
-class Task {
+class Task : public DAGNode {
 public:
     template<typename Function, typename... Args>
     explicit Task(Function&& f, Args&&... args);
@@ -38,9 +40,9 @@ public:
 
     std::function<ReturnType()> getExecFunc() { return m_execFunc; }
 
-    Task& precede(std::initializer_list<Task> tasks);
+    // Task& precede(std::initializer_list<Task> tasks);
 
-    Task& succeed(std::initializer_list<Task> tasks);
+    // Task& succeed(std::initializer_list<Task> tasks);
 
 private:
     std::function<ReturnType()> m_execFunc;
@@ -56,33 +58,34 @@ private:
 template<typename ReturnType>
 template<typename Function, typename... Args>
 Task<ReturnType>::Task(Function&& f, Args&&... args) 
-    :m_priority(TaskPriority::NORMAL)
+    :DAGNode(IDGenerator::getInstance()->generate()),
+    m_priority(TaskPriority::NORMAL)
 {
     m_execFunc = std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
-    m_ID = IDGenerator::getInstance()->generate();
-
+    // m_ID = IDGenerator::getInstance()->generate();
+    
     std::stringstream ss;
     ss << TASK_NAME_PREFIX << m_ID;
     ss >> m_name;
 }
 
-template<typename ReturnType>
-Task<ReturnType>& Task<ReturnType>::precede(std::initializer_list<Task> tasks)
-{
+// template<typename ReturnType>
+// Task<ReturnType>& Task<ReturnType>::precede(std::initializer_list<Task> tasks)
+// {
 
-    for (Task& task : tasks) {
-        m_precedes.push_back(std::make_shared<Task>(task));
-    }
-    return *this;
-}
+//     for (Task& task : tasks) {
+//         m_precedes.push_back(std::make_shared<Task>(task));
+//     }
+//     return *this;
+// }
 
-template<typename ReturnType>
-Task<ReturnType>& Task<ReturnType>::succeed(std::initializer_list<Task> tasks)
-{
-    for (Task& task : tasks) {
-        m_succeeds.push_back(std::make_shared<Task>(task));
-    }
-    return *this;
-}
+// template<typename ReturnType>
+// Task<ReturnType>& Task<ReturnType>::succeed(std::initializer_list<Task> tasks)
+// {
+//     for (Task& task : tasks) {
+//         m_succeeds.push_back(std::make_shared<Task>(task));
+//     }
+//     return *this;
+// }
 
 }
