@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:53:09
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-02 17:18:28
+ * @LastEditTime: 2021-10-02 21:30:59
  */
 #include "../core/task.hpp"
 #include "../core/threadPool.hpp"
@@ -15,7 +15,9 @@
 
 int main()
 {
-    vtf::Task<int> task1([](int a, int b) {
+
+    vtf::Task task1("task_1");
+    auto task = task1.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
@@ -23,7 +25,13 @@ int main()
     task1.setPriority(vtf::TaskPriority::URGENCY);
     std::cout << task1.getPriority() << std::endl;
 
-    task1.getExecFunc()();
+    vtf::ThreadPool pool(4);
+    auto future = pool.emplace([task]() {
+        (*task)();
+    });
 
+    std::cout << task->get_future().get() << std::endl;
+
+    // vtf::ThreadPool pool(8);
     
 }

@@ -4,12 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-09-24 19:47:30
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-02 17:37:14
+ * @LastEditTime: 2021-10-02 21:23:24
  */
 #pragma once
 #include <atomic>
 
 namespace vtf {
+
+namespace util {
 
 class IDGenerator {
 public:
@@ -31,4 +33,5 @@ long IDGenerator::generate()
     return m_id;
 }
 
+} //namespace util
 } //namespace vtf

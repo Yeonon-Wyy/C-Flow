@@ -43,32 +43,40 @@ void testDAGbasic()
 void testTaskDag()
 {
     std::cout << "testTaskDag:\n";
-    vtf::Task<int> task1([](int a, int b) {
+
+    vtf::Task task1("task_1");
+    auto pt1 = task1.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
 
-    vtf::Task<int> task2([](int a, int b) {
+    vtf::Task task2("task_1");
+    auto pt2 = task2.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
 
-    vtf::Task<int> task3([](int a, int b) {
+    vtf::Task task3("task_1");
+    auto pt3 = task3.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
 
-    vtf::Task<int> task4([](int a, int b) {
+    vtf::Task task4("task_1");
+    auto pt4 = task4.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
 
-    vtf::Task<int> task5([](int a, int b) {
+    vtf::Task task5("task_1");
+    auto pt5 = task5.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
+    task5.setPriority(vtf::TaskPriority::URGENCY);
 
-    vtf::Task<int> task6([](int a, int b) {
+    vtf::Task task6("task_1");
+    auto pt6 = task6.commit([](int a, int b) {
         std::cout << "exec a + b" << std::endl;
         return a + b;
     }, 1, 2);
