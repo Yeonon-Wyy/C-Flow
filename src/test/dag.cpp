@@ -97,6 +97,13 @@ void testTaskDag()
     dag.topologicalSort();
     dag.dumpNodeOrder();
 
+    std::cout << "twitch" << std::endl;
+    dag.rebuildGraph();
+    dag.dumpGraph();
+    dag.topologicalSort();
+    dag.dumpNodeOrder();
+    
+
 }
 
 int main()

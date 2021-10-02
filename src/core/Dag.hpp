@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-01 19:53:34
+ * @LastEditTime: 2021-10-02 15:54:09
  */
 #pragma once
 
@@ -38,7 +38,7 @@ public:
 
 public:
     long m_nodeId;                    //node-id
-    std::vector<int> m_outNodes;      //out-degree
+    std::vector<long> m_outNodes;      //out-degree
     int m_indegree = 0;               //in-degree of node
     int m_outdegree = 0;              //out-degree of node
 };
@@ -85,10 +85,21 @@ public:
      * @return {*}
      */    
     void dumpNodeOrder();
+
+    /**
+     * @name: rebuildGraph
+     * @Descripttion: rebuild the graph, only use in after topologicalSort.
+     * @param {*}
+     * @return {*}
+     */    
+    void rebuildGraph();
+
 private:
-    std::unordered_map<int, std::vector<int>> graph;
-    std::unordered_map<int, DAGNode*> nodeIdMap;
-    std::vector<int> m_nodeOrder;
+    std::unordered_map<long, std::vector<long>> m_graph;
+    std::unordered_map<long, DAGNode*> m_nodeIdMap;
+    std::vector<long> m_nodeOrder;
+    std::unordered_map<long, long> m_nodeIndegreeMap;
+    bool m_graphModifiedFlag = false;
 };
 
 /*
@@ -113,39 +124,43 @@ void DAGNode::precede(DAGNode* otherNode)
 */
 void DAG::addNode(DAGNode* node)
 {
-    int nodeId = node->m_nodeId;
-    nodeIdMap[nodeId] = node;
+    long nodeId = node->m_nodeId;
+    m_nodeIdMap[nodeId] = node;
 }
 
 void DAG::buildGraph()
 {
-    for (auto &[nodeId, node] : nodeIdMap) {
-        for (int otherNOdeId : node->m_outNodes) {
-            graph[nodeId].push_back(otherNOdeId);
+    for (auto &[nodeId, node] : m_nodeIdMap) {
+        if (m_nodeIndegreeMap.count(nodeId) == 0) m_nodeIndegreeMap[nodeId] = 0;
+        for (long otherNOdeId : node->m_outNodes) {
+            m_graph[nodeId].push_back(otherNOdeId);
+            m_nodeIndegreeMap[otherNOdeId]++;
         }
     }
 }
 
 void DAG::topologicalSort() {
+    rebuildGraph();
     while (true) {
         bool findFlag = false;
-        for (auto &[nodeId, node] : nodeIdMap) {
-            if (node->m_indegree == 0) {
-                int findNodeId = nodeId;
-                //find
-                for (int otherNodeId : graph[findNodeId]) {
-                    nodeIdMap[otherNodeId]->m_indegree--;
+        for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
+            if (degree == 0) {
+                //can find node of degree is 0
+                long findNodeId = nodeId;
+                for (long otherNodeId : m_graph[findNodeId]) {
+                    m_nodeIndegreeMap[otherNodeId]--;
                 }
-                graph.erase(findNodeId);
-                nodeIdMap.erase(findNodeId);
+                m_graph.erase(findNodeId);
+                m_nodeIndegreeMap.erase(findNodeId);
                 m_nodeOrder.push_back(findNodeId);
                 findFlag = true;
                 break;
             }
         }
         if (!findFlag) {
-            if (!nodeIdMap.empty())
+            if (!m_nodeIndegreeMap.empty())
                 std::cout << "error! please check dep" << std::endl;
+            m_graphModifiedFlag = true;
             return;
         }
     }
@@ -154,21 +169,31 @@ void DAG::topologicalSort() {
 
 void DAG::dumpGraph()
 {
-    for (auto &[nodeId, outNodeIds] : graph) {
+    for (auto &[nodeId, outNodeIds] : m_graph) {
         std::cout << nodeId << ": ";
-        for (int outNodeId : outNodeIds) {
+        for (long outNodeId : outNodeIds) {
             std::cout << outNodeId << " ";
         }
         std::cout << std::endl;
     }
 }
 
-void DAG::dumpOrder()
+void DAG::dumpNodeOrder()
 {
-    for (int nodeId : m_nodeOrder) {
+    for (long nodeId : m_nodeOrder) {
         std::cout << nodeId << " ";
     }
     std::cout << std::endl;
+}
+
+void DAG::rebuildGraph()
+{
+    if (m_graphModifiedFlag == false) return;
+    m_graph.clear();
+    m_nodeIndegreeMap.clear();
+    m_nodeOrder.clear();
+    buildGraph();
+    m_graphModifiedFlag = false;
 }
 
 }
