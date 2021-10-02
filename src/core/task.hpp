@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: include Task class
+ * @version: V1.0
+ * @Author: yeonon
+ * @Date: 2021-09-22 21:36:41
+ * @LastEditors: yeonon
+ * @LastEditTime: 2021-10-02 17:31:06
+ */
 #pragma once
 
 #include <functional>
@@ -25,67 +33,67 @@ enum TaskPriority {
 template<typename ReturnType>
 class Task : public DAGNode {
 public:
+
+    /**
+     * @name: Task
+     * @Descripttion: Task templeate constructor
+     * @param {*} f is function object, args is agr list
+     * @return {*}
+     */
     template<typename Function, typename... Args>
     explicit Task(Function&& f, Args&&... args);
 
     //utils function
-    
+
+    /**
+     * @name: setName
+     * @Descripttion: set task name
+     * @param {*} name
+     * @return {*}
+     */    
     void setName(const std::string& name) { m_name = std::move(name); }
+
+    /**
+     * @name: getName
+     * @Descripttion: get task name
+     * @param {*}
+     * @return {*} task name
+     */    
     std::string getName() { return m_name; }
 
+    /**
+     * @name: getID
+     * @Descripttion: get task id
+     * @param {*} 
+     * @return {*} task id
+     */    
     long getID() { return m_ID; }
 
-    void setPriority(TaskPriority priority) { m_priority = priority; }
-    TaskPriority getPriority() { return m_priority; }
-
+    //TODO: I think shouldn't return the function object to other module
+    /**
+     * @name: getExecFunc
+     * @Descripttion: return a function object
+     * @param {*}
+     * @return {*}
+     */    
     std::function<ReturnType()> getExecFunc() { return m_execFunc; }
 
-    // Task& precede(std::initializer_list<Task> tasks);
-
-    // Task& succeed(std::initializer_list<Task> tasks);
-
 private:
-    std::function<ReturnType()> m_execFunc;
-    std::string m_name;
-    long m_ID;
-    TaskPriority m_priority;
-
-    std::vector<std::shared_ptr<Task>> m_precedes;
-    std::vector<std::shared_ptr<Task>> m_succeeds;
+    std::function<ReturnType()> m_execFunc;              //function object
+    std::string m_name;                                  //task name
+    long m_ID;                                           //task id
 };
 
 //Note: 类模板里如果有模板成员函数，并且需要在类外定义，要加上类的模板参数
 template<typename ReturnType>
 template<typename Function, typename... Args>
 Task<ReturnType>::Task(Function&& f, Args&&... args) 
-    :DAGNode(IDGenerator::getInstance()->generate()),
-    m_priority(TaskPriority::NORMAL)
+    :DAGNode(IDGenerator::getInstance()->generate())
 {
-    m_execFunc = std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
-    // m_ID = IDGenerator::getInstance()->generate();
-    
+    m_execFunc = std::bind(std::forward<Function>(f), std::forward<Args>(args)...);    
     std::stringstream ss;
     ss << TASK_NAME_PREFIX << m_ID;
     ss >> m_name;
 }
 
-// template<typename ReturnType>
-// Task<ReturnType>& Task<ReturnType>::precede(std::initializer_list<Task> tasks)
-// {
-
-//     for (Task& task : tasks) {
-//         m_precedes.push_back(std::make_shared<Task>(task));
-//     }
-//     return *this;
-// }
-
-// template<typename ReturnType>
-// Task<ReturnType>& Task<ReturnType>::succeed(std::initializer_list<Task> tasks)
-// {
-//     for (Task& task : tasks) {
-//         m_succeeds.push_back(std::make_shared<Task>(task));
-//     }
-//     return *this;
-// }
-
-}
+} //namespace vtf

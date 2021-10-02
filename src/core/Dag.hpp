@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-02 15:54:09
+ * @LastEditTime: 2021-10-02 17:27:31
  */
 #pragma once
 
@@ -29,6 +29,14 @@ public:
     DAGNode(int id);
 
     /**
+     * @name: DAGNode
+     * @Descripttion: constructor of DAGNode
+     * @param {int} id is node id
+     * @return {*}
+     */    
+    DAGNode(int id, int nodePriority);
+
+    /**
      * @name: precede
      * @Descripttion: precede set dependency of node, nodeA->precede(NodeB) mean A -> B
      * @param {DAGNode*} otherNode
@@ -36,11 +44,42 @@ public:
      */    
     void precede(DAGNode* otherNode);
 
-public:
-    long m_nodeId;                    //node-id
+    /**
+     * @name: getPriority
+     * @Descripttion: just return node priority
+     * @param {*}
+     * @return {*} node priority
+     */    
+    int getPriority() { return m_nodePriority; }
+
+    /**
+     * @name: setPriority
+     * @Descripttion: just set node priority
+     * @param {int} nodePriority
+     * @return {*}
+     */    
+    void setPriority(int nodePriority) { m_nodePriority = nodePriority; }
+
+    /**
+     * @name: getNodeId
+     * @Descripttion: just get node id
+     * @param {*}
+     * @return {*} node-id
+     */    
+    long getNodeId() { return m_nodeId; }
+
+    /**
+     * @name: getOutNodes
+     * @Descripttion: just return outNodes, in c++ 17, it can use copy-elison
+     * @param {*}
+     * @return {*}
+     */    
+    std::vector<long> getOutNodes() { return m_outNodes; }
+
+private:
+    long m_nodeId;                     //node-id
     std::vector<long> m_outNodes;      //out-degree
-    int m_indegree = 0;               //in-degree of node
-    int m_outdegree = 0;              //out-degree of node
+    int m_nodePriority;                //node priority
 };
 
 class DAG {
@@ -105,18 +144,22 @@ private:
 /*
 * class DAGNode
 */
-
-
 DAGNode::DAGNode(int id)
-        :m_nodeId(id)
+        :m_nodeId(id),
+         m_nodePriority(0)
 {
+}
+
+DAGNode::DAGNode(int id, int nodePriority)
+        :m_nodeId(id),
+         m_nodePriority(nodePriority)
+{
+
 }
 
 void DAGNode::precede(DAGNode* otherNode)
 {
     this->m_outNodes.push_back(otherNode->m_nodeId);
-    this->m_outdegree++;
-    otherNode->m_indegree++;
 }
 
 /*
@@ -124,7 +167,7 @@ void DAGNode::precede(DAGNode* otherNode)
 */
 void DAG::addNode(DAGNode* node)
 {
-    long nodeId = node->m_nodeId;
+    long nodeId = node->getNodeId();
     m_nodeIdMap[nodeId] = node;
 }
 
@@ -132,7 +175,7 @@ void DAG::buildGraph()
 {
     for (auto &[nodeId, node] : m_nodeIdMap) {
         if (m_nodeIndegreeMap.count(nodeId) == 0) m_nodeIndegreeMap[nodeId] = 0;
-        for (long otherNOdeId : node->m_outNodes) {
+        for (long otherNOdeId : node->getOutNodes()) {
             m_graph[nodeId].push_back(otherNOdeId);
             m_nodeIndegreeMap[otherNOdeId]++;
         }
@@ -142,22 +185,29 @@ void DAG::buildGraph()
 void DAG::topologicalSort() {
     rebuildGraph();
     while (true) {
-        bool findFlag = false;
+        long findNodeId = -1;
+        int curMaxPriority = INT32_MIN;
         for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
             if (degree == 0) {
                 //can find node of degree is 0
-                long findNodeId = nodeId;
-                for (long otherNodeId : m_graph[findNodeId]) {
-                    m_nodeIndegreeMap[otherNodeId]--;
+                if (m_nodeIdMap[nodeId]->getPriority() > curMaxPriority) {
+                    findNodeId = nodeId;
+                    curMaxPriority = m_nodeIdMap[nodeId]->getPriority();
                 }
-                m_graph.erase(findNodeId);
-                m_nodeIndegreeMap.erase(findNodeId);
-                m_nodeOrder.push_back(findNodeId);
-                findFlag = true;
-                break;
             }
         }
-        if (!findFlag) {
+
+        if (findNodeId != -1) {
+            //erase node info from graph 
+            for (long otherNodeId : m_graph[findNodeId]) {
+                m_nodeIndegreeMap[otherNodeId]--;
+            }
+            m_graph.erase(findNodeId);
+            m_nodeIndegreeMap.erase(findNodeId);
+
+            m_nodeOrder.push_back(findNodeId);
+        } else {
+            //no find node, maybe error or complete
             if (!m_nodeIndegreeMap.empty())
                 std::cout << "error! please check dep" << std::endl;
             m_graphModifiedFlag = true;
