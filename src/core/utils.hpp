@@ -1,3 +1,11 @@
+/*
+ * @Descripttion: include some util
+ * @version: v1.0
+ * @Author: yeonon
+ * @Date: 2021-09-24 19:47:30
+ * @LastEditors: yeonon
+ * @LastEditTime: 2021-10-02 17:37:14
+ */
 #pragma once
 #include <atomic>
 
