@@ -4,13 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-06 18:10:57
+ * @LastEditTime: 2021-10-06 18:23:33
  */
 #pragma once
 
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <algorithm>
 
 #include "./utils.hpp"
 
@@ -102,6 +103,15 @@ public:
      */    
     void buildGraph();
 
+
+    /**
+     * @name: rebuildGraph
+     * @Descripttion: rebuild the graph, only use in after topologicalSort.
+     * @param {*}
+     * @return {*}
+     */    
+    void rebuildGraph();
+
     /**
      * @name: topologicalSort
      * @Descripttion: topological sort algorithem for DAG
@@ -109,6 +119,8 @@ public:
      * @return {*}
      */    
     void topologicalSort();
+
+    std::vector<std::vector<long>> getTopoOrder() { return m_nodeTopoOrder; }
 
     /**
      * @name: dumpGraph
@@ -125,14 +137,6 @@ public:
      * @return {*}
      */    
     void dumpNodeOrder();
-
-    /**
-     * @name: rebuildGraph
-     * @Descripttion: rebuild the graph, only use in after topologicalSort.
-     * @param {*}
-     * @return {*}
-     */    
-    void rebuildGraph();
 
 private:
     std::unordered_map<long, std::vector<long>> m_graph;
@@ -238,6 +242,10 @@ void DAG::topologicalSort() {
                 m_graph.erase(nodeId);
                 m_nodeIndegreeMap.erase(nodeId);
             }
+            //even some node as same level, still need keep high priority
+            std::sort(sameLevelNodes.begin(), sameLevelNodes.end(), [this](int lhs, int rhs) {
+                return this->m_nodeIdMap[lhs]->getPriority() > this->m_nodeIdMap[rhs]->getPriority();
+            });
             m_nodeTopoOrder.push_back(sameLevelNodes);
             sameLevelNodes.clear();
         } else {

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-06 17:48:40
+ * @LastEditTime: 2021-10-06 19:28:23
  */
 #pragma once
 
@@ -43,7 +43,8 @@ public:
      */
     Task(const std::string& name) 
         :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_name(name) {}
+         m_name(name),
+         m_ID(getNodeId()) {}
 
     /**
      * @name: Task 
@@ -53,7 +54,8 @@ public:
      */    
     Task(const std::string& name, int priority) 
         :DAGNode(util::IDGenerator::getInstance()->generate(), priority),
-         m_name(name) {}
+         m_name(name),
+         m_ID(getNodeId()) {}
 
     /* utils function  */
     /**
@@ -90,9 +92,18 @@ public:
     auto commit(Function&& f, Args&&... args)
         -> std::shared_ptr<std::packaged_task<typename std::result_of<Function(Args...)>::type()> >;
 
+    /**
+     * @name: getTaskFunc
+     * @Descripttion: getTaskFunc
+     * @param {*}
+     * @return {*} m_execFunc
+     */    
+    std::function<void()> getTaskFunc() { return m_taskFunc; }
+
 private:
     std::string m_name;                                  //task name
     long m_ID;                                           //task id
+    std::function<void()> m_taskFunc;                    //task function
 };
 
 
@@ -101,9 +112,13 @@ auto Task::commit(Function&& f, Args&&... args)
     -> std::shared_ptr<std::packaged_task<typename std::result_of<Function(Args...)>::type()> >
 {
     using returnType = typename std::result_of<Function(Args...)>::type;
+
     auto pt = std::make_shared< std::packaged_task<returnType()> >(
         std::bind(std::forward<Function>(f), std::forward<Args>(args)...)
     );
+
+    m_taskFunc = std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
+
     return pt;
 }
 
