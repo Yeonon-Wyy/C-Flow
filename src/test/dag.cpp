@@ -81,6 +81,12 @@ void testTaskDag()
         return a + b;
     }, 1, 2);
 
+    vtf::Task task7("task_1");
+    auto pt7 = task7.commit([](int a, int b) {
+        std::cout << "exec a + b" << std::endl;
+        return a + b;
+    }, 1, 2);
+
     task4.precede(&task3);
     task4.precede(&task6);
     task3.precede(&task6);
@@ -88,8 +94,9 @@ void testTaskDag()
     task6.precede(&task5);
     task6.precede(&task1);
     task1.precede(&task2);
-
-    
+    task5.precede(&task7);  
+    task1.precede(&task7);
+    task2.precede(&task7);
 
 
     vtf::DAG dag;
@@ -99,6 +106,7 @@ void testTaskDag()
     dag.addNode(&task4);
     dag.addNode(&task5);
     dag.addNode(&task6);
+    dag.addNode(&task7);
 
     dag.buildGraph();
     dag.dumpGraph();

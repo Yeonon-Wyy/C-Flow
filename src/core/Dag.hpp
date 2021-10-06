@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-02 17:36:59
+ * @LastEditTime: 2021-10-06 18:10:57
  */
 #pragma once
 
@@ -137,9 +137,9 @@ public:
 private:
     std::unordered_map<long, std::vector<long>> m_graph;
     std::unordered_map<long, DAGNode*> m_nodeIdMap;
-    std::vector<long> m_nodeOrder;
     std::unordered_map<long, long> m_nodeIndegreeMap;
     bool m_graphModifiedFlag = false;
+    std::vector<std::vector<long>> m_nodeTopoOrder;
 };
 
 /*
@@ -183,30 +183,63 @@ void DAG::buildGraph()
     }
 }
 
+// topologicalSort V1, just comment it first
+
+// void DAG::topologicalSort() {
+//     rebuildGraph();
+//     while (true) {
+//         long findNodeId = -1;
+//         int curMaxPriority = INT32_MIN;
+//         for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
+//             if (degree == 0) {
+//                 //can find node of degree is 0
+//                 if (m_nodeIdMap[nodeId]->getPriority() > curMaxPriority) {
+//                     findNodeId = nodeId;
+//                     curMaxPriority = m_nodeIdMap[nodeId]->getPriority();
+//                 }
+//             }
+//         }
+
+//         if (findNodeId != -1) {
+//             //erase node info from graph 
+//             for (long otherNodeId : m_graph[findNodeId]) {
+//                 m_nodeIndegreeMap[otherNodeId]--;
+//             }
+//             m_graph.erase(findNodeId);
+//             m_nodeIndegreeMap.erase(findNodeId);
+
+//             m_nodeOrder.push_back(findNodeId);
+//         } else {
+//             //no find node, maybe error or complete
+//             if (!m_nodeIndegreeMap.empty())
+//                 std::cout << "error! please check dep" << std::endl;
+//             m_graphModifiedFlag = true;
+//             return;
+//         }
+//     }
+// }
+
 void DAG::topologicalSort() {
     rebuildGraph();
+    std::vector<long> sameLevelNodes;
     while (true) {
-        long findNodeId = -1;
-        int curMaxPriority = INT32_MIN;
         for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
             if (degree == 0) {
-                //can find node of degree is 0
-                if (m_nodeIdMap[nodeId]->getPriority() > curMaxPriority) {
-                    findNodeId = nodeId;
-                    curMaxPriority = m_nodeIdMap[nodeId]->getPriority();
-                }
+                sameLevelNodes.push_back(nodeId);
             }
         }
 
-        if (findNodeId != -1) {
+        if (!sameLevelNodes.empty()) {
+            for (int nodeId : sameLevelNodes) {
             //erase node info from graph 
-            for (long otherNodeId : m_graph[findNodeId]) {
-                m_nodeIndegreeMap[otherNodeId]--;
+                for (long otherNodeId : m_graph[nodeId]) {
+                    m_nodeIndegreeMap[otherNodeId]--;
+                }
+                m_graph.erase(nodeId);
+                m_nodeIndegreeMap.erase(nodeId);
             }
-            m_graph.erase(findNodeId);
-            m_nodeIndegreeMap.erase(findNodeId);
-
-            m_nodeOrder.push_back(findNodeId);
+            m_nodeTopoOrder.push_back(sameLevelNodes);
+            sameLevelNodes.clear();
         } else {
             //no find node, maybe error or complete
             if (!m_nodeIndegreeMap.empty())
@@ -231,8 +264,12 @@ void DAG::dumpGraph()
 
 void DAG::dumpNodeOrder()
 {
-    for (long nodeId : m_nodeOrder) {
-        std::cout << nodeId << " ";
+    for (auto& order : m_nodeTopoOrder) {
+        std::cout << "[";
+        for (long nodeId : order) {
+            std::cout << nodeId << " ";
+        }
+        std::cout << "] ";
     }
     std::cout << std::endl;
 }
@@ -242,7 +279,7 @@ void DAG::rebuildGraph()
     if (m_graphModifiedFlag == false) return;
     m_graph.clear();
     m_nodeIndegreeMap.clear();
-    m_nodeOrder.clear();
+    m_nodeTopoOrder.clear();
     buildGraph();
     m_graphModifiedFlag = false;
 }
