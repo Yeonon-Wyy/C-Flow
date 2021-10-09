@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-06 19:28:23
+ * @LastEditTime: 2021-10-09 21:22:50
  */
 #pragma once
 
@@ -53,34 +53,10 @@ public:
      * @return {*}
      */    
     Task(const std::string& name, int priority) 
-        :DAGNode(util::IDGenerator::getInstance()->generate(), priority),
+        :DAGNode(util::IDGenerator::getInstance()->generate()),
          m_name(name),
+         m_priority(priority),
          m_ID(getNodeId()) {}
-
-    /* utils function  */
-    /**
-     * @name: setName
-     * @Descripttion: set task name
-     * @param {*} name
-     * @return {*}
-     */    
-    void setName(const std::string& name) { m_name = std::move(name); }
-
-    /**
-     * @name: getName
-     * @Descripttion: get task name
-     * @param {*}
-     * @return {*} task name
-     */    
-    std::string getName() { return m_name; }
-
-    /**
-     * @name: getID
-     * @Descripttion: get task id
-     * @param {*} 
-     * @return {*} task id
-     */    
-    long getID() { return m_ID; }
 
     /**
      * @name: commit
@@ -91,6 +67,16 @@ public:
     template<typename Function, typename... Args>
     auto commit(Function&& f, Args&&... args)
         -> std::shared_ptr<std::packaged_task<typename std::result_of<Function(Args...)>::type()> >;
+
+
+    /* setter and getter function  */
+    void setName(const std::string& name) { m_name = std::move(name); }
+    std::string getName() { return m_name; }
+
+    long getID() { return m_ID; }
+
+    void setPriority(int priority) { m_priority = priority; }
+    int getPriority() { return m_priority; }
 
     /**
      * @name: getTaskFunc
@@ -104,6 +90,7 @@ private:
     std::string m_name;                                  //task name
     long m_ID;                                           //task id
     std::function<void()> m_taskFunc;                    //task function
+    int m_priority;                                      //priority
 };
 
 

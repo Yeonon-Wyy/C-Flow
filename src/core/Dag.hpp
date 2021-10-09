@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-06 18:23:33
+ * @LastEditTime: 2021-10-09 22:16:57
  */
 #pragma once
 
@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <algorithm>
+#include <memory>
 
 #include "./utils.hpp"
 
@@ -31,36 +32,13 @@ public:
     DAGNode(int id);
 
     /**
-     * @name: DAGNode
-     * @Descripttion: constructor of DAGNode
-     * @param {int} id is node id
-     * @return {*}
-     */    
-    DAGNode(int id, int nodePriority);
-
-    /**
      * @name: precede
      * @Descripttion: precede set dependency of node, nodeA->precede(NodeB) mean A -> B
      * @param {DAGNode*} otherNode
      * @return {*}
      */    
-    void precede(DAGNode* otherNode);
+    void precede(std::shared_ptr<DAGNode> otherNode);
 
-    /**
-     * @name: getPriority
-     * @Descripttion: just return node priority
-     * @param {*}
-     * @return {*} node priority
-     */    
-    int getPriority() { return m_nodePriority; }
-
-    /**
-     * @name: setPriority
-     * @Descripttion: just set node priority
-     * @param {int} nodePriority
-     * @return {*}
-     */    
-    void setPriority(int nodePriority) { m_nodePriority = nodePriority; }
 
     /**
      * @name: getNodeId
@@ -81,7 +59,6 @@ public:
 private:
     long m_nodeId;                     //node-id
     std::vector<long> m_outNodes;      //out-degree
-    int m_nodePriority;                //node priority
 };
 
 class DAG {
@@ -93,7 +70,7 @@ public:
      * @param {DAGNode*} node
      * @return {*}
      */    
-    void addNode(DAGNode* node);
+    void addNode(std::shared_ptr<DAGNode> node);
 
     /**
      * @name: buildGraph
@@ -116,11 +93,9 @@ public:
      * @name: topologicalSort
      * @Descripttion: topological sort algorithem for DAG
      * @param {*}
-     * @return {*}
+     * @return {*} topological order
      */    
-    void topologicalSort();
-
-    std::vector<std::vector<long>> getTopoOrder() { return m_nodeTopoOrder; }
+    std::vector<std::vector<long>> topologicalSort();
 
     /**
      * @name: dumpGraph
@@ -130,50 +105,38 @@ public:
      */    
     void dumpGraph();
 
-    /**
-     * @name: dump
-     * @Descripttion: 
-     * @param {*}
-     * @return {*}
-     */    
-    void dumpNodeOrder();
-
 private:
     std::unordered_map<long, std::vector<long>> m_graph;
-    std::unordered_map<long, DAGNode*> m_nodeIdMap;
+    std::unordered_map<long, std::shared_ptr<DAGNode>> m_nodeIdMap;
     std::unordered_map<long, long> m_nodeIndegreeMap;
     bool m_graphModifiedFlag = false;
-    std::vector<std::vector<long>> m_nodeTopoOrder;
 };
 
 /*
 * class DAGNode
 */
 DAGNode::DAGNode(int id)
-        :m_nodeId(id),
-         m_nodePriority(0)
+        :m_nodeId(id)
 {
 }
 
-DAGNode::DAGNode(int id, int nodePriority)
-        :m_nodeId(id),
-         m_nodePriority(nodePriority)
-{
 
-}
-
-void DAGNode::precede(DAGNode* otherNode)
+void DAGNode::precede(std::shared_ptr<DAGNode> otherNode)
 {
     this->m_outNodes.push_back(otherNode->m_nodeId);
+
 }
 
 /*
 * class DAG
 */
-void DAG::addNode(DAGNode* node)
+void DAG::addNode(std::shared_ptr<DAGNode> node)
 {
     long nodeId = node->getNodeId();
     m_nodeIdMap[nodeId] = node;
+    
+    //set flag for grpah is modified
+    m_graphModifiedFlag = true;
 }
 
 void DAG::buildGraph()
@@ -223,11 +186,15 @@ void DAG::buildGraph()
 //     }
 // }
 
-void DAG::topologicalSort() {
-    rebuildGraph();
+std::vector<std::vector<long>> DAG::topologicalSort() {
+    std::vector<std::vector<long>> nodeOrder;
     std::vector<long> sameLevelNodes;
+
+    std::unordered_map<long, std::vector<long>> graphCopy = m_graph;
+    std::unordered_map<long, long> nodeIndegreeMapCopy = m_nodeIndegreeMap;
+
     while (true) {
-        for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
+        for (auto &[nodeId, degree] : nodeIndegreeMapCopy) {
             if (degree == 0) {
                 sameLevelNodes.push_back(nodeId);
             }
@@ -236,26 +203,26 @@ void DAG::topologicalSort() {
         if (!sameLevelNodes.empty()) {
             for (int nodeId : sameLevelNodes) {
             //erase node info from graph 
-                for (long otherNodeId : m_graph[nodeId]) {
-                    m_nodeIndegreeMap[otherNodeId]--;
+                for (long otherNodeId : graphCopy[nodeId]) {
+                    nodeIndegreeMapCopy[otherNodeId]--;
                 }
-                m_graph.erase(nodeId);
-                m_nodeIndegreeMap.erase(nodeId);
+                graphCopy.erase(nodeId);
+                nodeIndegreeMapCopy.erase(nodeId);
             }
-            //even some node as same level, still need keep high priority
-            std::sort(sameLevelNodes.begin(), sameLevelNodes.end(), [this](int lhs, int rhs) {
-                return this->m_nodeIdMap[lhs]->getPriority() > this->m_nodeIdMap[rhs]->getPriority();
-            });
-            m_nodeTopoOrder.push_back(sameLevelNodes);
+            nodeOrder.push_back(sameLevelNodes);
             sameLevelNodes.clear();
         } else {
             //no find node, maybe error or complete
-            if (!m_nodeIndegreeMap.empty())
+            if (!nodeIndegreeMapCopy.empty()) {
                 std::cout << "error! please check dep" << std::endl;
+                //we must clear error node order
+                nodeOrder.clear();
+            }
             m_graphModifiedFlag = true;
-            return;
+            break;
         }
     }
+    return nodeOrder;
 }
 
 
@@ -270,24 +237,11 @@ void DAG::dumpGraph()
     }
 }
 
-void DAG::dumpNodeOrder()
-{
-    for (auto& order : m_nodeTopoOrder) {
-        std::cout << "[";
-        for (long nodeId : order) {
-            std::cout << nodeId << " ";
-        }
-        std::cout << "] ";
-    }
-    std::cout << std::endl;
-}
-
 void DAG::rebuildGraph()
 {
     if (m_graphModifiedFlag == false) return;
     m_graph.clear();
     m_nodeIndegreeMap.clear();
-    m_nodeTopoOrder.clear();
     buildGraph();
     m_graphModifiedFlag = false;
 }
