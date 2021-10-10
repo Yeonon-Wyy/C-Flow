@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-09 22:16:57
+ * @LastEditTime: 2021-10-10 21:34:10
  */
 #pragma once
 
@@ -218,7 +218,6 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
                 //we must clear error node order
                 nodeOrder.clear();
             }
-            m_graphModifiedFlag = true;
             break;
         }
     }
