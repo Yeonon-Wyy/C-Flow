@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-09 21:22:50
+ * @LastEditTime: 2021-10-10 21:26:29
  */
 #pragma once
 
@@ -86,11 +86,36 @@ public:
      */    
     std::function<void()> getTaskFunc() { return m_taskFunc; }
 
+    /**
+     * @name: setRunFunc
+     * @Descripttion: just set run function to task object
+     * @param {*}
+     * @return {*}
+     */    
+    void setRunable(std::function<void()>&& runable) { m_runable = std::move(runable); }
+
+    /**
+     * @name: will execute runanble function, must be set
+     * @Descripttion: 
+     * @param {*}
+     * @return {*}
+     */    
+    void operator() () 
+    { 
+        if (m_runable) {
+            m_runable(); 
+        } else {
+            throw std::runtime_error("before execute, must set runable");;
+        }
+    }
+
 private:
     std::string m_name;                                  //task name
     long m_ID;                                           //task id
-    std::function<void()> m_taskFunc;                    //task function
+    std::function<void()> m_taskFunc;                    //task function, will execute user task
     int m_priority;                                      //priority
+    std::function<void()> m_runable;                     //runable function, only for threadPool
+
 };
 
 
