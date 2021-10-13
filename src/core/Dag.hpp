@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-10 21:34:10
+ * @LastEditTime: 2021-10-13 20:57:06
  */
 #pragma once
 
@@ -82,12 +82,12 @@ public:
 
 
     /**
-     * @name: rebuildGraph
+     * @name: rebuildGraphIfNeed
      * @Descripttion: rebuild the graph, only use in after topologicalSort.
      * @param {*}
      * @return {*}
      */    
-    void rebuildGraph();
+    void rebuildGraphIfNeed();
 
     /**
      * @name: topologicalSort
@@ -153,7 +153,7 @@ void DAG::buildGraph()
 // topologicalSort V1, just comment it first
 
 // void DAG::topologicalSort() {
-//     rebuildGraph();
+//     rebuildGraphIfNeed();
 //     while (true) {
 //         long findNodeId = -1;
 //         int curMaxPriority = INT32_MIN;
@@ -187,6 +187,7 @@ void DAG::buildGraph()
 // }
 
 std::vector<std::vector<long>> DAG::topologicalSort() {
+    rebuildGraphIfNeed();
     std::vector<std::vector<long>> nodeOrder;
     std::vector<long> sameLevelNodes;
 
@@ -236,7 +237,7 @@ void DAG::dumpGraph()
     }
 }
 
-void DAG::rebuildGraph()
+void DAG::rebuildGraphIfNeed()
 {
     if (m_graphModifiedFlag == false) return;
     m_graph.clear();

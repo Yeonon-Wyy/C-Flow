@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-10 21:26:29
+ * @LastEditTime: 2021-10-13 21:00:41
  */
 #pragma once
 
@@ -35,6 +35,14 @@ enum TaskPriority {
 class Task : public DAGNode {
 public:
 
+    Task() 
+        :DAGNode(util::IDGenerator::getInstance()->generate()),
+         m_priority(TaskPriority::NORMAL),
+         m_ID(getNodeId()) 
+    {
+        m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+    }
+
     /**
      * @name: Task
      * @Descripttion: Task constructor
@@ -45,6 +53,20 @@ public:
         :DAGNode(util::IDGenerator::getInstance()->generate()),
          m_name(name),
          m_ID(getNodeId()) {}
+
+    /**
+     * @name: Task
+     * @Descripttion: Task constructor
+     * @param {*} name is the task name
+     * @return {*} 
+     */
+    Task(int priority) 
+        :DAGNode(util::IDGenerator::getInstance()->generate()),
+         m_priority(priority),
+         m_ID(getNodeId())
+    {
+        m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+    }
 
     /**
      * @name: Task 
