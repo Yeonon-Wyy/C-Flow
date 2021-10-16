@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-16 18:07:18
+ * @LastEditTime: 2021-10-16 18:16:48
  */
 #pragma once
 
@@ -124,7 +124,6 @@ DAGNode::DAGNode(int id)
 void DAGNode::precede(std::shared_ptr<DAGNode> otherNode)
 {
     this->m_outNodes.push_back(otherNode->m_nodeId);
-
 }
 
 /*
@@ -151,6 +150,40 @@ void DAG::buildGraph()
 }
 
 // topologicalSort V1, just comment it first
+
+// void DAG::topologicalSort() {
+//     rebuildGraphIfNeed();
+//     while (true) {
+//         long findNodeId = -1;
+//         int curMaxPriority = INT32_MIN;
+//         for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
+//             if (degree == 0) {
+//                 //can find node of degree is 0
+//                 if (m_nodeIdMap[nodeId]->getPriority() > curMaxPriority) {
+//                     findNodeId = nodeId;
+//                     curMaxPriority = m_nodeIdMap[nodeId]->getPriority();
+//                 }
+//             }
+//         }
+
+//         if (findNodeId != -1) {
+//             //erase node info from graph 
+//             for (long otherNodeId : m_graph[findNodeId]) {
+//                 m_nodeIndegreeMap[otherNodeId]--;
+//             }
+//             m_graph.erase(findNodeId);
+//             m_nodeIndegreeMap.erase(findNodeId);
+
+//             m_nodeOrder.push_back(findNodeId);
+//         } else {
+//             //no find node, maybe error or complete
+//             if (!m_nodeIndegreeMap.empty())
+//                 std::cout << "error! please check dep" << std::endl;
+//             m_graphModifiedFlag = true;
+//             return;
+//         }
+//     }
+// }
 
 std::vector<std::vector<long>> DAG::topologicalSort() {
     rebuildGraphIfNeed();

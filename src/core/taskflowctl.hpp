@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-16 18:09:22
+ * @LastEditTime: 2021-10-16 19:40:48
  */
 
 #pragma once
@@ -81,7 +81,7 @@ void TaskFlowCtl::reorganizeTaskOrder()
         for (auto& curLevelTask : m_taskOrder) {
             std::cout << "[";
             for (long taskId : curLevelTask) {
-                std::cout << taskId << ",";
+                std::cout << m_taskIdMap[taskId]->getName() << ",";
             }
             std::cout << "],";
         }
@@ -99,7 +99,6 @@ void TaskFlowCtl::start()
 {
     reorganizeTaskOrder();
     for (auto& curLevelTaskIds : m_taskOrder) {
-        // std::vector<std::future<void>> taskfutureList;
         std::vector<std::pair<std::string, std::future<void>>> taskfutureList;
         for (long taskId : curLevelTaskIds) {
             if (m_taskIdMap.count(taskId) == 0) {
