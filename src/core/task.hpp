@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-13 21:00:41
+ * @LastEditTime: 2021-10-16 17:58:35
  */
 #pragma once
 
@@ -32,6 +32,11 @@ enum TaskPriority {
     EXTREME_URGENCY,
 };
 
+struct TaskCreateInfo {
+    int priority = TaskPriority::NORMAL;
+    std::string name = "";
+};
+
 class Task : public DAGNode {
 public:
 
@@ -43,42 +48,17 @@ public:
         m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
     }
 
-    /**
-     * @name: Task
-     * @Descripttion: Task constructor
-     * @param {*} name is the task name
-     * @return {*} 
-     */
-    Task(const std::string& name) 
+    Task(TaskCreateInfo&& createInfo) 
         :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_name(name),
-         m_ID(getNodeId()) {}
-
-    /**
-     * @name: Task
-     * @Descripttion: Task constructor
-     * @param {*} name is the task name
-     * @return {*} 
-     */
-    Task(int priority) 
-        :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_priority(priority),
-         m_ID(getNodeId())
+         m_priority(createInfo.priority),
+         m_ID(getNodeId()) 
     {
-        m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+        if (createInfo.name == "") {
+            m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+        } else {
+            m_name = std::move(createInfo.name);
+        }
     }
-
-    /**
-     * @name: Task 
-     * @Descripttion: Task constroctr 
-     * @param {int} priority 
-     * @return {*}
-     */    
-    Task(const std::string& name, int priority) 
-        :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_name(name),
-         m_priority(priority),
-         m_ID(getNodeId()) {}
 
     /**
      * @name: commit
@@ -92,12 +72,12 @@ public:
 
 
     /* setter and getter function  */
-    void setName(const std::string& name) { m_name = std::move(name); }
+    Task& setName(const std::string& name) { m_name = std::move(name); return *this; }
     std::string getName() { return m_name; }
 
     long getID() { return m_ID; }
 
-    void setPriority(int priority) { m_priority = priority; }
+    Task& setPriority(int priority) { m_priority = priority; return *this; }
     int getPriority() { return m_priority; }
 
     /**
@@ -114,7 +94,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    void setRunable(std::function<void()>&& runable) { m_runable = std::move(runable); }
+    Task& setRunable(std::function<void()>&& runable) { m_runable = std::move(runable); return *this; }
 
     /**
      * @name: will execute runanble function, must be set

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-13 22:08:17
+ * @LastEditTime: 2021-10-16 18:12:32
  */
 #include "../core/taskflowctl.hpp"
 #include "../core/utils.hpp"
@@ -17,7 +17,7 @@ int main()
         std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
     });
 
-    auto task2 = flowCtl.addTask([](int a, int b) {
+    auto task2 = flowCtl.addTaskWithTaskInfo({vtf::TaskPriority::EXTREME_URGENCY,"task_nmc"}, [](int a, int b) {
         std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
     }, 1, 2);
 

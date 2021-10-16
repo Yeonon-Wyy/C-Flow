@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-13 22:09:52
+ * @LastEditTime: 2021-10-16 18:09:22
  */
 
 #pragma once
@@ -27,18 +27,17 @@ namespace vtf
 class TaskFlowCtl
 {
 public:
-    TaskFlowCtl(bool enable = false)
+    TaskFlowCtl(bool enableDebug = false)
         :m_threadPool(TASKFLOWCTL_THREADPOOL_MAX_THREAD),
          m_dag(),
-         m_debugEnable(enable) {}
+         m_debugEnable(enableDebug) {}
 
 
     template<typename Function, typename... Args>
     std::shared_ptr<Task> addTask(Function&& f, Args&&... args);
 
-    //TODO:明天搞
-    std::shared_ptr<Task> addTaskWithName(const std::string& taskName);
-    std::shared_ptr<Task> addTaskWithPriority(const std::string& taskName);
+    template<typename Function, typename... Args>
+    std::shared_ptr<Task> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo, Function&& f, Args&&... args);
 
     void start();
 
@@ -59,6 +58,15 @@ template<typename Function, typename... Args>
 std::shared_ptr<Task> TaskFlowCtl::addTask(Function&& f, Args&&... args)
 {
     std::shared_ptr<Task> task = std::make_shared<Task>();
+    task->commit(std::forward<Function>(f), std::forward<Args>(args)...);
+    commonSetting(task);
+    return task;
+}
+
+template<typename Function, typename... Args>
+std::shared_ptr<Task> TaskFlowCtl::addTaskWithTaskInfo(TaskCreateInfo&& taskInfo, Function&& f, Args&&... args)
+{
+    std::shared_ptr<Task> task = std::make_shared<Task>(std::move(taskInfo));
     task->commit(std::forward<Function>(f), std::forward<Args>(args)...);
     commonSetting(task);
     return task;
