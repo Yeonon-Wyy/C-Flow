@@ -4,43 +4,42 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-16 21:56:43
+ * @LastEditTime: 2021-10-20 21:25:58
  */
 #include "../core/taskflowctl.hpp"
 #include "../core/utils.hpp"
 #include <chrono>
+#include "../core/blocking_queue.hpp"
 
 
 
 using Buffer = std::vector<std::vector<int>>;
-using BufferQ = std::queue<Buffer>;
+using BufferQ = vtf::BlockingQueue<Buffer>;
 
 int main()
 {
     vtf::TaskFlowCtl flowCtl(true);
 
-    std::shared_ptr<BufferQ> p1MasterbufferQ = std::make_shared<BufferQ>();
-    std::shared_ptr<BufferQ> p1SlavebufferQ = std::make_shared<BufferQ>();
-    std::shared_ptr<BufferQ> P2MasterbufferQ = std::make_shared<BufferQ>();
-    std::shared_ptr<BufferQ> P2SlavebufferQ = std::make_shared<BufferQ>();
-    std::shared_ptr<BufferQ> mdp1bufferQ = std::make_shared<BufferQ>();
-    std::shared_ptr<BufferQ> mdp2bufferQ = std::make_shared<BufferQ>();
+    std::shared_ptr<BufferQ> p1MasterbufferQ = std::make_shared<BufferQ>(8);
+    std::shared_ptr<BufferQ> p1SlavebufferQ = std::make_shared<BufferQ>(8);
+    std::shared_ptr<BufferQ> P2MasterbufferQ = std::make_shared<BufferQ>(8);
+    std::shared_ptr<BufferQ> P2SlavebufferQ = std::make_shared<BufferQ>(8);
+    std::shared_ptr<BufferQ> mdp1bufferQ = std::make_shared<BufferQ>(8);
 
-    std::shared_ptr<BufferQ> resbufferQ = std::make_shared<BufferQ>();
+    std::shared_ptr<BufferQ> resbufferQ = std::make_shared<BufferQ>(8);
 
 
 
     auto P1NodeMaster = flowCtl.addTaskWithTaskInfo(
         {vtf::TaskPriority::NORMAL,"P1NodeMaster"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            auto buffer = inbufferQ->front();
+            auto buffer = inbufferQ->pop();
             
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
             std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
             outBufferQ->push(buffer);
-            inbufferQ->pop();
         },
         p1MasterbufferQ,
         P2MasterbufferQ
@@ -49,8 +48,7 @@ int main()
     auto P1NodeSlave = flowCtl.addTaskWithTaskInfo(
         {vtf::TaskPriority::NORMAL,"P1NodeSlave"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            auto buffer = inbufferQ->front();
-            inbufferQ->pop();
+            auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
@@ -64,9 +62,7 @@ int main()
     auto P2SMasterNode = flowCtl.addTaskWithTaskInfo(
         {vtf::TaskPriority::NORMAL,"P2SMasterNode"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            std::cout << inbufferQ->size();
-            auto buffer = inbufferQ->front();
-            inbufferQ->pop();
+            auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
@@ -80,8 +76,7 @@ int main()
     auto P2SSlaveNode = flowCtl.addTaskWithTaskInfo(
         {vtf::TaskPriority::NORMAL,"P2SSlaveNode"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            auto buffer = inbufferQ->front();
-            inbufferQ->pop();
+            auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
@@ -89,51 +84,33 @@ int main()
             outBufferQ->push(buffer);
         },
         P2SlavebufferQ,
-        mdp2bufferQ
+        mdp1bufferQ
     );
 
     auto mdpNode1 = flowCtl.addTaskWithTaskInfo(
         {vtf::TaskPriority::NORMAL,"mdpNode1"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            // while (!inbufferQ->empty()) {
-                auto buffer = inbufferQ->front();
+            while (!inbufferQ->isEmpty()) {
+                auto buffer = inbufferQ->pop();
                 std::cout << "mdp1: buffer.size()" << buffer.size() << std::endl;
                 for (int col = 0; col <4; col++) {
                     buffer[0][col] *= 2;
                 }
                 outBufferQ->push(buffer);
-                inbufferQ->pop();
                 std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
 
-            // }
+            }
         },
         mdp1bufferQ,
         resbufferQ
     );
 
-    auto mdpNode2 = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"mdpNode2"}, 
-        [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
-            // while (!inbufferQ->empty()) {
-                auto buffer = inbufferQ->front();
-                std::cout << "mdp2: buffer.size()" << buffer.size() << std::endl;
-                for (int col = 0; col <4; col++) {
-                    buffer[0][col] *= 2;
-                }
-                outBufferQ->push(buffer);
-                inbufferQ->pop();
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
-            // }
-        },
-        mdp2bufferQ,
-        resbufferQ
-    );
 
 
     P1NodeMaster->precede(P2SMasterNode);
     P1NodeSlave->precede(P2SSlaveNode);
     P2SMasterNode->precede(mdpNode1);
-    P2SSlaveNode->precede(mdpNode2);
+    P2SSlaveNode->precede(mdpNode1);
 
     // auto start = std::chrono::system_clock::now();
     // flowCtl.start();
@@ -163,8 +140,7 @@ int main()
                 flowCtl.start();
 
                 //master
-                auto masterOutBuffer = resbufferQ->front();
-                resbufferQ->pop();
+                auto masterOutBuffer = resbufferQ->pop();
                 std::cout << "master:\n";
                 for (int i = 0; i < masterOutBuffer.size(); i++) {
                     std::cout << "[";
@@ -176,8 +152,7 @@ int main()
 
                 //slave
                 std::cout << "slave:\n";
-                auto slaveOutBuffer = resbufferQ->front();
-                resbufferQ->pop();
+                auto slaveOutBuffer = resbufferQ->pop();
                 for (int i = 0; i < slaveOutBuffer.size(); i++) {
                     std::cout << "[";
                     for (int j = 0; j < slaveOutBuffer.at(i).size(); j++) {

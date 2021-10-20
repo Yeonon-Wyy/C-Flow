@@ -1,4 +1,4 @@
-#include "../core/Dag.hpp"
+#include "../core/dag.hpp"
 #include "../core/task.hpp"
 #include "../core/threadPool.hpp"
 
@@ -119,7 +119,7 @@ void testTaskDag()
     dag.topologicalSort();
 
     std::cout << "twitch" << std::endl;
-    dag.rebuildGraph();
+    dag.rebuildGraphIfNeed();
     dag.dumpGraph();
     dag.topologicalSort();
     
