@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-16 18:16:48
+ * @LastEditTime: 2021-10-20 21:37:08
  */
 #pragma once
 
@@ -109,7 +109,8 @@ private:
     std::unordered_map<long, std::vector<long>> m_graph;
     std::unordered_map<long, std::shared_ptr<DAGNode>> m_nodeIdMap;
     std::unordered_map<long, long> m_nodeIndegreeMap;
-    bool m_graphModifiedFlag = false;
+    bool m_graphModified = false;
+    std::vector<std::vector<long>> m_nodeOrderCache;
 };
 
 /*
@@ -135,7 +136,7 @@ void DAG::addNode(std::shared_ptr<DAGNode> node)
     m_nodeIdMap[nodeId] = node;
     
     //set flag for grpah is modified
-    m_graphModifiedFlag = true;
+    m_graphModified = true;
 }
 
 void DAG::buildGraph()
@@ -149,44 +150,11 @@ void DAG::buildGraph()
     }
 }
 
-// topologicalSort V1, just comment it first
-
-// void DAG::topologicalSort() {
-//     rebuildGraphIfNeed();
-//     while (true) {
-//         long findNodeId = -1;
-//         int curMaxPriority = INT32_MIN;
-//         for (auto &[nodeId, degree] : m_nodeIndegreeMap) {
-//             if (degree == 0) {
-//                 //can find node of degree is 0
-//                 if (m_nodeIdMap[nodeId]->getPriority() > curMaxPriority) {
-//                     findNodeId = nodeId;
-//                     curMaxPriority = m_nodeIdMap[nodeId]->getPriority();
-//                 }
-//             }
-//         }
-
-//         if (findNodeId != -1) {
-//             //erase node info from graph 
-//             for (long otherNodeId : m_graph[findNodeId]) {
-//                 m_nodeIndegreeMap[otherNodeId]--;
-//             }
-//             m_graph.erase(findNodeId);
-//             m_nodeIndegreeMap.erase(findNodeId);
-
-//             m_nodeOrder.push_back(findNodeId);
-//         } else {
-//             //no find node, maybe error or complete
-//             if (!m_nodeIndegreeMap.empty())
-//                 std::cout << "error! please check dep" << std::endl;
-//             m_graphModifiedFlag = true;
-//             return;
-//         }
-//     }
-// }
 
 std::vector<std::vector<long>> DAG::topologicalSort() {
+    if (!m_graphModified) return m_nodeOrderCache;
     rebuildGraphIfNeed();
+
     std::vector<std::vector<long>> nodeOrder;
     std::vector<long> sameLevelNodes;
 
@@ -221,6 +189,7 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
             break;
         }
     }
+    m_nodeOrderCache = nodeOrder;
     return nodeOrder;
 }
 
@@ -238,11 +207,11 @@ void DAG::dumpGraph()
 
 void DAG::rebuildGraphIfNeed()
 {
-    if (m_graphModifiedFlag == false) return;
+    if (m_graphModified == false) return;
     m_graph.clear();
     m_nodeIndegreeMap.clear();
     buildGraph();
-    m_graphModifiedFlag = false;
+    m_graphModified = false;
 }
 
 }
