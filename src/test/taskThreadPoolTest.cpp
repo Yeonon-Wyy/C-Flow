@@ -4,9 +4,9 @@
  * @Author: yeonon
  * @Date: 2021-10-10 20:10:02
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-10 21:21:31
+ * @LastEditTime: 2021-10-22 23:25:16
  */
-#include "../core/Dag.hpp"
+#include "../core/dag.hpp"
 #include "../core/task.hpp"
 #include "../core/taskthreadPool.hpp"
 
@@ -25,56 +25,56 @@ constexpr T convertTime(std::chrono::duration<double> originTime)
 
 void testTaskExecute()
 {
-    std::cout << "testTaskExecute:\n";
+    VTF_LOGI << "testTaskExecute:\n";
 
-    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>("task_1");
+    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>();
     auto pt1 = task1->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task1 complate!" << std::endl;
+        VTF_LOGI << "task1 complate!";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>("task_2");
+    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>();
     auto pt2 = task2->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task2 complate!" << std::endl;
+        VTF_LOGI << "task2 complate!";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>("task_3");
+    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>();
     auto pt3 = task3->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task3 complate!" << std::endl;
+        VTF_LOGI << "task3 complate!";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>("task_4");
+    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>();
     auto pt4 = task4->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task4 complate!" << std::endl;
+        VTF_LOGI << "task4 complate!";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>("task_5");
+    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>();
     auto pt5 = task5->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task5 complate!" << std::endl;
+        VTF_LOGI << "task5 complate!";
         return a + b;
     }, 1, 2);
     task5->setPriority(vtf::TaskPriority::URGENCY);
 
-    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>("task_6");
+    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>();
 
     auto pt6 = task6->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task6 complate!" << std::endl;
+        VTF_LOGI << "task6 complate!";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>("task_7");
+    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>();
     auto pt7 = task7->commit([](int a, int b) {
         std::this_thread::sleep_until(awake_time());
-        std::cout << "task7 complate!" << std::endl;
+        VTF_LOGI << "task7 complate!";
         return a + b;
     }, 1, 2);
 
@@ -87,7 +87,7 @@ void testTaskExecute()
     task1->precede(task2);
     task5->precede(task7);  
     task1->precede(task7);
-    // task2->precede(task7);
+    task2->precede(task7);
 
 
     vtf::DAG dag;
@@ -118,13 +118,13 @@ void testTaskExecute()
     std::vector<std::vector<long>> topoOrder = dag.topologicalSort();
 
     for (auto& level : topoOrder) {
-        std::cout << "[";
+        VTF_LOGI << "[";
         for (long taskId : level) {
-            std::cout << taskId << ",";
+            VTF_LOGI << taskId << ",";
         }
-        std::cout << "],";
+        VTF_LOGI << "],";
     }
-    std::cout << std::endl;
+    VTF_LOGI ;
 
     for (auto& order : topoOrder) {
         std::vector<std::future<void>> futureList;
@@ -138,7 +138,7 @@ void testTaskExecute()
     }
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> runTime = end - start;
-    std::cout << "all task need: " << convertTime<std::chrono::milliseconds>(runTime).count() << "ms" << std::endl;
+    VTF_LOGI << "all task need: " << convertTime<std::chrono::milliseconds>(runTime).count() << "ms" ;
 
 }
 

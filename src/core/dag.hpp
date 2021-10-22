@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-20 21:37:08
+ * @LastEditTime: 2021-10-22 23:43:30
  */
 #pragma once
 
@@ -15,6 +15,7 @@
 #include <memory>
 
 #include "./utils.hpp"
+#include "log.hpp"
 
 namespace vtf
 {
@@ -182,7 +183,7 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
         } else {
             //no find node, maybe error or complete
             if (!nodeIndegreeMapCopy.empty()) {
-                std::cout << "error! please check dep" << std::endl;
+                VTF_LOGE << "error! please check dep";
                 //we must clear error node order
                 nodeOrder.clear();
             }
@@ -197,11 +198,12 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
 void DAG::dumpGraph()
 {
     for (auto &[nodeId, outNodeIds] : m_graph) {
-        std::cout << nodeId << ": ";
+        std::stringstream ss;
+        ss << nodeId << ": ";
         for (long outNodeId : outNodeIds) {
-            std::cout << outNodeId << " ";
+            ss << outNodeId << " ";
         }
-        std::cout << std::endl;
+        VTF_LOGI << ss.str();
     }
 }
 

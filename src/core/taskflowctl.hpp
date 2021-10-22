@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-20 21:23:55
+ * @LastEditTime: 2021-10-22 23:45:48
  */
 
 #pragma once
@@ -18,6 +18,7 @@
 #include "task.hpp"
 #include "taskthreadPool.hpp"
 #include "dag.hpp"
+#include "log.hpp"
 
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
@@ -77,15 +78,15 @@ void TaskFlowCtl::reorganizeTaskOrder()
     m_taskOrder = m_dag.topologicalSort();
     
     if (m_debugEnable) {
-        std::cout << "dump task order: " << std::endl;
+        VTF_LOGI << "dump task order: " << std::endl;
+        std::stringstream ss;
         for (auto& curLevelTask : m_taskOrder) {
-            std::cout << "[";
+            ss << "[";
             for (long taskId : curLevelTask) {
-                std::cout << m_taskIdMap[taskId]->getName() << ",";
+                ss << m_taskIdMap[taskId]->getName() << ",";
             }
-            std::cout << "],";
+            VTF_LOGI << ss.str() << "]";
         }
-        std::cout << std::endl;
     }
 }
 
@@ -111,7 +112,7 @@ void TaskFlowCtl::start()
 
         for (std::pair<std::string, std::future<void>> &taskfuturePair : taskfutureList) {
             taskfuturePair.second.get();
-            std::cout << taskfuturePair.first << " execute complate!" << std::endl;
+            VTF_LOGI << taskfuturePair.first << " execute complate!";
         }
     }
 }

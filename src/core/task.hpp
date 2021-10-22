@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-20 21:24:04
+ * @LastEditTime: 2021-10-22 23:24:24
  */
 #pragma once
 
@@ -18,6 +18,7 @@
 
 #include "dag.hpp"
 #include "utils.hpp"
+#include "log.hpp"
 
 
 #define TASK_NAME_PREFIX "task_"

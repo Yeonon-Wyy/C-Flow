@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 20:59:22
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-10 20:57:17
+ * @LastEditTime: 2021-10-22 23:23:30
  */
 
 #include "../core/threadPool.hpp"
@@ -16,9 +16,10 @@ void testThreadPool()
 {
     std::future<void> f;
     {
-        std::packaged_task<void()> pt([]() { std::cout << "1" << std::endl; });
+        std::packaged_task<void()> pt([]() { VTF_LOGI << "1"; });
         f = pt.get_future();
         pt();
+        
     }
     f.get();
     

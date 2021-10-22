@@ -10,6 +10,7 @@
 #include <future>
 
 #include "task.hpp"
+#include "log.hpp"
 
 namespace vtf {
 

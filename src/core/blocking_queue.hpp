@@ -4,12 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-16 22:00:26
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-20 21:12:13
+ * @LastEditTime: 2021-10-22 23:23:57
  */
 
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+
+#include "log.hpp"
 
 namespace vtf {
 template <typename T>
@@ -30,10 +32,10 @@ public:
     bool isFull() { return (m_startIdx + m_capacity - m_endIdx) % (m_capacity + 1) == 0; }
 
 private:
+    int m_capacity;
     std::vector<T> m_items;
     int m_startIdx;
     int m_endIdx;
-    int m_capacity;
 
     std::mutex m_mutex;
     std::condition_variable m_not_full;

@@ -9,6 +9,7 @@
 #include <memory>
 #include <future>
 
+#include "log.hpp"
 namespace vtf {
 
 class ThreadPool {

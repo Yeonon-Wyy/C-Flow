@@ -4,13 +4,15 @@
  * @Author: yeonon
  * @Date: 2021-09-24 19:47:30
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-20 21:36:14
+ * @LastEditTime: 2021-10-22 23:24:44
  */
 #pragma once
 #include <atomic>
 #include <type_traits>
 #include <sstream>
 #include <chrono>
+
+#include "log.hpp"
 
 namespace vtf {
 

@@ -8,7 +8,7 @@
 
 void testDAGbasic()
 {
-    std::cout << "testDAGbasic:\n";
+    VTF_LOGI << "testDAGbasic:";
 
     
     std::shared_ptr<vtf::DAGNode> node1 = std::make_shared<vtf::DAGNode>(1);
@@ -46,50 +46,50 @@ void testDAGbasic()
 
 void testTaskDag()
 {
-    std::cout << "testTaskDag:\n";
+    VTF_LOGI << "testTaskDag:\n";
 
     // vtf::Task task1("task_1");
-    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>("task_1");
+    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>();
     auto pt1 = task1->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>("task_2");
+    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>();
     auto pt2 = task2->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>("task_3");
+    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>();
     auto pt3 = task3->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b";
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>("task_4");
+    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>();
     auto pt4 = task4->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>("task_5");
+    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>();
     auto pt5 = task5->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
     task5->setPriority(vtf::TaskPriority::URGENCY);
 
-    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>("task_6");
+    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>();
 
     auto pt6 = task6->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>("task_7");
+    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>();
     auto pt7 = task7->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
@@ -118,7 +118,7 @@ void testTaskDag()
     dag.dumpGraph();
     dag.topologicalSort();
 
-    std::cout << "twitch" << std::endl;
+    VTF_LOGI << "twitch" ;
     dag.rebuildGraphIfNeed();
     dag.dumpGraph();
     dag.topologicalSort();
@@ -141,49 +141,49 @@ constexpr T convertTime(std::chrono::duration<double> originTime)
 
 void testTaskExecute()
 {
-    std::cout << "testTaskExecute:\n";
+    VTF_LOGI << "testTaskExecute:\n";
 
-    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>("task_1");
+    std::shared_ptr<vtf::Task> task1 = std::make_shared<vtf::Task>();
     auto pt1 = task1->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>("task_2");
+    std::shared_ptr<vtf::Task> task2 = std::make_shared<vtf::Task>();
     auto pt2 = task2->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>("task_3");
+    std::shared_ptr<vtf::Task> task3 = std::make_shared<vtf::Task>();
     auto pt3 = task3->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>("task_4");
+    std::shared_ptr<vtf::Task> task4 = std::make_shared<vtf::Task>();
     auto pt4 = task4->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>("task_5");
+    std::shared_ptr<vtf::Task> task5 = std::make_shared<vtf::Task>();
     auto pt5 = task5->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
     task5->setPriority(vtf::TaskPriority::URGENCY);
 
-    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>("task_6");
+    std::shared_ptr<vtf::Task> task6 = std::make_shared<vtf::Task>();
 
     auto pt6 = task6->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>("task_7");
+    std::shared_ptr<vtf::Task> task7 = std::make_shared<vtf::Task>();
     auto pt7 = task7->commit([](int a, int b) {
-        std::cout << "exec a + b" << std::endl;
+        VTF_LOGI << "exec a + b" ;
         return a + b;
     }, 1, 2);
 
@@ -237,7 +237,7 @@ void testTaskExecute()
     }
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> runTime = end - start;
-    std::cout << "all task need: " << convertTime<std::chrono::milliseconds>(runTime).count() << "ms" << std::endl;
+    VTF_LOGI << "all task need: " << convertTime<std::chrono::milliseconds>(runTime).count() << "ms" ;
 
 
 }
