@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:43:30
+ * @LastEditTime: 2021-10-24 13:36:09
  */
 #pragma once
 
@@ -183,7 +183,7 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
         } else {
             //no find node, maybe error or complete
             if (!nodeIndegreeMapCopy.empty()) {
-                VTF_LOGE << "error! please check dep";
+                VTF_LOGD("please check node dependcy.");
                 //we must clear error node order
                 nodeOrder.clear();
             }
@@ -203,7 +203,7 @@ void DAG::dumpGraph()
         for (long outNodeId : outNodeIds) {
             ss << outNodeId << " ";
         }
-        VTF_LOGI << ss.str();
+        VTF_LOGI(ss.str());
     }
 }
 

@@ -4,13 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:42:06
+ * @LastEditTime: 2021-10-24 14:14:21
  */
 #include "../core/taskflowctl.hpp"
 #include "../core/utils.hpp"
-#include <chrono>
 #include "../core/blocking_queue.hpp"
-
+#include <chrono>
 
 
 using Buffer = std::vector<std::vector<int>>;
@@ -19,6 +18,7 @@ using BufferQ = vtf::BlockingQueue<Buffer>;
 int main()
 {
     vtf::TaskFlowCtl flowCtl(true);
+
 
     std::shared_ptr<BufferQ> p1MasterbufferQ = std::make_shared<BufferQ>(8);
     std::shared_ptr<BufferQ> p1SlavebufferQ = std::make_shared<BufferQ>(8);
@@ -111,13 +111,6 @@ int main()
     P2SMasterNode->precede(mdpNode1);
     P2SSlaveNode->precede(mdpNode1);
 
-    // auto start = std::chrono::system_clock::now();
-    // flowCtl.start();
-    // auto end = std::chrono::system_clock::now();
-    // VTF_LOGI << "all task need: " << vtf::util::TimeUtil::convertTime<std::chrono::milliseconds>(end - start).count() << "ms" ;
-
-    // VTF_LOGI << "out buffer content: ";
-
     std::thread dataSourceThread(
         [&flowCtl](std::shared_ptr<BufferQ> masterBufferQ, std::shared_ptr<BufferQ> slaveBufferQ, std::shared_ptr<BufferQ> resbufferQ){
             for (int i = 0; i < 10; i++) {
@@ -140,18 +133,18 @@ int main()
 
                 //master
                 auto masterOutBuffer = resbufferQ->pop();
-                VTF_LOGI << "master:";
+                VTF_LOGI("master");
                 for (int i = 0; i < masterOutBuffer.size(); i++) {
                     std::stringstream ss;
                     ss << "[";
                     for (int j = 0; j < masterOutBuffer.at(i).size(); j++) {
                         ss << masterOutBuffer.at(i).at(j) << " "; 
                     }
-                    VTF_LOGI << ss.str() << "]" ;
+                    VTF_LOGE("{0}]", ss.str());
                 }
 
                 //slave
-                VTF_LOGI << "slave:";
+                VTF_LOGI("slave");
                 auto slaveOutBuffer = resbufferQ->pop();
                 for (int i = 0; i < slaveOutBuffer.size(); i++) {
                     std::stringstream ss;
@@ -160,7 +153,7 @@ int main()
                         ss << slaveOutBuffer[i][j] << " ";
                     }
 
-                    VTF_LOGI << ss.str() << "]" ;
+                    VTF_LOGE("{0}]", ss.str());
                 }
                 std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(100));
             }

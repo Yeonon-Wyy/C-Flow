@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:45:48
+ * @LastEditTime: 2021-10-24 14:13:13
  */
 
 #pragma once
@@ -78,14 +78,14 @@ void TaskFlowCtl::reorganizeTaskOrder()
     m_taskOrder = m_dag.topologicalSort();
     
     if (m_debugEnable) {
-        VTF_LOGI << "dump task order: " << std::endl;
+        VTF_LOGI("dump task order: ");
         std::stringstream ss;
         for (auto& curLevelTask : m_taskOrder) {
             ss << "[";
             for (long taskId : curLevelTask) {
                 ss << m_taskIdMap[taskId]->getName() << ",";
             }
-            VTF_LOGI << ss.str() << "]";
+            VTF_LOGI("{0}]", ss.str());
         }
     }
 }
@@ -112,7 +112,7 @@ void TaskFlowCtl::start()
 
         for (std::pair<std::string, std::future<void>> &taskfuturePair : taskfutureList) {
             taskfuturePair.second.get();
-            VTF_LOGI << taskfuturePair.first << " execute complate!";
+            VTF_LOGI("{0} execute complate!", taskfuturePair.first);
         }
     }
 }

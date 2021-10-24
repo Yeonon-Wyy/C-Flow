@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-20 21:12:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:38:38
+ * @LastEditTime: 2021-10-24 14:17:42
  */
 #include "../core/blocking_queue.hpp"
 #include <random>
@@ -24,14 +24,14 @@ void consume(vtf::BlockingQueue<int>& bq, int i)
     while (true) {
         std::random_device rd;
         auto               item = bq.pop();
-        VTF_LOGI << "consume " << i << " [" << item << "]";
+        VTF_LOGI("consume {0} [{1}]", i, item);
         std::this_thread::sleep_for(std::chrono::milliseconds(1500 + rd() % 5000));
     }
 }
 
 int main(int agrc, char** agrv)
 {
-    google::InitGoogleLogging(agrv[0]);
+
     vtf::BlockingQueue<int> bq(8);
     std::thread t1(consume, std::ref(bq), 1);
     std::thread t2(consume, std::ref(bq), 2);
@@ -46,6 +46,4 @@ int main(int agrc, char** agrv)
     t3.join();
     t4.join();
     t5.join();
-    google::ShutdownGoogleLogging();
-
 }
