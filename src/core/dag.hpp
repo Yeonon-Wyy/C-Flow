@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-24 13:36:09
+ * @LastEditTime: 2021-10-30 15:24:16
  */
 #pragma once
 
@@ -33,12 +33,12 @@ public:
     DAGNode(int id);
 
     /**
-     * @name: precede
-     * @Descripttion: precede set dependency of node, nodeA->precede(NodeB) mean A -> B
+     * @name: connect
+     * @Descripttion: connect set dependency of node, nodeA->connect(NodeB) mean A -> B
      * @param {DAGNode*} otherNode
      * @return {*}
      */    
-    void precede(std::shared_ptr<DAGNode> otherNode);
+    virtual void connect(std::shared_ptr<DAGNode> otherNode);
 
 
     /**
@@ -123,9 +123,9 @@ DAGNode::DAGNode(int id)
 }
 
 
-void DAGNode::precede(std::shared_ptr<DAGNode> otherNode)
+void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
 {
-    this->m_outNodes.push_back(otherNode->m_nodeId);
+    this->m_outNodes.push_back(succsorNode->m_nodeId);
 }
 
 /*
