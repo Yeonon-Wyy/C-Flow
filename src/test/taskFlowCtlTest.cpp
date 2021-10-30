@@ -4,9 +4,9 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-24 14:14:21
+ * @LastEditTime: 2021-10-30 19:10:08
  */
-#include "../core/taskflowctl.hpp"
+#include "../core/task/taskflowctl.hpp"
 #include "../core/utils.hpp"
 #include "../core/blocking_queue.hpp"
 #include <chrono>
@@ -106,10 +106,10 @@ int main()
 
 
 
-    P1NodeMaster->precede(P2SMasterNode);
-    P1NodeSlave->precede(P2SSlaveNode);
-    P2SMasterNode->precede(mdpNode1);
-    P2SSlaveNode->precede(mdpNode1);
+    P1NodeMaster->connect(P2SMasterNode);
+    P1NodeSlave->connect(P2SSlaveNode);
+    P2SMasterNode->connect(mdpNode1);
+    P2SSlaveNode->connect(mdpNode1);
 
     std::thread dataSourceThread(
         [&flowCtl](std::shared_ptr<BufferQ> masterBufferQ, std::shared_ptr<BufferQ> slaveBufferQ, std::shared_ptr<BufferQ> resbufferQ){
@@ -134,10 +134,10 @@ int main()
                 //master
                 auto masterOutBuffer = resbufferQ->pop();
                 VTF_LOGI("master");
-                for (int i = 0; i < masterOutBuffer.size(); i++) {
+                for (size_t i = 0; i < masterOutBuffer.size(); i++) {
                     std::stringstream ss;
                     ss << "[";
-                    for (int j = 0; j < masterOutBuffer.at(i).size(); j++) {
+                    for (size_t j = 0; j < masterOutBuffer.at(i).size(); j++) {
                         ss << masterOutBuffer.at(i).at(j) << " "; 
                     }
                     VTF_LOGE("{0}]", ss.str());
@@ -146,7 +146,7 @@ int main()
                 //slave
                 VTF_LOGI("slave");
                 auto slaveOutBuffer = resbufferQ->pop();
-                for (int i = 0; i < slaveOutBuffer.size(); i++) {
+                for (size_t i = 0; i < slaveOutBuffer.size(); i++) {
                     std::stringstream ss;
                     ss << "[";
                     for (int j = 0; j < slaveOutBuffer.at(i).size(); j++) {

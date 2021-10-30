@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-24 14:13:13
+ * @LastEditTime: 2021-10-30 19:04:13
  */
 
 #pragma once
@@ -17,8 +17,8 @@
 
 #include "task.hpp"
 #include "taskthreadPool.hpp"
-#include "dag.hpp"
-#include "log.hpp"
+#include "../dag.hpp"
+#include "../log.hpp"
 
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
@@ -34,16 +34,48 @@ public:
          m_debugEnable(enableDebug) {}
 
 
+    /**
+     * @name: addTask
+     * @Descripttion: add a task to task flow
+     * @param {*} f mean function object, args is some params.
+     * @return {*} a task object
+     */    
     template<typename Function, typename... Args>
     std::shared_ptr<Task> addTask(Function&& f, Args&&... args);
 
+    /**
+     * @name: addTaskWithTaskInfo
+     * @Descripttion: add task with some infomation
+     * @param {*} taskInfo is task infomation
+     * @return {*} a task object
+     */    
     template<typename Function, typename... Args>
     std::shared_ptr<Task> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo, Function&& f, Args&&... args);
 
+    /**
+     * @name: start
+     * @Descripttion: start all task according to DAG
+     * @param {*} none
+     * @return {*} none
+     */    
     void start();
 
 private:
+
+    /**
+     * @name: reorganizeTaskOrder
+     * @Descripttion: reorganize task order, only after add or delete task
+     * @param {*} none
+     * @return {*} none
+     */    
     void reorganizeTaskOrder();
+
+    /**
+     * @name: commonSetting
+     * @Descripttion: set some common setting for task
+     * @param {shared_ptr<Task>} task
+     * @return {*}
+     */    
     void commonSetting(std::shared_ptr<Task> task);
 private:
     std::unordered_map<long, std::shared_ptr<Task>> m_taskIdMap;

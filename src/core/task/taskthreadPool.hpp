@@ -10,7 +10,7 @@
 #include <future>
 
 #include "task.hpp"
-#include "log.hpp"
+#include "../log.hpp"
 
 namespace vtf {
 
@@ -26,7 +26,12 @@ public:
 
     TaskThreadPool(size_t threadSize);
 
-    //emplace a task to thread pool
+    /**
+     * @name: emplaceTask
+     * @Descripttion: add a task to thread pool
+     * @param {shared_ptr<Task>} task
+     * @return {*}
+     */    
     auto emplaceTask(std::shared_ptr<Task> task) 
         -> std::future<void>;
 
@@ -53,7 +58,7 @@ private:
 TaskThreadPool::TaskThreadPool(size_t threadSize)
     :isStop(false) 
 {
-    for (int i = 0; i < threadSize; i++) {
+    for (size_t i = 0; i < threadSize; i++) {
         m_workers.emplace_back([this](){
             while (true) {
                 

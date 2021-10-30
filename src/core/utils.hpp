@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-24 19:47:30
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:24:44
+ * @LastEditTime: 2021-10-30 18:58:48
  */
 #pragma once
 #include <atomic>
@@ -25,6 +25,13 @@ public:
         static IDGenerator idGenerator;
         return &idGenerator;
     }
+
+    /**
+     * @name: generate
+     * @Descripttion: generate a id for user
+     * @param {*}
+     * @return {*} id
+     */    
     long generate()
     {
         m_id++;
@@ -36,6 +43,13 @@ public:
 
 class StringConvetor {
 public:
+
+    /**
+     * @name: digit2String
+     * @Descripttion: convert digit to str
+     * @param {*} digit
+     * @return {*} str
+     */    
     template<typename digitType>
     static const std::string digit2String(digitType digit)
     {
@@ -44,6 +58,12 @@ public:
         return oss.str();
     }
 
+    /**
+     * @name: string2digit
+     * @Descripttion: convert str to digit
+     * @param {*} str
+     * @return {*} digit
+     */    
     template<typename digitType>
     static digitType string2digit(std::string str)
     {
@@ -57,12 +77,25 @@ public:
 class TimeUtil
 {
 public:
+
+    /**
+     * @name: awake_time
+     * @Descripttion: return a chronon clock object with time in ms
+     * @param {int} timeInMs
+     * @return {*} chronon clock object
+     */    
     static auto awake_time(int timeInMs) {
         // using std::chrono::operator""ms;
         std::chrono::milliseconds ms(timeInMs);
         return std::chrono::steady_clock::now() + ms;
     }
 
+    /**
+     * @name: convertTime
+     * @Descripttion: convert a duration to another duration, like ms to ns
+     * @param {*} originTime
+     * @return {*} after convert time
+     */    
     template<typename T>
     static constexpr T convertTime(std::chrono::duration<double> originTime)
     {

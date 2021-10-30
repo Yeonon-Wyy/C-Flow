@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-22 23:24:24
+ * @LastEditTime: 2021-10-30 19:09:00
  */
 #pragma once
 
@@ -16,9 +16,9 @@
 #include <initializer_list>
 #include <future>
 
-#include "dag.hpp"
-#include "utils.hpp"
-#include "log.hpp"
+#include "../dag.hpp"
+#include "../utils.hpp"
+#include "../log.hpp"
 
 
 #define TASK_NAME_PREFIX "task_"
@@ -43,16 +43,16 @@ public:
 
     Task() 
         :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_priority(TaskPriority::NORMAL),
-         m_ID(getNodeId()) 
+         m_ID(getNodeId()),
+         m_priority(TaskPriority::NORMAL)
     {
         m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
     }
 
     Task(TaskCreateInfo&& createInfo) 
         :DAGNode(util::IDGenerator::getInstance()->generate()),
-         m_priority(createInfo.priority),
-         m_ID(getNodeId()) 
+         m_ID(getNodeId()),
+         m_priority(createInfo.priority)
     {
         if (createInfo.name == "") {
             m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);

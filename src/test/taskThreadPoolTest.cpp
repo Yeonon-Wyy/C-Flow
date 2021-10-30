@@ -4,11 +4,11 @@
  * @Author: yeonon
  * @Date: 2021-10-10 20:10:02
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-24 14:14:46
+ * @LastEditTime: 2021-10-30 19:05:23
  */
 #include "../core/dag.hpp"
-#include "../core/task.hpp"
-#include "../core/taskthreadPool.hpp"
+#include "../core/task/task.hpp"
+#include "../core/task/taskthreadPool.hpp"
 
 auto now() { return std::chrono::steady_clock::now(); }
  
@@ -70,16 +70,16 @@ void testTaskExecute()
         return a + b;
     }, 1, 2);
 
-    task4->precede(task3);
-    task4->precede(task6);
-    task3->precede(task6);
-    task3->precede(task2);
-    task6->precede(task5);
-    task6->precede(task1);
-    task1->precede(task2);
-    task5->precede(task7);  
-    task1->precede(task7);
-    task2->precede(task7);
+    task4->connect(task3);
+    task4->connect(task6);
+    task3->connect(task6);
+    task3->connect(task2);
+    task6->connect(task5);
+    task6->connect(task1);
+    task1->connect(task2);
+    task5->connect(task7);  
+    task1->connect(task7);
+    task2->connect(task7);
 
 
     vtf::DAG dag;

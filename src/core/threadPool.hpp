@@ -16,7 +16,12 @@ class ThreadPool {
 public:
     ThreadPool(size_t threadSize);
 
-    //emplace a task to thread pool
+    /**
+     * @name: emplace
+     * @Descripttion: emplace a task to thread pool
+     * @param {*}
+     * @return {*}
+     */    
     template<typename F, typename... Args>
     auto emplace(F&& f, Args&&... agrs) 
         -> std::future<typename std::result_of<F(Args...)>::type>;
@@ -41,7 +46,7 @@ private:
 ThreadPool::ThreadPool(size_t threadSize)
     :isStop(false) 
 {
-    for (int i = 0; i < threadSize; i++) {
+    for (size_t i = 0; i < threadSize; i++) {
         m_workers.emplace_back([this](){
             while (true) {
                 

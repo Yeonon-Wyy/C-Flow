@@ -1,5 +1,5 @@
 #include "../core/dag.hpp"
-#include "../core/task.hpp"
+#include "../core/task/task.hpp"
 #include "../core/threadPool.hpp"
 
 #include <chrono>
@@ -17,13 +17,13 @@ void testDAGbasic()
     std::shared_ptr<vtf::DAGNode> node5 = std::make_shared<vtf::DAGNode>(5);
     std::shared_ptr<vtf::DAGNode> node6 = std::make_shared<vtf::DAGNode>(6);
 
-    node4->precede(node3);
-    node4->precede(node6);
-    node3->precede(node6);
-    node3->precede(node2);
-    node6->precede(node5);
-    node6->precede(node1);
-    node1->precede(node2);
+    node4->connect(node3);
+    node4->connect(node6);
+    node3->connect(node6);
+    node3->connect(node2);
+    node6->connect(node5);
+    node6->connect(node1);
+    node1->connect(node2);
 
 
     vtf::DAG dag;
@@ -84,16 +84,16 @@ void testTaskDag()
         return a + b;
     }, 1, 2);
 
-    task4->precede(task3);
-    task4->precede(task6);
-    task3->precede(task6);
-    task3->precede(task2);
-    task6->precede(task5);
-    task6->precede(task1);
-    task1->precede(task2);
-    task5->precede(task7);  
-    task1->precede(task7);
-    task2->precede(task7);
+    task4->connect(task3);
+    task4->connect(task6);
+    task3->connect(task6);
+    task3->connect(task2);
+    task6->connect(task5);
+    task6->connect(task1);
+    task1->connect(task2);
+    task5->connect(task7);  
+    task1->connect(task7);
+    task2->connect(task7);
 
 
     vtf::DAG dag;
@@ -169,16 +169,16 @@ void testTaskExecute()
         return a + b;
     }, 1, 2);
 
-    task4->precede(task3);
-    task4->precede(task6);
-    task3->precede(task6);
-    task3->precede(task2);
-    task6->precede(task5);
-    task6->precede(task1);
-    task1->precede(task2);
-    task5->precede(task7);  
-    task1->precede(task7);
-    task2->precede(task7);
+    task4->connect(task3);
+    task4->connect(task6);
+    task3->connect(task6);
+    task3->connect(task2);
+    task6->connect(task5);
+    task6->connect(task1);
+    task1->connect(task2);
+    task5->connect(task7);  
+    task1->connect(task7);
+    task2->connect(task7);
 
 
     vtf::DAG dag;
