@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 15:24:16
+ * @LastEditTime: 2021-11-10 21:54:28
  */
 #pragma once
 
@@ -13,6 +13,8 @@
 #include <iostream>
 #include <algorithm>
 #include <memory>
+#include <unordered_set>
+#include <set>
 
 #include "./utils.hpp"
 #include "log.hpp"
@@ -99,12 +101,51 @@ public:
     std::vector<std::vector<long>> topologicalSort();
 
     /**
+     * @name: multiTopologicalSort
+     * @Descripttion: topological sort algorithem for DAG, will generte multi order
+     * @param {*}
+     * @return {*} all topological order
+     */    
+    std::set<std::vector<long>> multiTopologicalSort();
+
+
+    /**
+     * @name: graph
+     * @Descripttion: return a graph 
+     * @param {*}
+     * @return {*}
+     */    
+    std::unordered_map<long, std::vector<long>> graph() { return m_graph; }
+    /**
      * @name: dumpGraph
      * @Descripttion: dump Graph info
      * @param {*}
      * @return {*}
      */    
     void dumpGraph();
+
+private:
+    /**
+     * @name: findAllTopologicalSort
+     * @Descripttion: find all topological order by node order
+     * @param {*}
+     * @return {*}
+     */    
+    void findAllTopologicalSort(
+        std::vector<std::vector<long>>& nodeOrder, 
+        std::set<std::vector<long>>& allTopoOrder, 
+        std::vector<long>& topoOrder,
+        int startIdx
+    );
+
+    /**
+     * @name: checkDependency
+     * @Descripttion: check Dependency with src node id and dst node id
+     * @param {long} srcNodeId
+     * @param {long} dstNodeId
+     * @return {*}
+     */    
+    bool checkDependency(long srcNodeId, long dstNodeId);
 
 private:
     std::unordered_map<long, std::vector<long>> m_graph;
@@ -142,13 +183,17 @@ void DAG::addNode(std::shared_ptr<DAGNode> node)
 
 void DAG::buildGraph()
 {
+    VTF_LOGD("build graph start");
     for (auto &[nodeId, node] : m_nodeIdMap) {
-        if (m_nodeIndegreeMap.count(nodeId) == 0) m_nodeIndegreeMap[nodeId] = 0;
         for (long otherNOdeId : node->getOutNodes()) {
             m_graph[nodeId].push_back(otherNOdeId);
+            if (m_nodeIndegreeMap.count(nodeId) == 0) {
+                m_nodeIndegreeMap[nodeId] = 0;
+            }
             m_nodeIndegreeMap[otherNOdeId]++;
         }
     }
+    VTF_LOGD("build graph end");
 }
 
 
@@ -192,6 +237,93 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
     }
     m_nodeOrderCache = nodeOrder;
     return nodeOrder;
+}
+
+
+std::set<std::vector<long>> DAG::multiTopologicalSort()
+{
+    rebuildGraphIfNeed();
+
+    std::vector<std::vector<long>> nodeOrder;
+    std::vector<long> sameLevelNodes;
+
+    std::unordered_map<long, std::vector<long>> graphCopy = m_graph;
+    std::unordered_map<long, long> nodeIndegreeMapCopy = m_nodeIndegreeMap;
+    while (true) {
+        for (auto &[nodeId, degree] : nodeIndegreeMapCopy) {
+            if (degree == 0) {
+                sameLevelNodes.push_back(nodeId);
+            }
+        }
+
+        if (!sameLevelNodes.empty()) {
+            for (int nodeId : sameLevelNodes) {
+            //erase node info from graph 
+                for (long otherNodeId : graphCopy[nodeId]) {
+                    nodeIndegreeMapCopy[otherNodeId]--;
+                }
+                graphCopy.erase(nodeId);
+                nodeIndegreeMapCopy.erase(nodeId);
+            }
+            nodeOrder.push_back(sameLevelNodes);
+            sameLevelNodes.clear();
+        } else {
+            //no find node, maybe error or complete
+            if (!nodeIndegreeMapCopy.empty()) {
+                VTF_LOGD("please check node dependcy.");
+                //we must clear error node order
+                nodeOrder.clear();
+            }
+            break;
+        }
+    }
+    std::set<std::vector<long>> allTopoOrder;
+    std::vector<long> topoOrder;
+    findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, 0);
+    return allTopoOrder;
+}
+
+void DAG::findAllTopologicalSort(
+    std::vector<std::vector<long>>& nodeOrder, 
+    std::set<std::vector<long>>& allTopoOrder, 
+    std::vector<long>& topoOrder,
+    int startIdx
+)
+{
+    if (topoOrder.size() == nodeOrder.size()) {
+        std::vector<long> temp;
+        for (int i = 0; i < topoOrder.size(); i++) {
+            if (i > 0 && !checkDependency(topoOrder[i-1], topoOrder[i])) {
+                break;
+            }
+            temp.push_back(topoOrder[i]);
+        }
+        if (temp.size() > 1) allTopoOrder.insert(temp);
+        // allTopoOrder.insert(topoOrder);
+        return;
+    }
+
+    for (int i = startIdx; i < nodeOrder.size(); i++) {
+        for (int j = 0; j < nodeOrder[i].size(); j++) {
+            topoOrder.push_back(nodeOrder[i][j]);
+            findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, i + 1);
+            topoOrder.pop_back();
+        } 
+    }
+}
+
+bool DAG::checkDependency(long srcNodeId, long dstNodeId)
+{
+    if (m_graph.count(srcNodeId) == 0) {
+        return false;
+    }
+    
+    auto connectionsIter = m_graph.find(srcNodeId);
+    auto resultIter = std::find(connectionsIter->second.cbegin(), connectionsIter->second.cend(), dstNodeId);
+    if (resultIter == connectionsIter->second.cend()) {
+        return false;
+    }
+    return true;
 }
 
 

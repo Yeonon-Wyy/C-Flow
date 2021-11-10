@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-24 19:47:30
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 18:58:48
+ * @LastEditTime: 2021-11-06 16:10:59
  */
 #pragma once
 #include <atomic>
@@ -20,12 +20,6 @@ namespace util {
 
 class IDGenerator {
 public:
-    static IDGenerator* getInstance()
-    {
-        static IDGenerator idGenerator;
-        return &idGenerator;
-    }
-
     /**
      * @name: generate
      * @Descripttion: generate a id for user
@@ -37,7 +31,7 @@ public:
         m_id++;
         return m_id;
     }
-public:
+private:
     std::atomic_long m_id;
 };
 

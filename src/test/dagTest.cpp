@@ -16,15 +16,20 @@ void testDAGbasic()
     std::shared_ptr<vtf::DAGNode> node4 = std::make_shared<vtf::DAGNode>(4);
     std::shared_ptr<vtf::DAGNode> node5 = std::make_shared<vtf::DAGNode>(5);
     std::shared_ptr<vtf::DAGNode> node6 = std::make_shared<vtf::DAGNode>(6);
+    std::shared_ptr<vtf::DAGNode> node7 = std::make_shared<vtf::DAGNode>(7);
 
-    node4->connect(node3);
-    node4->connect(node6);
-    node3->connect(node6);
-    node3->connect(node2);
-    node6->connect(node5);
-    node6->connect(node1);
+
     node1->connect(node2);
-
+    node1->connect(node3);
+    node2->connect(node4);
+    // node3->connect(node4);
+    node4->connect(node5);
+    node4->connect(node6);
+    
+    // node1->connect(node2);
+    // node1->connect(node3);
+    // node2->connect(node4);
+    // node3->connect(node4);
 
     vtf::DAG dag;
     dag.addNode(node1);
@@ -33,14 +38,23 @@ void testDAGbasic()
     dag.addNode(node4);
     dag.addNode(node5);
     dag.addNode(node6);
-
+    // dag.addNode(node7);
 
 
     dag.buildGraph();
 
     dag.dumpGraph();
 
-    dag.topologicalSort();
+    auto order = dag.multiTopologicalSort();
+    for (auto it = order.begin(); it != order.end(); it++) {
+        std::cout << "[";
+        for (long id : *it) {
+            std::cout << id << " ";
+        }
+        std::cout << "] ";   
+    }
+
+    std::cout << std::endl;
 }
 
 void testTaskDag()
@@ -227,8 +241,8 @@ void testTaskExecute()
 int main()
 {
     testDAGbasic();
-    testTaskDag();
-    testTaskExecute();
+    // testTaskDag();
+    // testTaskExecute();
 
 
 

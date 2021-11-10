@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 18:49:43
+ * @LastEditTime: 2021-11-06 16:24:19
  */
 #pragma once
 #include <memory>
@@ -19,25 +19,28 @@ template<typename Item>
 class Dispatcher : public ThreadLoop {
 public:
     Dispatcher()
-        :m_id(vtf::util::IDGenerator::getInstance()->generate()),
+        :m_id(m_idGenerator.generate()),
          m_name(DISPATCHER_DEFAULT_PREFIX + vtf::util::StringConvetor::digit2String(m_id))
     {
+        run();
     }
 
     Dispatcher(std::string&& name)
-        :m_id(vtf::util::IDGenerator::getInstance()->generate()),
+        :m_id(m_idGenerator.generate()),
          m_name(name)
     {
     }
-
+    
     virtual bool dispatch(std::shared_ptr<Item> item) = 0;
     virtual void queueInDispacther(std::shared_ptr<Item> item) = 0;
     // virtual bool threadLoop() = 0;
 private:
+    static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
 };
 
-
+template<typename Item>
+vtf::util::IDGenerator Dispatcher<Item>::m_idGenerator;
 
 } //namesapce vtf

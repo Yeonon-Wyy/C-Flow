@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 19:09:00
+ * @LastEditTime: 2021-11-06 16:16:48
  */
 #pragma once
 
@@ -41,8 +41,8 @@ struct TaskCreateInfo {
 class Task : public DAGNode {
 public:
 
-    Task() 
-        :DAGNode(util::IDGenerator::getInstance()->generate()),
+    Task()
+        :DAGNode(m_idGenerator.generate()),
          m_ID(getNodeId()),
          m_priority(TaskPriority::NORMAL)
     {
@@ -50,7 +50,7 @@ public:
     }
 
     Task(TaskCreateInfo&& createInfo) 
-        :DAGNode(util::IDGenerator::getInstance()->generate()),
+        :DAGNode(m_idGenerator.generate()),
          m_ID(getNodeId()),
          m_priority(createInfo.priority)
     {
@@ -113,6 +113,7 @@ public:
     }
 
 private:
+    static util::IDGenerator m_idGenerator;
     std::string m_name;                                  //task name
     long m_ID;                                           //task id
     std::function<void()> m_taskFunc;                    //task function, will execute user task
@@ -121,6 +122,7 @@ private:
 
 };
 
+util::IDGenerator Task::m_idGenerator;
 
 template<typename Function, typename... Args>
 auto Task::commit(Function&& f, Args&&... args)
