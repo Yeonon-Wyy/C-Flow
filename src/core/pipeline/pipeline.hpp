@@ -4,14 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 15:23:29
+ * @LastEditTime: 2021-11-13 16:24:48
  */
 
 #pragma once
 
 #include "../dag.hpp"
 #include "pipeNode.hpp"
-#include "pipenodeDispatcher.hpp"
+#include "pipeNodeDispatcher.hpp"
 #include "../log.hpp"
 #include <memory>
 #include <mutex>
@@ -35,16 +35,57 @@ public:
     using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
     using GraphType = std::unordered_map<long, std::vector<long>>;
 
-    //TODO: 可以作成可变参数，并且返回Tuple
-    std::shared_ptr<PipeNode<Item>> addPipeNode(ProcessFunction&& pf);
+    /**
+     * @name: addPipeNode
+     * @Descripttion: add a pipe node to pipeline. pipeline will generate a new node object for user.
+     * @param {ProcessFunction&&} pf is node process function.
+     * @return {*}
+     */    
+    std::shared_ptr<PipeNode<Item>> addPipeNode(const std::string& name, ProcessFunction&& pf);
 
-    //temp:
-    bool reorganize();
+    /**
+     * @name: addPipeNode
+     * @Descripttion: add a pipe node, user will construct node object self.
+     * @param {shared_ptr<PipeNode<Item>>} node
+     * @return {*}
+     */    
+    bool addPipeNode(std::shared_ptr<PipeNode<Item>> node);
+
+    /**
+     * @name: constructPipelinesByScenario
+     * @Descripttion: construct pipelines by given scenario
+     * @param {*}
+     * @return {*}
+     */    
+    bool constructPipelinesByScenario();
+
+
+    /**
+     * @name: submit a item to pipeline
+     * @Descripttion: 
+     * @param {shared_ptr<Item>} item
+     * @return {*}
+     */    
+    bool submit(std::shared_ptr<Item> item);
+
+private:
+
+    /**
+     * @name: getPipelineWithScenario
+     * @Descripttion: get a pipeline by given scenario
+     * @param {PipelineScenario} scenario
+     * @return {*}
+     */    
     std::vector<long> getPipelineWithScenario(PipelineScenario scenario);
 
-    //submit item
-    bool submit(std::shared_ptr<Item> item);
-    
+    /**
+     * @name: dumpPipelines
+     * @Descripttion: just dump pipelines
+     * @param {*}
+     * @return {*}
+     */    
+    void dumpPipelines();
+
 private:
     DAG m_dag;
     std::shared_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
@@ -57,10 +98,10 @@ private:
 };
 
 template<typename Item>
-std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(ProcessFunction&& pf)
+std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(const std::string& name, ProcessFunction&& pf)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
-    std::shared_ptr<PipeNode<Item>> node = std::make_shared<PipeNode<Item>>();
+    std::shared_ptr<PipeNode<Item>> node = std::make_shared<PipeNode<Item>>(name);
     node->setProcessFunction(std::forward<ProcessFunction>(pf));
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
@@ -68,9 +109,24 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(ProcessFunction&& pf
     m_pipelineModified = true;
     return node;
 }
+template<typename Item>
+bool PipeLine<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> node)
+{
+    std::unique_lock<std::mutex> lk(m_mutex);
+    if (m_pipeNodeMaps.count(node->getNodeId()) != 0) {
+        VTF_LOGE("node [{0}:{1}] already be added to pipeline. don't need add again.", node->getNodeId(), node->name());
+        return false;
+    }
+
+    m_pipeNodeMaps[node->getNodeId()] = node;
+    m_dag.addNode(node);
+    m_pipeNodeDispatcher->addPipeNode(node);
+    m_pipelineModified = true;
+    return true;
+}
 
 template<typename Item>
-bool PipeLine<Item>::reorganize()
+bool PipeLine<Item>::constructPipelinesByScenario()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     auto pipelines = m_dag.multiTopologicalSort();
@@ -101,17 +157,7 @@ bool PipeLine<Item>::reorganize()
         }
     }
 
-    //dump
-    for (auto&[scenario, pipeline] : m_scenario2PipelineMaps) {
-        std::stringstream ss;
-        ss << scenario << ": [";
-        for (long& nodeId : pipeline) {
-            ss << nodeId << " ";
-        }
-        ss << "]";
-        VTF_LOGD(ss.str());
-    }
-
+    dumpPipelines();
     return true;
 }
 
@@ -136,6 +182,22 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;
+}
+
+//private
+template<typename Item>
+void PipeLine<Item>::dumpPipelines()
+{
+    //dump
+    for (auto&[scenario, pipeline] : m_scenario2PipelineMaps) {
+        std::stringstream ss;
+        ss << scenario << ": [";
+        for (long& nodeId : pipeline) {
+            ss << nodeId << " ";
+        }
+        ss << "]";
+        VTF_LOGD(ss.str());
+    }
 }
 
 } //namespace pipeline

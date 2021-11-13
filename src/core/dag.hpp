@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-10 21:54:28
+ * @LastEditTime: 2021-11-13 16:21:23
  */
 #pragma once
 
@@ -183,7 +183,6 @@ void DAG::addNode(std::shared_ptr<DAGNode> node)
 
 void DAG::buildGraph()
 {
-    VTF_LOGD("build graph start");
     for (auto &[nodeId, node] : m_nodeIdMap) {
         for (long otherNOdeId : node->getOutNodes()) {
             m_graph[nodeId].push_back(otherNOdeId);
@@ -193,7 +192,6 @@ void DAG::buildGraph()
             m_nodeIndegreeMap[otherNOdeId]++;
         }
     }
-    VTF_LOGD("build graph end");
 }
 
 
@@ -228,7 +226,7 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
         } else {
             //no find node, maybe error or complete
             if (!nodeIndegreeMapCopy.empty()) {
-                VTF_LOGD("please check node dependcy.");
+                VTF_LOGE("please check node dependcy.");
                 //we must clear error node order
                 nodeOrder.clear();
             }

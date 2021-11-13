@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-12 23:17:06
+ * @LastEditTime: 2021-11-13 16:08:26
  */
 #pragma once
 
@@ -36,8 +36,8 @@ public:
     virtual bool dispatch(std::shared_ptr<Item> item) override;
     virtual void queueInDispacther(std::shared_ptr<Item> item) override;
     virtual bool threadLoop() override;
-
     void addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode);
+    std::string getNodeNameByNodeId(long nodeId);
 
 private:
     ItemQueue m_dispatchQueue;
@@ -48,7 +48,7 @@ private:
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {
-    VTF_LOGD("vtf::dispatch req id({0})", item->ID());
+    VTF_LOGD("dispatch item id({0})", item->ID());
     if (item->checkDependencyIsReady()) {
         long currentProcessNodeId = item->getCurrentNode();
         if (currentProcessNodeId < 0) {
@@ -70,7 +70,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 template<typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> item)
 {
-    VTF_LOGD("vtf::push req id({0})", item->ID());
+    VTF_LOGD("queue req id({0})", item->ID());
     m_dispatchQueue.push(item);
     return;
 }
@@ -91,7 +91,16 @@ void PipeNodeDispatcher<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> pipeN
     if (m_pipeNodeMaps.count(nodeId) == 0) {
         m_pipeNodeMaps[nodeId] = pipeNode;
     }
-    VTF_LOGD("add pipe node {0}", nodeId);
+    VTF_LOGD("add a pipe node [{0}:{1}]", nodeId, pipeNode->name());
+}
+
+template<typename Item>
+std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(long nodeId)
+{
+    if (m_pipeNodeMaps.count(nodeId) > 0) {
+        return m_pipeNodeMaps[nodeId]->name();
+    }
+    return "";
 }
 
 } //pipeline

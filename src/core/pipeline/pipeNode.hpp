@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-12 22:37:38
+ * @LastEditTime: 2021-11-13 16:18:41
  */
 #pragma once
 #include "../dag.hpp"
@@ -40,20 +40,60 @@ public:
         m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(m_id);
     }
 
-    PipeNode(std::string&& name)
+    PipeNode(const std::string& name)
          :DAGNode(m_idGenerator.generate()),
          m_id(getNodeId()),
-         m_name(std::move(name))
+         m_name(name)
     {}
 
     ~PipeNode() {}
 
+    /**
+     * @name: process 
+     * @Descripttion: execute user define process function, and after complete, mark done
+     * @param {*}
+     * @return {*}
+     */    
     bool process(std::shared_ptr<Item>);
 
+    /**
+     * @name: setProcessFunction
+     * @Descripttion: setter for user define process function
+     * @param {ProcessFunction&&} pf is user define process function
+     * @return {*}
+     */    
     void setProcessFunction(ProcessFunction&& pf) { m_processFunction = std::move(pf); }
+
+    /**
+     * @name: name
+     * @Descripttion: return a node name
+     * @param {*}
+     * @return {*}
+     */    
     const std::string name() const { return m_name; }
 
-    PipeNode* addcenarios(PipelineScenario scenario);
+    /**
+     * @name: addcenarios
+     * @Descripttion: add a scenario for pipeNode
+     * @param {PipelineScenario} scenario
+     * @return {*}
+     */    
+    PipeNode* addScenarios(PipelineScenario scenario);
+
+    /**
+     * @name: addcenarios
+     * @Descripttion: add a scenario for pipeNode by initializer List
+     * @param {PipelineScenario} scenarios
+     * @return {*}
+     */    
+    PipeNode* addScenarios(std::initializer_list<PipelineScenario> scenarios);
+
+    /**
+     * @name: hasScenario
+     * @Descripttion: check node is include someone  scenario
+     * @param {PipelineScenario} scenario
+     * @return {*}
+     */    
     bool hasScenario(PipelineScenario scenario);
 
 private:
@@ -82,9 +122,15 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 }
 
 template<typename Item>
-PipeNode<Item>* PipeNode<Item>::addcenarios(PipelineScenario scenario)
+PipeNode<Item>* PipeNode<Item>::addScenarios(PipelineScenario scenario)
 {
     m_pipelineScenarios.push_back(scenario);
+    return this;
+}
+template<typename Item>
+PipeNode<Item>* PipeNode<Item>::addScenarios(std::initializer_list<PipelineScenario> scenarios)
+{
+    m_pipelineScenarios.insert(m_pipelineScenarios.end(), scenarios.begin(), scenarios.end());
     return this;
 }
 
