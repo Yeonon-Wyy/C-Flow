@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:24:56
+ * @LastEditTime: 2021-11-13 17:17:49
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -72,8 +72,15 @@ void testPipeline()
 
     while (true) {
         auto req = std::make_shared<vtf::pipeline::PipeRequest>(PipelineScenario::SAT, false);
-        ppl.submit(req);
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
+        if (req->ID() == 100) {
+            ppl.stop();
+            continue;
+        } else {
+
+            ppl.submit(req);
+            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
+        }
+
     }
 }
 

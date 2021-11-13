@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:18:41
+ * @LastEditTime: 2021-11-13 16:57:37
  */
 #pragma once
 #include "../dag.hpp"
@@ -24,7 +24,6 @@ namespace pipeline {
 #define PIPENODE_DEFAULT_NAME_PREFIX "pipeNode_"
 
 
-
 template<typename Item>
 class PipeNode : 
     public vtf::DAGNode,
@@ -35,7 +34,9 @@ public:
 
     PipeNode()
          :DAGNode(m_idGenerator.generate()),
-         m_id(getNodeId())
+         m_id(getNodeId()),
+         m_status(PipeNodeStatus::IDLE),
+         m_isStop(false)
     {
         m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(m_id);
     }
@@ -43,7 +44,9 @@ public:
     PipeNode(const std::string& name)
          :DAGNode(m_idGenerator.generate()),
          m_id(getNodeId()),
-         m_name(name)
+         m_name(name),
+         m_status(PipeNodeStatus::IDLE),
+         m_isStop(false)
     {}
 
     ~PipeNode() {}
@@ -96,12 +99,31 @@ public:
      */    
     bool hasScenario(PipelineScenario scenario);
 
+    /**
+     * @name: stop
+     * @Descripttion: stop process
+     * @param {*}
+     * @return {*}
+     */    
+    void stop() { VTF_LOGD("node [{0}:[1]] stop", m_id, name()); m_isStop = true; }
+
+    /**
+     * @name: restart
+     * @Descripttion: restart process
+     * @param {*}
+     * @return {*}
+     */   
+    void restart() { m_isStop = false; m_status = PipeNodeStatus::IDLE; }
+
+    PipeNodeStatus status() { return m_status; }
+
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
+    PipeNodeStatus m_status;
+    bool m_isStop;
     std::vector<PipelineScenario> m_pipelineScenarios;
-
     ProcessFunction m_processFunction;
     std::mutex m_mutex;
 };
@@ -114,9 +136,18 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 {
     bool ret = true;
     std::unique_lock<std::mutex> lk(m_mutex);
+    if (m_status == PipeNodeStatus::STOP) {
+        return false;
+    }
+    m_status = PipeNodeStatus::PROCESSING;
     ret = m_processFunction(item);
     if (ret) {
         item->markCurrentNodeReady();
+    }
+    m_status = PipeNodeStatus::IDLE;
+    if (m_isStop) {
+        m_status = PipeNodeStatus::STOP;
+        g_pipeNodeStopCV.notify_one();
     }
     return ret;
 }

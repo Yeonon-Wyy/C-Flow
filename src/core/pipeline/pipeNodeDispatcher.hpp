@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:08:26
+ * @LastEditTime: 2021-11-13 17:14:35
  */
 #pragma once
 
@@ -19,6 +19,7 @@ namespace vtf {
 namespace pipeline {
 
 constexpr int defaultQueueSize = 32;
+constexpr int defaultThreadPoolSize = 8;
 
 template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {
@@ -27,7 +28,8 @@ public:
     using PipeNodeMap = std::unordered_map<long, std::shared_ptr<PipeNode<Item>>>;
     PipeNodeDispatcher(int dispatchQueueSize = defaultQueueSize)
         :m_dispatchQueue(dispatchQueueSize),
-         m_threadPool(8)
+         m_threadPool(defaultThreadPoolSize),
+         m_isStop(false)
     {}
 
     ~PipeNodeDispatcher()
@@ -39,15 +41,21 @@ public:
     void addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode);
     std::string getNodeNameByNodeId(long nodeId);
 
+    void stop();
+
 private:
     ItemQueue m_dispatchQueue;
     PipeNodeMap m_pipeNodeMaps;
     vtf::ThreadPool m_threadPool;
+    bool m_isStop;
 };
 
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {
+    if (m_isStop) {
+        return false;
+    }
     VTF_LOGD("dispatch item id({0})", item->ID());
     if (item->checkDependencyIsReady()) {
         long currentProcessNodeId = item->getCurrentNode();
@@ -70,6 +78,9 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 template<typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> item)
 {
+    if (m_isStop) {
+        return;
+    }
     VTF_LOGD("queue req id({0})", item->ID());
     m_dispatchQueue.push(item);
     return;
@@ -101,6 +112,31 @@ std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(long nodeId)
         return m_pipeNodeMaps[nodeId]->name();
     }
     return "";
+}
+
+template<typename Item>
+void PipeNodeDispatcher<Item>::stop()
+{
+    m_isStop = true;
+    VTF_LOGD("pipeline dispacther clear START");
+    for (auto&[nodeId, node] : m_pipeNodeMaps) {
+        node->stop();
+    }
+    {
+        std::unique_lock<std::mutex> lk(g_pipeNodeStopMutex);
+        g_pipeNodeStopCV.wait(lk, [this]() {
+            for (auto&[nodeId, node] : m_pipeNodeMaps) {
+                if (node->status() == PipeNodeStatus::PROCESSING) {
+                    VTF_LOGD("node [{0}:{1}] still processing", nodeId, node->name());
+                    return false;
+                }
+            }
+            return true;
+        });
+    }
+
+    VTF_LOGD("pipeline dispacther stop END");
+    m_dispatchQueue.clear();
 }
 
 } //pipeline

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:24:48
+ * @LastEditTime: 2021-11-13 17:11:14
  */
 
 #pragma once
@@ -68,6 +68,9 @@ public:
      */    
     bool submit(std::shared_ptr<Item> item);
 
+    void start();
+    void stop();
+
 private:
 
     /**
@@ -93,6 +96,7 @@ private:
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
 
+    bool m_isStop = false;
     bool m_pipelineModified = false;
     std::mutex m_mutex;
 };
@@ -178,10 +182,30 @@ template<typename Item>
 bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
+    if (m_isStop) {
+        VTF_LOGD("pipeline already stoped, can't submit any item");
+        return false;
+    }
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;
+}
+
+template<typename Item>
+void PipeLine<Item>::start()
+{
+    constructPipelinesByScenario();
+}
+
+template<typename Item>
+void PipeLine<Item>::stop()
+{
+    VTF_LOGD("pipeline stop Start");
+    std::unique_lock<std::mutex> lk(m_mutex);
+    m_isStop = true;
+    m_pipeNodeDispatcher->stop();
+    VTF_LOGD("pipeline stop End");
 }
 
 //private

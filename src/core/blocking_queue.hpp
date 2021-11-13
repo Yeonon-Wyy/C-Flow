@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-16 22:00:26
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 17:17:49
+ * @LastEditTime: 2021-11-13 17:09:25
  */
 
 #include <vector>
@@ -30,6 +30,7 @@ public:
 
     bool isEmpty() { return m_startIdx == m_endIdx; }
     bool isFull() { return (m_startIdx + m_capacity - m_endIdx) % (m_capacity + 1) == 0; }
+    void clear();
 
 private:
     int m_capacity;
@@ -73,6 +74,15 @@ T BlockingQueue<T>::pop()
     m_startIdx %= (m_capacity + 1);
     m_not_full.notify_one();
     return item;
+}
+
+template<typename T>
+void BlockingQueue<T>::clear()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_startIdx = 0;
+    m_endIdx = 0;
+    m_items.clear();
 }
 
 } //namespace vtf

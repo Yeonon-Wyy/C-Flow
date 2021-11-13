@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-06 16:24:19
+ * @LastEditTime: 2021-11-13 17:03:52
  */
 #pragma once
 #include <memory>
@@ -33,7 +33,6 @@ public:
     
     virtual bool dispatch(std::shared_ptr<Item> item) = 0;
     virtual void queueInDispacther(std::shared_ptr<Item> item) = 0;
-    // virtual bool threadLoop() = 0;
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
