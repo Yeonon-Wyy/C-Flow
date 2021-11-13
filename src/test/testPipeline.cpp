@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 17:17:49
+ * @LastEditTime: 2021-11-13 23:28:28
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -12,17 +12,25 @@
 
 using namespace vtf::pipeline;
 
+enum MyScenario {
+    Scenario1,
+    Scenario2,
+    Scenario3
+};
+
 void testDispatch()
 {
     vtf::pipeline::PipeNodeDispatcher<vtf::pipeline::PipeRequest> pd(8);
     pd.run();
 
     while (true) {
-        std::shared_ptr<vtf::pipeline::PipeRequest> req = std::make_shared<vtf::pipeline::PipeRequest>(PipelineScenario::SAT);
+        std::shared_ptr<vtf::pipeline::PipeRequest> req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1);
         pd.queueInDispacther(req);
         std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(300));
     }
 }
+
+
 
 void testPipeline()
 {
@@ -57,21 +65,23 @@ void testPipeline()
         return true;
     });
 
-    //[[1],[2,3],[4]]
-    node1->addScenarios({PipelineScenario::SAT,PipelineScenario::BOKEH});
-    node2->addScenarios(PipelineScenario::SAT);
-    node3->addScenarios(PipelineScenario::BOKEH);
-    node4->addScenarios({PipelineScenario::SAT,PipelineScenario::BOKEH});
+    node1->addScenarios({MyScenario::Scenario1, MyScenario::Scenario2});
+    node2->addScenarios(MyScenario::Scenario1);
+    node3->addScenarios(MyScenario::Scenario2);
+    node4->addScenarios({MyScenario::Scenario1,MyScenario::Scenario2});
 
     node1->connect(node2);
     node1->connect(node3);
     node2->connect(node4);
     node3->connect(node4);
 
-    ppl.constructPipelinesByScenario();
+    ppl.start();
+
+    // auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1, false);
+    // ppl.submit(req);
 
     while (true) {
-        auto req = std::make_shared<vtf::pipeline::PipeRequest>(PipelineScenario::SAT, false);
+        auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario2, false);
         if (req->ID() == 100) {
             ppl.stop();
             continue;

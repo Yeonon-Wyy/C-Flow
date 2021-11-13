@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:57:37
+ * @LastEditTime: 2021-11-13 23:14:34
  */
 #pragma once
 #include "../dag.hpp"
@@ -99,6 +99,8 @@ public:
      */    
     bool hasScenario(PipelineScenario scenario);
 
+
+    std::vector<PipelineScenario> getScenarios() { return m_pipelineScenarios; }
     /**
      * @name: stop
      * @Descripttion: stop process

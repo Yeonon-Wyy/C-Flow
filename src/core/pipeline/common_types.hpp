@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-10 20:52:24
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:51:46
+ * @LastEditTime: 2021-11-13 23:30:35
  */
 #pragma once
 
@@ -14,13 +14,7 @@
 namespace vtf {
 namespace pipeline {
 
-enum PipelineScenario {
-    SCENARIO_START,
-    SAT,
-    BOKEH,
-    SUPERNS,
-    SCENARIO_END
-};
+using PipelineScenario = uint32_t;
 
 enum PipeNodeStatus {
     PROCESSING,

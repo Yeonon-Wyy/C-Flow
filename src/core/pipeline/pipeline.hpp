@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 17:11:14
+ * @LastEditTime: 2021-11-13 23:20:57
  */
 
 #pragma once
@@ -95,6 +95,7 @@ private:
     std::unordered_map<long, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
+    std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
 
     bool m_isStop = false;
     bool m_pipelineModified = false;
@@ -133,9 +134,17 @@ template<typename Item>
 bool PipeLine<Item>::constructPipelinesByScenario()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
+    if (!m_pipelineModified) return true;
+
+    //get all scenario
+    for (auto&[nodeId, node] : m_pipeNodeMaps) {
+        for (PipelineScenario scenario : node->getScenarios()) {
+            m_pipelineScenarioSet.insert(scenario);
+        }
+    }
     auto pipelines = m_dag.multiTopologicalSort();
-    for (int scenario = PipelineScenario::SCENARIO_START + 1; scenario < PipelineScenario::SCENARIO_END; scenario++) {
-        
+    for (auto it = m_pipelineScenarioSet.begin(); it != m_pipelineScenarioSet.end(); it++) {
+        PipelineScenario scenario = *it;
         for (auto pipelineIter = pipelines.begin(); pipelineIter != pipelines.end(); pipelineIter++) {
             auto pipeline = *pipelineIter;
             bool findFlag = true;

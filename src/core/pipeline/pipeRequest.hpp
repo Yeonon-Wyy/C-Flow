@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:24:53
+ * @LastEditTime: 2021-11-13 23:01:36
  */
 #pragma once
 
@@ -199,7 +199,6 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::sh
     return true;
 }
 
-//TODO: 需要完成该函数
 long PipeRequest::findNextNode()
 {
     if (!checkDependencyValid()) return -1;
