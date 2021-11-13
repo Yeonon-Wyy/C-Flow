@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-10 21:53:13
+ * @LastEditTime: 2021-11-13 15:23:29
  */
 
 #pragma once
@@ -24,7 +24,8 @@ template<typename Item>
 class PipeLine {
 public:
     PipeLine()
-        :m_dag()
+        :m_dag(),
+         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
     {}
 
     ~PipeLine()
@@ -46,7 +47,7 @@ public:
     
 private:
     DAG m_dag;
-    PipeNodeDispatcher<Item> m_pipeNodeDispatcher;
+    std::shared_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
     std::unordered_map<long, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
@@ -63,7 +64,7 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(ProcessFunction&& pf
     node->setProcessFunction(std::forward<ProcessFunction>(pf));
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
-    m_pipeNodeDispatcher.addPipeNode(node);
+    m_pipeNodeDispatcher->addPipeNode(node);
     m_pipelineModified = true;
     return node;
 }
@@ -117,7 +118,6 @@ bool PipeLine<Item>::reorganize()
 template<typename Item>
 std::vector<long> PipeLine<Item>::getPipelineWithScenario(PipelineScenario scenario)
 {
-    std::unique_lock<std::mutex> lk(m_mutex);
     std::vector<long> pipeline;
     if (m_scenario2PipelineMaps.count(scenario) == 0) {
         VTF_LOGE("can't find any pipelie about scenario {0}", scenario);
@@ -132,8 +132,10 @@ template<typename Item>
 bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
-    m_pipeNodeDispatcher.queueInDispacther(item);
+    item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
+    m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
+    return true;
 }
 
 } //namespace pipeline

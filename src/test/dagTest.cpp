@@ -46,15 +46,6 @@ void testDAGbasic()
     dag.dumpGraph();
 
     auto order = dag.multiTopologicalSort();
-    for (auto it = order.begin(); it != order.end(); it++) {
-        std::cout << "[";
-        for (long id : *it) {
-            std::cout << id << " ";
-        }
-        std::cout << "] ";   
-    }
-
-    std::cout << std::endl;
 }
 
 void testTaskDag()

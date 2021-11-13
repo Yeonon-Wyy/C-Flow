@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-10 20:54:04
+ * @LastEditTime: 2021-11-12 22:37:38
  */
 #pragma once
 #include "../dag.hpp"
@@ -48,7 +48,7 @@ public:
 
     ~PipeNode() {}
 
-    bool process();
+    bool process(std::shared_ptr<Item>);
 
     void setProcessFunction(ProcessFunction&& pf) { m_processFunction = std::move(pf); }
     const std::string name() const { return m_name; }
@@ -66,21 +66,18 @@ private:
     std::mutex m_mutex;
 };
 
-// [1,3,2,5,6]
-// [1,3,2,5,7]
-
-//[SAT: [1,3,2,5,6]]
-//[BOKEH: [1,3,2,5,7]]
-
 template<typename Item>
 vtf::util::IDGenerator PipeNode<Item>::m_idGenerator;
 
 template<typename Item>
-bool PipeNode<Item>::process()
+bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 {
     bool ret = true;
     std::unique_lock<std::mutex> lk(m_mutex);
-    ret = m_processFunction();
+    ret = m_processFunction(item);
+    if (ret) {
+        item->markCurrentNodeReady();
+    }
     return ret;
 }
 

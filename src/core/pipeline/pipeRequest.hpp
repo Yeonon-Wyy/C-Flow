@@ -4,19 +4,20 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-10 22:05:44
+ * @LastEditTime: 2021-11-13 14:59:34
  */
 #pragma once
 
 #include "../utils.hpp"
 #include "common_types.hpp"
+#include "pipenodeDispatcher.hpp"
 
 namespace vtf {
 namespace pipeline {
 
 using GraphType = std::unordered_map<long, std::vector<long>>;
 
-class Request {
+class Request : public std::enable_shared_from_this<Request>{
 
 public:
     Request()
@@ -24,8 +25,57 @@ public:
     {}
 
     long ID() { return m_id; };
-    virtual bool constructDependency(const std::vector<long>&) = 0;
-    virtual std::vector<long> findNextNodes() = 0;
+
+    /**
+     * @name: constructDependency
+     * @Descripttion: use pipelines to construct dependency for current request
+     * @param {*}
+     * @return {*}
+     */    
+    virtual bool constructDependency(const std::vector<long>&, std::shared_ptr<PipeNodeDispatcher<Request>>) = 0;
+
+    /**
+     * @name: findNextNodes
+     * @Descripttion: find next node list, the list size can only include one nodes or multi nodes, it decide by impl class
+     * @param {*}
+     * @return {*}
+     */    
+    // virtual std::vector<long> findNextNodes() = 0;
+
+    /**
+     * @name: getCurrentNodes
+     * @Descripttion: get current processing node list. the list size can only include one nodes or multi nodes, it decide by impl class
+     * @param {*}
+     * @return {*}
+     */    
+    virtual long getCurrentNode() = 0;
+
+    /**
+     * @name: getNextNode
+     * @Descripttion: get next process node list. the list size can only include one nodes or multi nodes, it decide by impl class
+     * @param {*}
+     * @return {*}
+     */    
+    virtual long getNextNode() = 0;
+
+
+    /**
+     * @name: checkDependencyIsReady
+     * @Descripttion: check current request state, if is ready will return true, or else will return false
+     * @param {*}
+     * @return {*}
+     */    
+    virtual bool checkDependencyIsReady() = 0;
+
+    /**
+     * @name: markCurrentNodeReady
+     * @Descripttion: mark current node is ready. will effect next node dependency setting
+     * @param {*}
+     * @return {*}
+     */    
+    virtual void markCurrentNodeReady() = 0;
+
+    virtual PipelineScenario scenario() = 0;
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
@@ -56,29 +106,45 @@ public:
     {
     }
 
-    bool constructDependency(const std::vector<long>& pipeline) override;
+    bool constructDependency(const std::vector<long>& pipeline, std::shared_ptr<PipeNodeDispatcher<Request>> dispatcher) override;
 
-    PipelineScenario scenario() { return m_scenario; }
+    PipelineScenario scenario() override { return m_scenario; }
 
-    std::vector<long> findNextNodes();
+    long getCurrentNode() override { return m_currentProcessNodeId; };
+    long getNextNode() override { return {m_nextNodeId}; };
+    
+    bool checkDependencyIsReady() override;
+
+    void markCurrentNodeReady() override;
+private:
+    bool checkDependencyValid();
+    long findNextNode();
 private:
     std::vector<Dependency> m_dependencies;
+    std::shared_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
     PipelineScenario m_scenario;
     long m_currentProcessNodeId;
+    int m_currentProcessNodeIdx;
+    long m_nextNodeId;
+    int m_nextNodeIdx;
     bool m_enableDebug;
+
 };
 
 PipeRequest::PipeRequest(PipelineScenario scenario, bool enableDebug)
     :Request(),
         m_scenario(scenario),
         m_currentProcessNodeId(-1),
+        m_currentProcessNodeIdx(-1),
+        m_nextNodeId(-1),
+        m_nextNodeIdx(-1),
         m_enableDebug(enableDebug)
 {
     
 }
 
 
-bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
+bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::shared_ptr<PipeNodeDispatcher<Request>> dispatcher)
 {
     m_dependencies.clear();
     for (int i = 0; i < pipeline.size(); i++) {
@@ -114,6 +180,11 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
 
     //set current process node to first node
     m_currentProcessNodeId = m_dependencies[0].curNodeId;
+    m_currentProcessNodeIdx = 0;
+    m_nextNodeIdx = m_currentProcessNodeIdx + 1;
+    m_nextNodeId = findNextNode();
+
+    m_pipeNodeDIspatcher = dispatcher;
 
     //dump
     if (m_enableDebug) {
@@ -129,9 +200,77 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
 }
 
 //TODO: 需要完成该函数
-std::vector<long> PipeRequest::findNextNodes()
+long PipeRequest::findNextNode()
 {
+    if (!checkDependencyValid()) return -1;
+    Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
+    long successorId = currentDependency.successors.first;   
+    DependencyStatus successorStatus = currentDependency.successors.second;
+    if (successorId != -1 && successorStatus == DependencyStatus::NOREADY) {
+        return successorId;
+    }
+    return -1;
+}
 
+bool PipeRequest::checkDependencyIsReady()
+{
+    if (!checkDependencyValid()) return false;
+    Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
+    long precursorId = currentDependency.precursors.first;
+    DependencyStatus precursorStatus = currentDependency.precursors.second;
+
+    if ((precursorId == -1 && precursorStatus == DependencyStatus::DONE)
+        || (precursorId != -1 && precursorStatus == DependencyStatus::READY)) 
+    {
+        VTF_LOGD("precursor node {0} is ready", precursorId);
+        return true;
+    }
+    return false;
+}
+
+void PipeRequest::markCurrentNodeReady()
+{
+    long nextNodeId = findNextNode();
+    m_nextNodeIdx = m_currentProcessNodeIdx + 1;
+    //last node
+    if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
+        VTF_LOGD("request {0} all node already process done.", ID());
+        m_currentProcessNodeId = -1;
+        m_currentProcessNodeIdx++;
+        m_nextNodeId = -1;
+        m_nextNodeIdx = -1;
+        return;
+    }
+
+    if (m_dependencies[m_nextNodeIdx].precursors.first != m_dependencies[m_currentProcessNodeIdx].curNodeId) {
+        VTF_LOGD("node {0} and node {1} no connection. please check dependency.", m_dependencies[m_currentProcessNodeIdx].curNodeId, m_dependencies[m_nextNodeIdx].precursors.first);
+        return;
+    }
+
+    //mark next node denpendency's pre is done
+    m_dependencies[m_nextNodeIdx].precursors.second = DependencyStatus::READY;
+    VTF_LOGD("request {0} node {1} have done. ", ID(), m_currentProcessNodeId);
+
+    m_currentProcessNodeId = nextNodeId;
+    m_currentProcessNodeIdx++;
+    m_nextNodeId = findNextNode();
+    //queue in dispatcher
+    m_pipeNodeDIspatcher->queueInDispacther(shared_from_this());
+}
+
+//private
+bool PipeRequest::checkDependencyValid()
+{
+    if (m_currentProcessNodeIdx < 0 || m_currentProcessNodeIdx >= m_dependencies.size()) {
+        VTF_LOGE("current process node index {0} is error. please check it.", m_currentProcessNodeIdx);
+        return false;
+    }
+    Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
+    if (currentDependency.curNodeId != m_currentProcessNodeId) {
+        VTF_LOGE("current process node dependency's node id{0} must equal current process node{1}.", currentDependency.curNodeId, m_currentProcessNodeId);
+        return false;
+    }
+    return true;
 }
 
 } //namespace pipeline

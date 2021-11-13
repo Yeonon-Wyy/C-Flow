@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-10 21:21:34
+ * @LastEditTime: 2021-11-13 00:11:40
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipenodeDispatcher.hpp"
@@ -26,28 +26,33 @@ void testDispatch()
 
 void testPipeline()
 {
-    vtf::pipeline::PipeLine<vtf::pipeline::PipeRequest> ppl;
-    auto node1 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::PipeRequest>) -> bool {
+    vtf::pipeline::PipeLine<vtf::pipeline::Request> ppl;
+    auto node1 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::Request>) -> bool {
         VTF_LOGD("ppl add node 1");
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
-    auto node2 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::PipeRequest>) -> bool {
+    auto node2 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::Request>) -> bool {
         VTF_LOGD("ppl add node 2");
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
-    auto node3 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::PipeRequest>) -> bool {
+    auto node3 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::Request>) -> bool {
         VTF_LOGD("ppl add node 3");
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
-    auto node4 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::PipeRequest>) -> bool {
+    auto node4 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::Request>) -> bool {
         VTF_LOGD("ppl add node 4");
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
-    auto node5 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::PipeRequest>) -> bool {
+    auto node5 = ppl.addPipeNode([](std::shared_ptr<vtf::pipeline::Request>) -> bool {
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         VTF_LOGD("ppl add node 4");
         return true;
     });
@@ -66,10 +71,9 @@ void testPipeline()
     ppl.reorganize();
 
     while (true) {
-        auto req = std::make_shared<vtf::pipeline::PipeRequest>(PipelineScenario::SAT, true);
-        req->constructDependency(ppl.getPipelineWithScenario(req->scenario()));
+        auto req = std::make_shared<vtf::pipeline::PipeRequest>(PipelineScenario::SAT, false);
         ppl.submit(req);
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
     }
 }
 

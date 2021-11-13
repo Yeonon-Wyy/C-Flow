@@ -4,12 +4,13 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-07 19:31:36
+ * @LastEditTime: 2021-11-12 23:17:06
  */
 #pragma once
 
 #include "../dispatcher.hpp"
 #include "../blocking_queue.hpp"
+#include "../threadPool.hpp"
 #include "pipeNode.hpp"
 
 #include <type_traits>
@@ -25,7 +26,8 @@ public:
     using ItemQueue = BlockingQueue<std::shared_ptr<Item>>;
     using PipeNodeMap = std::unordered_map<long, std::shared_ptr<PipeNode<Item>>>;
     PipeNodeDispatcher(int dispatchQueueSize = defaultQueueSize)
-        :m_dispatchQueue(dispatchQueueSize) 
+        :m_dispatchQueue(dispatchQueueSize),
+         m_threadPool(8)
     {}
 
     ~PipeNodeDispatcher()
@@ -40,13 +42,29 @@ public:
 private:
     ItemQueue m_dispatchQueue;
     PipeNodeMap m_pipeNodeMaps;
+    vtf::ThreadPool m_threadPool;
 };
 
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {
     VTF_LOGD("vtf::dispatch req id({0})", item->ID());
-    std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(500));
+    if (item->checkDependencyIsReady()) {
+        long currentProcessNodeId = item->getCurrentNode();
+        if (currentProcessNodeId < 0) {
+            //finish
+            return true;
+        }
+        if (m_pipeNodeMaps.count(currentProcessNodeId) == 0) {
+            VTF_LOGE("can't find currentNode node {0}", currentProcessNodeId);
+            return true;
+        }
+
+        auto currentNode = m_pipeNodeMaps[currentProcessNodeId];
+        //submit to thread pool
+        m_threadPool.emplace(&PipeNode<Item>::process, currentNode, item);
+    
+    }
     return true;
 }
 template<typename Item>
