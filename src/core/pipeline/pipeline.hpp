@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 23:20:57
+ * @LastEditTime: 2021-11-14 23:45:52
  */
 
 #pragma once
@@ -12,6 +12,7 @@
 #include "../dag.hpp"
 #include "pipeNode.hpp"
 #include "pipeNodeDispatcher.hpp"
+#include "resultNotifier.hpp"
 #include "../log.hpp"
 #include <memory>
 #include <mutex>
@@ -25,7 +26,8 @@ class PipeLine {
 public:
     PipeLine()
         :m_dag(),
-         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
+         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>()),
+         m_resultNotifier(std::make_shared<ResultNotifier<Item>>("pipeline_result_notifier"))
     {}
 
     ~PipeLine()
@@ -96,6 +98,7 @@ private:
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
     std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
+    std::shared_ptr<ResultNotifier<Item>> m_resultNotifier;
 
     bool m_isStop = false;
     bool m_pipelineModified = false;
@@ -196,6 +199,7 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
         return false;
     }
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
+    item->addResultNotifier(m_resultNotifier);
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;
