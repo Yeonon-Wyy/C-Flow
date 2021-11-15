@@ -4,14 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 22:33:00
+ * @LastEditTime: 2021-11-15 23:25:32
  */
 #pragma once
 
 #include "../utils.hpp"
 #include "common_types.hpp"
 #include "pipeNodeDispatcher.hpp"
-#include "resultNotifier.hpp"
+#include "../notifier.hpp"
 
 namespace vtf {
 namespace pipeline {
@@ -90,7 +90,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual void addResultNotifier(std::shared_ptr<ResultNotifier<Request>>) = 0;
+    virtual void addResultNotifier(std::shared_ptr<Notifier<Request>>) = 0;
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
@@ -132,7 +132,7 @@ public:
 
     void markCurrentNodeReady() override;
 
-    void addResultNotifier(std::shared_ptr<ResultNotifier<Request>>) override;
+    void addResultNotifier(std::shared_ptr<Notifier<Request>>) override;
 private:
     bool checkDependencyValid();
     long findNextNode();
@@ -140,7 +140,7 @@ private:
 private:
     std::vector<Dependency> m_dependencies;
     std::shared_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
-    std::vector<std::shared_ptr<ResultNotifier<Request>>> m_resultNotifiers;
+    std::vector<std::shared_ptr<Notifier<Request>>> m_resultNotifiers;
     PipelineScenario m_scenario;
     long m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
@@ -311,7 +311,7 @@ bool PipeRequest::checkDependencyValid()
     return true;
 }
 
-void PipeRequest::addResultNotifier(std::shared_ptr<ResultNotifier<Request>> resultNotifier)
+void PipeRequest::addResultNotifier(std::shared_ptr<Notifier<Request>> resultNotifier)
 {
     m_resultNotifiers.push_back(resultNotifier);
 }

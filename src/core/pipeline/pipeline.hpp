@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-14 23:45:52
+ * @LastEditTime: 2021-11-15 23:27:14
  */
 
 #pragma once
@@ -12,7 +12,7 @@
 #include "../dag.hpp"
 #include "pipeNode.hpp"
 #include "pipeNodeDispatcher.hpp"
-#include "resultNotifier.hpp"
+#include "../notifier.hpp"
 #include "../log.hpp"
 #include <memory>
 #include <mutex>
@@ -26,8 +26,7 @@ class PipeLine {
 public:
     PipeLine()
         :m_dag(),
-         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>()),
-         m_resultNotifier(std::make_shared<ResultNotifier<Item>>("pipeline_result_notifier"))
+         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
     {}
 
     ~PipeLine()
@@ -52,6 +51,9 @@ public:
      * @return {*}
      */    
     bool addPipeNode(std::shared_ptr<PipeNode<Item>> node);
+
+    void addNotifier(std::shared_ptr<Notifier<Item>> notifier);
+    void addNotifier(const std::string& name, int notifierQueueSize, std::function<bool(std::shared_ptr<Item>)>&& pf);
 
     /**
      * @name: constructPipelinesByScenario
@@ -98,7 +100,7 @@ private:
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
     std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
-    std::shared_ptr<ResultNotifier<Item>> m_resultNotifier;
+    std::vector<std::shared_ptr<Notifier<Item>>> m_notifiers;
 
     bool m_isStop = false;
     bool m_pipelineModified = false;
@@ -131,6 +133,21 @@ bool PipeLine<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> node)
     m_pipeNodeDispatcher->addPipeNode(node);
     m_pipelineModified = true;
     return true;
+}
+
+template<typename Item>
+void PipeLine<Item>::addNotifier(std::shared_ptr<Notifier<Item>> notifier)
+{
+    std::unique_lock<std::mutex> lk(m_mutex);
+    m_notifiers.push_back(notifier);
+}
+
+template<typename Item>
+void PipeLine<Item>::addNotifier(const std::string& name, int notifierQueueSize, std::function<bool(std::shared_ptr<Item>)>&& pf)
+{
+    std::unique_lock<std::mutex> lk(m_mutex);
+    auto notifier = std::make_shared<Notifier<Item>>(name, notifierQueueSize, std::forward<std::function<bool(std::shared_ptr<Item>)>>(pf));
+    m_notifiers.push_back(notifier);
 }
 
 template<typename Item>
@@ -199,7 +216,11 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
         return false;
     }
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
-    item->addResultNotifier(m_resultNotifier);
+    
+    for (auto& notifier : m_notifiers) {
+        item->addResultNotifier(notifier);
+    }
+    
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;

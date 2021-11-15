@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 22:39:58
+ * @LastEditTime: 2021-11-15 23:28:47
  */
 #pragma once
 
@@ -32,10 +32,13 @@ class Notifier : public ThreadLoop {
 public:
     using ReadyQueue = BlockingQueue<std::shared_ptr<Item>>;
 
-    Notifier(const std::string& name, int readyQueueSize)
+    using NotifierProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
+
+    Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
         :m_id(m_idGenerator.generate()),
          m_name(name),
-         m_readyQueue(readyQueueSize)
+         m_readyQueue(readyQueueSize),
+         m_processFunction(std::move(pf))
     {
         run();
     }
@@ -47,14 +50,6 @@ public:
      * @return {*}
      */    
     bool threadLoop();
-
-    /**
-     * @name: process
-     * @Descripttion: user define process function.
-     * @param {*}
-     * @return {*}
-     */    
-    virtual bool process(std::shared_ptr<Item>) = 0;
 
     /**
      * @name: notify
@@ -70,6 +65,7 @@ private:
     long m_id;
     std::string m_name;
     ReadyQueue m_readyQueue;
+    NotifierProcessFunction m_processFunction;
 };
 
 template<typename Item>
@@ -80,8 +76,12 @@ bool Notifier<Item>::threadLoop()
 {
     bool ret = true;
     auto item = m_readyQueue.pop();
+    if (!m_processFunction) {
+        VTF_LOGD("user must give a process function for notify.");
+        return false;
+    }
+    ret = m_processFunction(item);
     VTF_LOGD("[{0}] result notifier process item {1}", name(), item->ID());
-    ret = process(item);
     return ret;
 }
 

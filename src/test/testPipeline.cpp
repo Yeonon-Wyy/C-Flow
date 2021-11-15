@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 23:00:07
+ * @LastEditTime: 2021-11-15 23:31:11
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -37,13 +37,13 @@ void testPipeline()
     vtf::pipeline::PipeLine<vtf::pipeline::Request> ppl;
     auto node1 = ppl.addPipeNode("P1Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P1 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
     auto node2 = ppl.addPipeNode("P2Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P2 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
         return true;
     });
 
@@ -76,6 +76,10 @@ void testPipeline()
     node3->connect(node4);
 
     ppl.start();
+    ppl.addNotifier("pipeline_result_notifier", 32, [](std::shared_ptr<vtf::pipeline::Request> request) {
+        VTF_LOGD("result {0} notify it", request->ID());
+        return true;
+    });
 
     // auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1, false);
     // ppl.submit(req);
