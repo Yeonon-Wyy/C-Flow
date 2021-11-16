@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 23:27:14
+ * @LastEditTime: 2021-11-16 22:31:17
  */
 
 #pragma once
@@ -102,7 +102,7 @@ private:
     std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
     std::vector<std::shared_ptr<Notifier<Item>>> m_notifiers;
 
-    bool m_isStop = false;
+    std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
     std::mutex m_mutex;
 };

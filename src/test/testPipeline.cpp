@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 23:31:11
+ * @LastEditTime: 2021-11-16 22:32:45
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -49,13 +49,16 @@ void testPipeline()
 
     auto node3 = ppl.addPipeNode("P3Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P3 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        VTF_LOGD("request {0} process P3 node done", request->ID());
+
         return true;
     });
 
     auto node4 = ppl.addPipeNode("MDP", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process MDP node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        VTF_LOGD("request {0} process MDP node done", request->ID());
         return true;
     });
 

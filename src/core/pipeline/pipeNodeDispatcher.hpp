@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 17:14:35
+ * @LastEditTime: 2021-11-16 22:30:40
  */
 #pragma once
 
@@ -14,6 +14,7 @@
 #include "pipeNode.hpp"
 
 #include <type_traits>
+#include <atomic>
 
 namespace vtf {
 namespace pipeline {
@@ -47,7 +48,7 @@ private:
     ItemQueue m_dispatchQueue;
     PipeNodeMap m_pipeNodeMaps;
     vtf::ThreadPool m_threadPool;
-    bool m_isStop;
+    std::atomic_bool m_isStop;
 };
 
 template<typename Item>

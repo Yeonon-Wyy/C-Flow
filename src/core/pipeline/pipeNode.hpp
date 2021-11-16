@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 23:14:34
+ * @LastEditTime: 2021-11-16 22:27:29
  */
 #pragma once
 #include "../dag.hpp"
@@ -107,7 +107,12 @@ public:
      * @param {*}
      * @return {*}
      */    
-    void stop() { VTF_LOGD("node [{0}:[1]] stop", m_id, name()); m_isStop = true; }
+    void stop() 
+    { 
+        std::unique_lock<std::mutex> lk(m_mutex);
+        m_isStop = true; 
+        VTF_LOGD("node [{0}:[1]] stop", m_id, name()); 
+    }
 
     /**
      * @name: restart
@@ -115,7 +120,13 @@ public:
      * @param {*}
      * @return {*}
      */   
-    void restart() { m_isStop = false; m_status = PipeNodeStatus::IDLE; }
+    
+    void restart() 
+    { 
+        std::unique_lock<std::mutex> lk(m_mutex); 
+        m_isStop = false; 
+        m_status = PipeNodeStatus::IDLE; 
+    }
 
     PipeNodeStatus status() { return m_status; }
 
