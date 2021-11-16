@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-21 23:07:13
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 15:10:37
+ * @LastEditTime: 2021-11-16 23:08:24
  */
 #pragma once
 
@@ -18,7 +18,7 @@ namespace vtf {
 #define VTF_LOG_FILENAME "/tmp/vtf_log/vtf_log.txt"
 #define VTF_LOG_MAX_SIZE 1048576 * 5
 #define VTF_LOG_MAX_FILE_SIZE 4
-#define VTF_LOG_PATTERN "[%Y-%m-%d %T][thread %t][%l]%v"
+#define VTF_LOG_PATTERN "[%Y-%m-%d %H:%M:%S.%e][thread %t][%l]%v"
 
 #define __FILENAME__ (strrchr(__FILE__,'/')?(strrchr(__FILE__,'/')+1):__FILE__)
 #ifndef PREFIX

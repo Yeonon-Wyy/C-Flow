@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-16 22:30:40
+ * @LastEditTime: 2021-11-16 22:52:29
  */
 #pragma once
 
@@ -71,7 +71,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 
         auto currentNode = m_pipeNodeMaps[currentProcessNodeId];
         //submit to thread pool
-        m_threadPool.emplace(&PipeNode<Item>::process, currentNode, item);
+        m_threadPool.emplace(&PipeNode<Item>::submit, currentNode, item);
     
     }
     return true;

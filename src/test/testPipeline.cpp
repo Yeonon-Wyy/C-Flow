@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-16 22:32:45
+ * @LastEditTime: 2021-11-16 23:15:25
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -43,13 +43,13 @@ void testPipeline()
 
     auto node2 = ppl.addPipeNode("P2Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P2 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
         return true;
     });
 
     auto node3 = ppl.addPipeNode("P3Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P3 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
         VTF_LOGD("request {0} process P3 node done", request->ID());
 
         return true;
@@ -57,7 +57,7 @@ void testPipeline()
 
     auto node4 = ppl.addPipeNode("MDP", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process MDP node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
         VTF_LOGD("request {0} process MDP node done", request->ID());
         return true;
     });
