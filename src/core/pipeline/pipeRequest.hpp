@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 23:25:32
+ * @LastEditTime: 2021-11-20 17:48:57
  */
 #pragma once
 
@@ -24,6 +24,11 @@ public:
     Request()
         :m_id(m_idGenerator.generate())
     {}
+
+    virtual ~Request() {
+        VTF_LOGD("request {0} destory", ID());
+    }
+
 
     long ID() { return m_id; };
 
@@ -84,13 +89,6 @@ public:
      */    
     virtual PipelineScenario scenario() = 0;
 
-    /**
-     * @name: addResultNotifier
-     * @Descripttion: add a result notifier to request
-     * @param {*}
-     * @return {*}
-     */    
-    virtual void addResultNotifier(std::shared_ptr<Notifier<Request>>) = 0;
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
@@ -119,6 +117,7 @@ public:
 
     ~PipeRequest()
     {
+        VTF_LOGD("pipe request {0} destory", ID());
     }
 
     bool constructDependency(const std::vector<long>& pipeline, std::shared_ptr<PipeNodeDispatcher<Request>> dispatcher) override;
@@ -132,7 +131,6 @@ public:
 
     void markCurrentNodeReady() override;
 
-    void addResultNotifier(std::shared_ptr<Notifier<Request>>) override;
 private:
     bool checkDependencyValid();
     long findNextNode();
@@ -140,7 +138,6 @@ private:
 private:
     std::vector<Dependency> m_dependencies;
     std::shared_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
-    std::vector<std::shared_ptr<Notifier<Request>>> m_resultNotifiers;
     PipelineScenario m_scenario;
     long m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
@@ -248,9 +245,6 @@ bool PipeRequest::checkDependencyIsReady()
 
 bool PipeRequest::notifyResult()
 {
-    for (auto resultNotifier : m_resultNotifiers) {
-        resultNotifier->notify(shared_from_this());
-    }
     return true;
 }
 
@@ -261,11 +255,11 @@ void PipeRequest::markCurrentNodeReady()
     //last node
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
         VTF_LOGD("request {0} node [{1}:{2}] have done.", ID(), m_currentProcessNodeId, m_pipeNodeDIspatcher->getNodeNameByNodeId(m_currentProcessNodeId));
-        notifyResult();
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
         m_nextNodeIdx = -1;
+        m_pipeNodeDIspatcher->queueInDispacther(shared_from_this());
         VTF_LOGD("request {0} all node already process done.", ID());
         return;
     }
@@ -310,11 +304,5 @@ bool PipeRequest::checkDependencyValid()
     }
     return true;
 }
-
-void PipeRequest::addResultNotifier(std::shared_ptr<Notifier<Request>> resultNotifier)
-{
-    m_resultNotifiers.push_back(resultNotifier);
-}
-
 } //namespace pipeline
 } //namespace vtf

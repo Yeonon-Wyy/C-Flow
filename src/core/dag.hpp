@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 16:21:23
+ * @LastEditTime: 2021-11-20 16:18:22
  */
 #pragma once
 
@@ -66,6 +66,10 @@ private:
 
 class DAG {
 public:
+    ~DAG()
+    {
+        VTF_LOGD("dag destory");
+    }
 
     /**
      * @name: addNode
@@ -123,6 +127,8 @@ public:
      * @return {*}
      */    
     void dumpGraph();
+
+    void clear();
 
 private:
     /**
@@ -344,6 +350,15 @@ void DAG::rebuildGraphIfNeed()
     m_nodeIndegreeMap.clear();
     buildGraph();
     m_graphModified = false;
+}
+
+void DAG::clear()
+{
+    m_graph.clear();
+    m_graphModified = true;
+    m_nodeIdMap.clear();
+    m_nodeIndegreeMap.clear();
+    m_nodeOrderCache.clear();
 }
 
 }

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-16 22:31:17
+ * @LastEditTime: 2021-11-20 17:45:51
  */
 
 #pragma once
@@ -155,6 +155,10 @@ bool PipeLine<Item>::constructPipelinesByScenario()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!m_pipelineModified) return true;
+    VTF_LOGD("m_notifiers.size {0}", m_notifiers.size());
+    for (auto notifier : m_notifiers) {
+        m_pipeNodeDispatcher->addResultNotifier(notifier);
+    }
 
     //get all scenario
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
@@ -190,6 +194,7 @@ bool PipeLine<Item>::constructPipelinesByScenario()
         }
     }
 
+    m_pipelineModified = false;
     dumpPipelines();
     return true;
 }
@@ -216,11 +221,6 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
         return false;
     }
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
-    
-    for (auto& notifier : m_notifiers) {
-        item->addResultNotifier(notifier);
-    }
-    
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;
@@ -235,11 +235,8 @@ void PipeLine<Item>::start()
 template<typename Item>
 void PipeLine<Item>::stop()
 {
-    VTF_LOGD("pipeline stop Start");
     std::unique_lock<std::mutex> lk(m_mutex);
-    m_isStop = true;
-    m_pipeNodeDispatcher->stop();
-    VTF_LOGD("pipeline stop End");
+
 }
 
 //private

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-16 23:15:25
+ * @LastEditTime: 2021-11-20 17:44:06
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -78,31 +78,39 @@ void testPipeline()
     node2->connect(node4);
     node3->connect(node4);
 
-    ppl.start();
-    ppl.addNotifier("pipeline_result_notifier", 32, [](std::shared_ptr<vtf::pipeline::Request> request) {
+    ppl.addNotifier("pipeline_result_notifier", 8, [](std::shared_ptr<vtf::pipeline::Request> request) {
         VTF_LOGD("result {0} notify it", request->ID());
         return true;
     });
+    ppl.start();
 
-    // auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1, false);
-    // ppl.submit(req);
-
+    bool isSTop = false;
+    int cnt = 0;
     while (true) {
-        auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario2, false);
-        // if (req->ID() == 100) {
-        //     ppl.stop();
-        //     continue;
-        // } else {
-
-            ppl.submit(req);
+        if (0) {
+            VTF_LOGD("start stop");
+            ppl.stop();
+            isSTop = true;
+            VTF_LOGD("end stop");
+            break;
+        } else {
             std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
-        // }
-
+            if (!isSTop) {
+                auto req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario2, false);
+                ppl.submit(req);
+            }
+        }
+        cnt++;
     }
+    VTF_LOGD("test pipeline stop");
+    VTF_LOGD("node1 useCount {0}", node1.use_count());
 }
 
 int main()
 {
     // testDispatch();
     testPipeline();
+    // while (true) {
+        
+    // }
 }

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-13 00:26:57
+ * @LastEditTime: 2021-11-20 16:15:27
  */
 #pragma once
 
@@ -20,6 +20,10 @@ public:
     ThreadLoop()
         :m_isStop(false)
     {}
+
+    ~ThreadLoop()
+    {
+    }
 
     /**
      * @name: threadLoop

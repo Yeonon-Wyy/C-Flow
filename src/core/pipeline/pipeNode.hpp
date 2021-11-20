@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-16 22:53:52
+ * @LastEditTime: 2021-11-20 16:37:24
  */
 #pragma once
 #include "../dag.hpp"
@@ -57,7 +57,9 @@ public:
         run();
     }
 
-    ~PipeNode() {}
+    ~PipeNode() {
+        VTF_LOGD("node {0} destory", m_name);
+    }
 
     bool threadLoop() override;
 
@@ -111,26 +113,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    void stop() 
-    { 
-        std::unique_lock<std::mutex> lk(m_mutex);
-        m_isStop = true; 
-        VTF_LOGD("node [{0}:[1]] stop", m_id, name()); 
-    }
-
-    /**
-     * @name: restart
-     * @Descripttion: restart process
-     * @param {*}
-     * @return {*}
-     */   
-    
-    void restart() 
-    { 
-        std::unique_lock<std::mutex> lk(m_mutex); 
-        m_isStop = false; 
-        m_status = PipeNodeStatus::IDLE; 
-    }
+    void stop();
 
     PipeNodeStatus status() { return m_status; }
 
@@ -178,19 +161,12 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 {
     bool ret = true;
     std::unique_lock<std::mutex> lk(m_mutex);
-    if (m_status == PipeNodeStatus::STOP) {
-        return false;
-    }
     m_status = PipeNodeStatus::PROCESSING;
     ret = m_processFunction(item);
     if (ret) {
         item->markCurrentNodeReady();
     }
     m_status = PipeNodeStatus::IDLE;
-    if (m_isStop) {
-        m_status = PipeNodeStatus::STOP;
-        g_pipeNodeStopCV.notify_one();
-    }
     return ret;
 }
 
@@ -211,6 +187,11 @@ template<typename Item>
 bool PipeNode<Item>::hasScenario(PipelineScenario scenario)
 {
     return std::find(m_pipelineScenarios.begin(), m_pipelineScenarios.end(), scenario) != m_pipelineScenarios.end();
+}
+
+template<typename Item>
+void PipeNode<Item>::stop() 
+{ 
 }
 
 } //namespace pipeline

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-15 23:28:47
+ * @LastEditTime: 2021-11-20 16:37:44
  */
 #pragma once
 
@@ -14,6 +14,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <memory>
+#include <atomic>
 
 namespace vtf {
 
@@ -38,9 +39,15 @@ public:
         :m_id(m_idGenerator.generate()),
          m_name(name),
          m_readyQueue(readyQueueSize),
-         m_processFunction(std::move(pf))
+         m_processFunction(std::move(pf)),
+         m_isStop(false)
     {
         run();
+    }
+    
+    ~Notifier()
+    {
+        VTF_LOGD("notifier {0} destory", m_name);
     }
 
     /**
@@ -60,12 +67,15 @@ public:
     void notify(std::shared_ptr<Item>);
 
     std::string name() { return m_name; }
+
+    void stop();
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
     ReadyQueue m_readyQueue;
     NotifierProcessFunction m_processFunction;
+    std::atomic_bool m_isStop;
 };
 
 template<typename Item>
@@ -89,6 +99,11 @@ template<typename Item>
 void Notifier<Item>::notify(std::shared_ptr<Item> item)
 {
     m_readyQueue.push(item);
+}
+
+template<typename Item>
+void Notifier<Item>::stop()
+{
 }
 
 }
