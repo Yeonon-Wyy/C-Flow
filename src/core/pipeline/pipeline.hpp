@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 20:52:38
+ * @LastEditTime: 2021-11-21 21:46:35
  */
 
 #pragma once
@@ -96,6 +96,12 @@ private:
     void dumpPipelines();
 
 private:
+    /**
+     * @name: checkValid
+     * @Descripttion: check pipeline is valid
+     * @param {*}
+     * @return {*}
+     */
     bool checkValid();
 
 private:

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:44:42
+ * @LastEditTime: 2021-11-21 21:56:53
  */
 #pragma once
 
@@ -63,8 +63,20 @@ public:
      */    
     void notify(std::shared_ptr<Item>);
 
+    /**
+     * @name: name
+     * @Descripttion: return notifier's name
+     * @param {*}
+     * @return {*}
+     */    
     std::string name() { return m_name; }
 
+    /**
+     * @name: stop
+     * @Descripttion: stop notifier. 
+     * @param {*}
+     * @return {*}
+     */    
     void stop();
 private:
     static vtf::util::IDGenerator m_idGenerator;

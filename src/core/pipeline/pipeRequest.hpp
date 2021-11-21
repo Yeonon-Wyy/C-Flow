@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:05:59
+ * @LastEditTime: 2021-11-21 21:50:44
  */
 #pragma once
 
@@ -89,7 +89,20 @@ public:
      */    
     virtual PipelineScenario scenario() = 0;
 
+    /**
+     * @name: setNotifyStatus
+     * @Descripttion: just set notifier status, default is OK
+     * @param {NotifyStatus&&} status
+     * @return {*}
+     */    
     virtual void setNotifyStatus(NotifyStatus&& status) = 0;
+
+    /**
+     * @name: getNotifyStatus
+     * @Descripttion: return a NotifyStatus
+     * @param {*}
+     * @return {*}
+     */    
     virtual NotifyStatus getNotifyStatus() = 0;
 
 private:

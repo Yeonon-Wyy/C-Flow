@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 20:55:10
+ * @LastEditTime: 2021-11-21 21:52:05
  */
 #pragma once
 
@@ -128,6 +128,12 @@ public:
      */    
     void dumpGraph();
 
+    /**
+     * @name: clear 
+     * @Descripttion: clear all info of dag, include graph info, node info, etc...
+     * @param {*}
+     * @return {*}
+     */    
     void clear();
 
 private:

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 19:06:09
+ * @LastEditTime: 2021-11-21 21:51:04
  */
 #pragma once
 #include "../dag.hpp"
@@ -104,6 +104,12 @@ public:
      */    
     void stop();
 
+    /**
+     * @name: status
+     * @Descripttion: return pipeNode status
+     * @param {*}
+     * @return {*}
+     */    
     PipeNodeStatus status() { return m_status; }
 
     /**
@@ -113,9 +119,6 @@ public:
      * @return {*}
      */    
     bool process(std::shared_ptr<Item>);
-private:
-
-
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;

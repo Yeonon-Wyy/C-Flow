@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:10:48
+ * @LastEditTime: 2021-11-21 21:49:57
  */
 #pragma once
 
@@ -38,14 +38,60 @@ public:
         VTF_LOGD("dispatch destory");
     }
 
+    /**
+     * @name: dispatch
+     * @Descripttion: dispatch item
+     * @param {shared_ptr<Item>} item
+     * @return {*}
+     */    
     bool dispatch(std::shared_ptr<Item> item) override;
+
+    /**
+     * @name: queueInDispacther
+     * @Descripttion: queue a item to dispatcher
+     * @param {shared_ptr<Item>} item
+     * @return {*}
+     */    
     void queueInDispacther(std::shared_ptr<Item> item) override;
+
+    /**
+     * @name: threadLoop
+     * @Descripttion: thread loop will loop run process function until receive stop flag
+     * @param {shared_ptr<Item>} item
+     * @return {*}
+     */    
     bool threadLoop(std::shared_ptr<Item> item) override;
 
+    /**
+     * @name: addPipeNode
+     * @Descripttion: add pipeNode object to dispacther, note the pipeNode will use weak_ptr to save
+     * @param {shared_ptr<PipeNode<Item>>} pipeNode
+     * @return {*}
+     */    
     void addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode);
+
+    /**
+     * @name: getNodeNameByNodeId
+     * @Descripttion: just a util function, return a name of given node id.
+     * @param {long} nodeId
+     * @return {*}
+     */    
     std::string getNodeNameByNodeId(long nodeId);
 
+    /**
+     * @name: stop
+     * @Descripttion: stop dispatcher, will stop threadLoop and threadPool.
+     * @param {*}
+     * @return {*}
+     */    
     void stop() override;
+
+    /**
+     * @name: addResultNotifier
+     * @Descripttion: add a result notifier to dispatcher, note the notifier object will use weak_ptr to save
+     * @param {shared_ptr<Notifier<Item>>} notifier
+     * @return {*}
+     */    
     void addResultNotifier(std::shared_ptr<Notifier<Item>> notifier)
     {
         m_resultNotifiers.push_back(notifier);

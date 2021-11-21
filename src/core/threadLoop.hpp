@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 20:18:05
+ * @LastEditTime: 2021-11-21 22:03:10
  */
 #pragma once
 
@@ -49,7 +49,14 @@ public:
      */    
     void stop();
 
+    /**
+     * @name: queue a item to thread loop, will pop the itme in right time.
+     * @Descripttion: 
+     * @param {*}
+     * @return {*}
+     */    
     void queueItem(T item);
+
 private:
     void _threadLoop();
 private:
@@ -74,12 +81,16 @@ void ThreadLoop<T>::_threadLoop()
             m_condition.wait(lk, [this]() {
                 return this->m_isStop || !m_itemQueue.empty();
             });
-            VTF_LOGD("m_itemQUeue size ({0}), stop flag {1}", m_itemQueue.size(), m_isStop);
+
+            //if isStop flag was set and  m_itemQueue is empty, exit loop
+            //so, if isStop flag was set, but m_itemQueue is not empty, the loop will execute continue untile queue is empty
             if (this->m_isStop && m_itemQueue.empty()) {
-                return;
+                break;
             }
             item = m_itemQueue.front();
             m_itemQueue.pop();
+
+            //if m_itemQueue'size less than m_queueSize, notify it.
             if (m_itemQueue.size() < m_queueSize) {
                 m_not_full_cv.notify_one();
             }
@@ -101,6 +112,9 @@ void ThreadLoop<T>::queueItem(T item)
         if (m_isStop) {
             return;
         }
+
+        //because we need control process rate of item
+        //so if item queue size greater than m_queueSize, will block it until item queue size less than m_queueSize
         if (this->m_itemQueue.size() >= m_queueSize) {
             m_not_full_cv.wait(lk, [this](){
                 return this->m_itemQueue.size() < m_queueSize;
@@ -119,6 +133,8 @@ void ThreadLoop<T>::stop()
         m_isStop = true;
     }
     m_condition.notify_one();
+
+    //wait thread exit, note it is must do, or else maybe will core dump
     m_thread.join();
 }
 
@@ -131,7 +147,7 @@ ThreadLoop<T>::~ThreadLoop()
             return;
         }
     }
-
+    //if user don't call stop, must call stop in destructor, and wait thread exit, or else maybe will core dump.
     stop();
 
 }
