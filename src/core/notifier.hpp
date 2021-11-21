@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 20:59:47
+ * @LastEditTime: 2021-11-21 21:44:42
  */
 #pragma once
 
@@ -15,12 +15,13 @@
 #include <condition_variable>
 #include <memory>
 #include <atomic>
+#include <map>
 
 namespace vtf {
 
 
 #define NOTIFIER_DEFAULT_PREFIX "notfier_";
-
+constexpr long initExpectItemId = 1;
 /**
  * @name: Notifier
  * @Descripttion: Notifier is a common class. user can inheriting this class for user requirement.
@@ -36,7 +37,8 @@ public:
     Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
         :m_id(m_idGenerator.generate()),
          m_name(name),
-         m_processFunction(std::move(pf))
+         m_processFunction(std::move(pf)),
+         m_expectItemId(initExpectItemId)
     {
     }
     
@@ -69,6 +71,9 @@ private:
     long m_id;
     std::string m_name;
     NotifierProcessFunction m_processFunction;
+
+    std::map<long, std::shared_ptr<Item>> m_pendingItemMap;
+    long m_expectItemId = initExpectItemId;
 };
 
 template<typename Item>
@@ -82,8 +87,33 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
         VTF_LOGD("user must give a process function for notify.");
         return false;
     }
-    ret = m_processFunction(item);
-    VTF_LOGD("[{0}] result notifier process item {1}", name(), item->ID());
+    if (item->ID() == m_expectItemId) {
+        //if current item id equal m_expectItemId
+
+        //process current item first
+        ret = m_processFunction(item);
+        //update m_expectItemId
+        m_expectItemId = item->ID() + 1;
+        VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
+        
+        //if pending map is not empty, mean future item arrive first, we need process it.
+        for (auto it = m_pendingItemMap.begin(); it != m_pendingItemMap.end();) {
+            //need one-by-one process, so we need juge m_expectItemId and item id.
+            if (it->first == m_expectItemId) {
+                m_processFunction(it->second);
+                //update m_expectItemId
+                m_expectItemId = it->second->ID() + 1;
+                VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
+                m_pendingItemMap.erase(it++);
+            } else {
+                it++;
+                break;
+            }
+        }
+    } else {
+        //if current item not equal m_expectItemId, will hold it to pending map
+        m_pendingItemMap[item->ID()] = item;
+    }
     return ret;
 }
 
@@ -98,6 +128,8 @@ void Notifier<Item>::stop()
 {
     VTF_LOGD("notifier [{0}] stop start", m_name);
     ThreadLoop<std::shared_ptr<Item>>::stop();
+    m_pendingItemMap.clear();
+    m_expectItemId = initExpectItemId;
     VTF_LOGD("notifier [{0}] stop end", m_name);
 }
 
