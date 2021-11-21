@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 17:48:57
+ * @LastEditTime: 2021-11-20 22:18:07
  */
 #pragma once
 
@@ -137,7 +137,7 @@ private:
     bool notifyResult();
 private:
     std::vector<Dependency> m_dependencies;
-    std::shared_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
+    std::weak_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
     PipelineScenario m_scenario;
     long m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
@@ -205,9 +205,9 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::sh
     //dump
     if (m_enableDebug) {
         for (auto& dependency : m_dependencies) {
-            VTF_LOGD("node : [{0}:{1}]", dependency.curNodeId, m_pipeNodeDIspatcher->getNodeNameByNodeId(dependency.curNodeId));
-            VTF_LOGD("pre : [{0}:{1}]", dependency.precursors.first, m_pipeNodeDIspatcher->getNodeNameByNodeId(dependency.precursors.first));
-            VTF_LOGD("suc : [{0}:{1}]", dependency.successors.first), m_pipeNodeDIspatcher->getNodeNameByNodeId(dependency.successors.first);
+            VTF_LOGD("node : [{0}:{1}]", dependency.curNodeId, dispatcher->getNodeNameByNodeId(dependency.curNodeId));
+            VTF_LOGD("pre : [{0}:{1}]", dependency.precursors.first, dispatcher->getNodeNameByNodeId(dependency.precursors.first));
+            VTF_LOGD("suc : [{0}:{1}]", dependency.successors.first), dispatcher->getNodeNameByNodeId(dependency.successors.first);
             VTF_LOGD("--------------------------------------");  
         }
     }
@@ -237,52 +237,50 @@ bool PipeRequest::checkDependencyIsReady()
     if ((precursorId == -1 && precursorStatus == DependencyStatus::DONE)
         || (precursorId != -1 && precursorStatus == DependencyStatus::READY)) 
     {
-        VTF_LOGD("precursor node [{0}:{1}] is ready", precursorId, m_pipeNodeDIspatcher->getNodeNameByNodeId(precursorId));
+        VTF_LOGD("precursor node [{0}] is ready", precursorId);
         return true;
     }
     return false;
 }
 
-bool PipeRequest::notifyResult()
-{
-    return true;
-}
 
 void PipeRequest::markCurrentNodeReady()
 {
     long nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
+    auto dispatcherSp = m_pipeNodeDIspatcher.lock();
+
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
-        VTF_LOGD("request {0} node [{1}:{2}] have done.", ID(), m_currentProcessNodeId, m_pipeNodeDIspatcher->getNodeNameByNodeId(m_currentProcessNodeId));
+        VTF_LOGD("request {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
         m_nextNodeIdx = -1;
-        m_pipeNodeDIspatcher->queueInDispacther(shared_from_this());
+        if (dispatcherSp)
+            dispatcherSp->queueInDispacther(shared_from_this());
         VTF_LOGD("request {0} all node already process done.", ID());
         return;
     }
 
     if (m_dependencies[m_nextNodeIdx].precursors.first != m_dependencies[m_currentProcessNodeIdx].curNodeId) {
-        VTF_LOGD("node [{0}:{1}] and node [{2}:{3}] no connection. please check dependency.", 
+        VTF_LOGD("node [{0}] and node [{1}] no connection. please check dependency.", 
             m_dependencies[m_currentProcessNodeIdx].curNodeId, 
-            m_pipeNodeDIspatcher->getNodeNameByNodeId(m_dependencies[m_currentProcessNodeIdx].curNodeId),
-            m_dependencies[m_nextNodeIdx].precursors.first,
-            m_pipeNodeDIspatcher->getNodeNameByNodeId(m_dependencies[m_nextNodeIdx].precursors.first)
+            m_dependencies[m_nextNodeIdx].precursors.first
         );
         return;
     }
 
     //mark next node denpendency's pre is done
     m_dependencies[m_nextNodeIdx].precursors.second = DependencyStatus::READY;
-    VTF_LOGD("request {0} node [{1}:{2}] have done. ", ID(), m_currentProcessNodeId, m_pipeNodeDIspatcher->getNodeNameByNodeId(m_currentProcessNodeId));
+    VTF_LOGD("request {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
 
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
     //queue in dispatcher
-    m_pipeNodeDIspatcher->queueInDispacther(shared_from_this());
+    if (dispatcherSp)
+        dispatcherSp->queueInDispacther(shared_from_this());
 }
 
 //private
@@ -294,11 +292,9 @@ bool PipeRequest::checkDependencyValid()
     }
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
     if (currentDependency.curNodeId != m_currentProcessNodeId) {
-        VTF_LOGE("current process node dependency's node [{0}:{1}] must equal current process node [{2}:{3}].", 
+        VTF_LOGE("current process node dependency's node [{0}] must equal current process node [{1}].", 
             currentDependency.curNodeId, 
-            m_pipeNodeDIspatcher->getNodeNameByNodeId(currentDependency.curNodeId),
-            m_currentProcessNodeId,
-            m_pipeNodeDIspatcher->getNodeNameByNodeId(m_currentProcessNodeId)
+            m_currentProcessNodeId
         );
         return false;
     }

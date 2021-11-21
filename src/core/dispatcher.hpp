@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 17:47:05
+ * @LastEditTime: 2021-11-20 22:48:33
  */
 #pragma once
 #include <memory>
@@ -17,13 +17,12 @@ namespace vtf {
 #define DISPATCHER_DEFAULT_PREFIX "dispacther_"
 
 template<typename Item>
-class Dispatcher : public ThreadLoop {
+class Dispatcher : public ThreadLoop<std::shared_ptr<Item>> {
 public:
     Dispatcher()
         :m_id(m_idGenerator.generate()),
          m_name(DISPATCHER_DEFAULT_PREFIX + vtf::util::StringConvetor::digit2String(m_id))
     {
-        run();
     }
 
     Dispatcher(std::string&& name)

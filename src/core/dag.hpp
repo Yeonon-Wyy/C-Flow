@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 16:18:22
+ * @LastEditTime: 2021-11-20 20:55:10
  */
 #pragma once
 
@@ -155,7 +155,7 @@ private:
 
 private:
     std::unordered_map<long, std::vector<long>> m_graph;
-    std::unordered_map<long, std::shared_ptr<DAGNode>> m_nodeIdMap;
+    std::unordered_map<long, std::weak_ptr<DAGNode>> m_nodeIdMap;
     std::unordered_map<long, long> m_nodeIndegreeMap;
     bool m_graphModified = false;
     std::vector<std::vector<long>> m_nodeOrderCache;
@@ -190,7 +190,8 @@ void DAG::addNode(std::shared_ptr<DAGNode> node)
 void DAG::buildGraph()
 {
     for (auto &[nodeId, node] : m_nodeIdMap) {
-        for (long otherNOdeId : node->getOutNodes()) {
+        auto nodeSp = node.lock();
+        for (long otherNOdeId : nodeSp->getOutNodes()) {
             m_graph[nodeId].push_back(otherNOdeId);
             if (m_nodeIndegreeMap.count(nodeId) == 0) {
                 m_nodeIndegreeMap[nodeId] = 0;

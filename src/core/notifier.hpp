@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 16:37:44
+ * @LastEditTime: 2021-11-21 19:16:11
  */
 #pragma once
 
@@ -29,7 +29,7 @@ namespace vtf {
  * @return {*}
  */
 template<typename Item>
-class Notifier : public ThreadLoop {
+class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
 public:
     using ReadyQueue = BlockingQueue<std::shared_ptr<Item>>;
 
@@ -38,11 +38,8 @@ public:
     Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
         :m_id(m_idGenerator.generate()),
          m_name(name),
-         m_readyQueue(readyQueueSize),
-         m_processFunction(std::move(pf)),
-         m_isStop(false)
+         m_processFunction(std::move(pf))
     {
-        run();
     }
     
     ~Notifier()
@@ -56,7 +53,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    bool threadLoop();
+    bool threadLoop(std::shared_ptr<Item>);
 
     /**
      * @name: notify
@@ -73,19 +70,16 @@ private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
-    ReadyQueue m_readyQueue;
     NotifierProcessFunction m_processFunction;
-    std::atomic_bool m_isStop;
 };
 
 template<typename Item>
 vtf::util::IDGenerator Notifier<Item>::m_idGenerator;
 
 template<typename Item>
-bool Notifier<Item>::threadLoop()
+bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
 {
     bool ret = true;
-    auto item = m_readyQueue.pop();
     if (!m_processFunction) {
         VTF_LOGD("user must give a process function for notify.");
         return false;
@@ -98,12 +92,15 @@ bool Notifier<Item>::threadLoop()
 template<typename Item>
 void Notifier<Item>::notify(std::shared_ptr<Item> item)
 {
-    m_readyQueue.push(item);
+    ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
 }
 
 template<typename Item>
 void Notifier<Item>::stop()
 {
+    VTF_LOGD("notifier [{0}] stop start", m_name);
+    ThreadLoop<std::shared_ptr<Item>>::stop();
+    VTF_LOGD("notifier [{0}] stop end", m_name);
 }
 
 }

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 17:44:50
+ * @LastEditTime: 2021-11-21 19:07:03
  */
 #pragma once
 
@@ -29,8 +29,7 @@ public:
     using ItemQueue = BlockingQueue<std::shared_ptr<Item>>;
     using PipeNodeMap = std::unordered_map<long, std::weak_ptr<PipeNode<Item>>>;
     PipeNodeDispatcher(int dispatchQueueSize = defaultQueueSize)
-        :m_dispatchQueue(dispatchQueueSize),
-         m_threadPool(defaultThreadPoolSize),
+        :m_threadPool(defaultThreadPoolSize),
          m_isStop(false)
     {}
 
@@ -39,9 +38,10 @@ public:
         VTF_LOGD("dispatch destory");
     }
 
-    virtual bool dispatch(std::shared_ptr<Item> item) override;
-    virtual void queueInDispacther(std::shared_ptr<Item> item) override;
-    virtual bool threadLoop() override;
+    bool dispatch(std::shared_ptr<Item> item) override;
+    void queueInDispacther(std::shared_ptr<Item> item) override;
+    bool threadLoop(std::shared_ptr<Item> item) override;
+
     void addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode);
     std::string getNodeNameByNodeId(long nodeId);
 
@@ -52,20 +52,21 @@ public:
     }
 
 private:
-    ItemQueue m_dispatchQueue;
     PipeNodeMap m_pipeNodeMaps;
-    std::vector<std::shared_ptr<Notifier<Item>>> m_resultNotifiers;
+    std::vector<std::weak_ptr<Notifier<Item>>> m_resultNotifiers;
     vtf::ThreadPool m_threadPool;
     std::atomic_bool m_isStop;
 };
 
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
-{
+{    
     VTF_LOGD("dispatch item id({0}) nextNodeId {1}, notifier size ({2})", item->ID(), item->getCurrentNode(), m_resultNotifiers.size());
     if (item->getCurrentNode() == -1) {
-        for (auto& notifier : m_resultNotifiers) {
-            notifier->notify(item);
+        for (auto notifier : m_resultNotifiers) {
+            auto notifierSp = notifier.lock();
+            if (notifierSp)
+                notifierSp->notify(item);
         }
         return true;
     }
@@ -84,7 +85,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
         auto currentNodeSp = m_pipeNodeMaps[currentProcessNodeId].lock();
         //submit to thread pool
         if (currentNodeSp)
-            m_threadPool.emplace(&PipeNode<Item>::submit, currentNodeSp, item);
+            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, item);
     }
     return true;
 }
@@ -92,16 +93,15 @@ template<typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> item)
 {
     VTF_LOGD("queue req id({0})", item->ID());
-    m_dispatchQueue.push(item);
+    ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
     return;
 }
 
 template<typename Item>
-bool PipeNodeDispatcher<Item>::threadLoop()
+bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> item)
 {
     bool ret = true;
-    auto req = m_dispatchQueue.pop();
-    ret = dispatch(req);
+    ret = dispatch(item);
     return ret;
 }
 
@@ -129,6 +129,11 @@ std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(long nodeId)
 template<typename Item>
 void PipeNodeDispatcher<Item>::stop()
 {
+    VTF_LOGD("pipeNodeDispatcher stop start");
+    ThreadLoop<std::shared_ptr<Item>>::stop();
+    m_pipeNodeMaps.clear();
+    m_resultNotifiers.clear();
+    VTF_LOGD("pipeNodeDispatcher stop end");
 }
 
 } //pipeline

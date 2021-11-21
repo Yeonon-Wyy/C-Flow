@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 16:37:24
+ * @LastEditTime: 2021-11-21 19:06:09
  */
 #pragma once
 #include "../dag.hpp"
@@ -28,8 +28,7 @@ constexpr int defaultPipeNodeQueueSize = 32;
 template<typename Item>
 class PipeNode : 
     public vtf::DAGNode,
-    public std::enable_shared_from_this<PipeNode<Item>>,
-    public ThreadLoop
+    public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:
     using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
@@ -38,32 +37,22 @@ public:
     PipeNode(int queueSize = defaultPipeNodeQueueSize)
          :DAGNode(m_idGenerator.generate()),
          m_id(getNodeId()),
-         m_status(PipeNodeStatus::IDLE),
-         m_isStop(false),
-         m_processQueue(queueSize)
+         m_status(PipeNodeStatus::IDLE)
     {
         m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(m_id);
-        run();
     }
 
     PipeNode(const std::string& name, int queueSize = defaultPipeNodeQueueSize)
          :DAGNode(m_idGenerator.generate()),
          m_id(getNodeId()),
          m_name(name),
-         m_status(PipeNodeStatus::IDLE),
-         m_isStop(false),
-         m_processQueue(queueSize)
+         m_status(PipeNodeStatus::IDLE)
     {
-        run();
     }
 
     ~PipeNode() {
         VTF_LOGD("node {0} destory", m_name);
     }
-
-    bool threadLoop() override;
-
-    void submit(std::shared_ptr<Item>);
 
     /**
      * @name: setProcessFunction
@@ -117,7 +106,6 @@ public:
 
     PipeNodeStatus status() { return m_status; }
 
-private:
     /**
      * @name: process 
      * @Descripttion: execute user define process function, and after complete, mark done
@@ -125,42 +113,27 @@ private:
      * @return {*}
      */    
     bool process(std::shared_ptr<Item>);
+private:
+
 
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
     PipeNodeStatus m_status;
-    bool m_isStop;
     std::vector<PipelineScenario> m_pipelineScenarios;
     ProcessFunction m_processFunction;
-    ItemQueue m_processQueue;
     std::mutex m_mutex;
 };
 
 template<typename Item>
 vtf::util::IDGenerator PipeNode<Item>::m_idGenerator;
 
-template<typename Item>
-bool PipeNode<Item>::threadLoop()
-{
-    bool ret = true;
-    auto item = m_processQueue.pop();
-    ret = process(item);
-    return ret;
-}
-
-template<typename Item>
-void PipeNode<Item>::submit(std::shared_ptr<Item> item)
-{
-    m_processQueue.push(item);
-}
 
 template<typename Item>
 bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 {
     bool ret = true;
-    std::unique_lock<std::mutex> lk(m_mutex);
     m_status = PipeNodeStatus::PROCESSING;
     ret = m_processFunction(item);
     if (ret) {
@@ -192,6 +165,9 @@ bool PipeNode<Item>::hasScenario(PipelineScenario scenario)
 template<typename Item>
 void PipeNode<Item>::stop() 
 { 
+    VTF_LOGD("PipeNode [{0}] stop start", m_name);
+    VTF_LOGD("PipeNode [{0}] stop end", m_name);
+    
 }
 
 } //namespace pipeline

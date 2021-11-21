@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 17:44:06
+ * @LastEditTime: 2021-11-20 23:31:26
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -20,14 +20,13 @@ enum MyScenario {
 
 void testDispatch()
 {
-    vtf::pipeline::PipeNodeDispatcher<vtf::pipeline::PipeRequest> pd(8);
-    pd.run();
+    // vtf::pipeline::PipeNodeDispatcher<vtf::pipeline::PipeRequest> pd(8);
 
-    while (true) {
-        std::shared_ptr<vtf::pipeline::PipeRequest> req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1);
-        pd.queueInDispacther(req);
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(300));
-    }
+    // while (true) {
+    //     std::shared_ptr<vtf::pipeline::PipeRequest> req = std::make_shared<vtf::pipeline::PipeRequest>(MyScenario::Scenario1);
+    //     pd.queueInDispacther(req);
+    //     std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(300));
+    // }
 }
 
 
@@ -87,11 +86,15 @@ void testPipeline()
     bool isSTop = false;
     int cnt = 0;
     while (true) {
-        if (0) {
-            VTF_LOGD("start stop");
+        if (cnt == 100) {
+            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
             ppl.stop();
+            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+
+            VTF_LOGD("start stop");
             isSTop = true;
             VTF_LOGD("end stop");
+
             break;
         } else {
             std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
