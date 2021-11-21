@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 22:18:07
+ * @LastEditTime: 2021-11-21 21:05:59
  */
 #pragma once
 
@@ -89,6 +89,9 @@ public:
      */    
     virtual PipelineScenario scenario() = 0;
 
+    virtual void setNotifyStatus(NotifyStatus&& status) = 0;
+    virtual NotifyStatus getNotifyStatus() = 0;
+
 private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
@@ -131,6 +134,10 @@ public:
 
     void markCurrentNodeReady() override;
 
+    void setNotifyStatus(NotifyStatus&& status) override { m_notifyStatus = std::move(status); };
+
+    NotifyStatus getNotifyStatus() { return m_notifyStatus; }
+
 private:
     bool checkDependencyValid();
     long findNextNode();
@@ -139,6 +146,7 @@ private:
     std::vector<Dependency> m_dependencies;
     std::weak_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
     PipelineScenario m_scenario;
+    NotifyStatus m_notifyStatus;
     long m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
     long m_nextNodeId;
@@ -150,6 +158,7 @@ private:
 PipeRequest::PipeRequest(PipelineScenario scenario, bool enableDebug)
     :Request(),
         m_scenario(scenario),
+        m_notifyStatus(NotifyStatus::OK),
         m_currentProcessNodeId(-1),
         m_currentProcessNodeIdx(-1),
         m_nextNodeId(-1),

@@ -26,6 +26,14 @@ public:
     auto emplace(F&& f, Args&&... agrs) 
         -> std::future<typename std::result_of<F(Args...)>::type>;
 
+    void stop();
+
+    bool isStoped()
+    {
+        std::unique_lock<std::mutex> lk(this->m_taskMutex);
+        return isStop;
+    }
+
     ~ThreadPool();
 private:
     //thread list, we need keep fixed number of threads
@@ -99,6 +107,17 @@ auto ThreadPool::emplace(F&& f, Args&&... agrs)
 }
 
 ThreadPool::~ThreadPool()
+{
+    {
+        std::unique_lock<std::mutex> lk(this->m_taskMutex);
+        if (isStop) {
+            return;
+        }
+    }
+    stop();
+}
+
+void ThreadPool::stop()
 {
     {
         std::unique_lock<std::mutex> lk(this->m_taskMutex);

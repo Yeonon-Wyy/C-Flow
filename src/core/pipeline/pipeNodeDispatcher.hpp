@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 19:07:03
+ * @LastEditTime: 2021-11-21 21:10:48
  */
 #pragma once
 
@@ -61,12 +61,16 @@ private:
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {    
-    VTF_LOGD("dispatch item id({0}) nextNodeId {1}, notifier size ({2})", item->ID(), item->getCurrentNode(), m_resultNotifiers.size());
-    if (item->getCurrentNode() == -1) {
+    VTF_LOGD("dispatch item id({0}) nextNodeId {1}", item->ID(), item->getCurrentNode());
+    if (item->getCurrentNode() == -1 || m_threadPool.isStoped()) {
         for (auto notifier : m_resultNotifiers) {
             auto notifierSp = notifier.lock();
-            if (notifierSp)
+            if (m_threadPool.isStoped()) {
+                item->setNotifyStatus(NotifyStatus::ERROR);
+            }
+            if (notifierSp) {
                 notifierSp->notify(item);
+            }
         }
         return true;
     }
@@ -92,8 +96,8 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 template<typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> item)
 {
-    VTF_LOGD("queue req id({0})", item->ID());
     ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
+    VTF_LOGD("queue item id({0})", item->ID());
     return;
 }
 
@@ -130,6 +134,7 @@ template<typename Item>
 void PipeNodeDispatcher<Item>::stop()
 {
     VTF_LOGD("pipeNodeDispatcher stop start");
+    m_threadPool.stop();
     ThreadLoop<std::shared_ptr<Item>>::stop();
     m_pipeNodeMaps.clear();
     m_resultNotifiers.clear();

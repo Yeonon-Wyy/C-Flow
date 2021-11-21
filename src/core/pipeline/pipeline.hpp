@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 19:15:32
+ * @LastEditTime: 2021-11-21 20:52:38
  */
 
 #pragma once
@@ -109,6 +109,8 @@ private:
 
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
+    long m_finalSubmitedItemID = -1;
+
     std::mutex m_mutex;
 };
 
@@ -241,6 +243,7 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
+    m_finalSubmitedItemID = item->ID();
     return true;
 }
 
@@ -255,8 +258,8 @@ template<typename Item>
 void PipeLine<Item>::stop()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
-    m_pipeNodeDispatcher->stop();
     m_isStop = true;
+    m_pipeNodeDispatcher->stop();
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
         node->stop();
     }

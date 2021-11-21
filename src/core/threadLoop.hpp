@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 19:03:19
+ * @LastEditTime: 2021-11-21 20:18:05
  */
 #pragma once
 
@@ -74,6 +74,7 @@ void ThreadLoop<T>::_threadLoop()
             m_condition.wait(lk, [this]() {
                 return this->m_isStop || !m_itemQueue.empty();
             });
+            VTF_LOGD("m_itemQUeue size ({0}), stop flag {1}", m_itemQueue.size(), m_isStop);
             if (this->m_isStop && m_itemQueue.empty()) {
                 return;
             }
@@ -105,7 +106,6 @@ void ThreadLoop<T>::queueItem(T item)
                 return this->m_itemQueue.size() < m_queueSize;
             });
         }
-
         this->m_itemQueue.push(item);
     }
     m_condition.notify_one();

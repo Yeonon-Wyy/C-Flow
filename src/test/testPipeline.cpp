@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-20 23:31:26
+ * @LastEditTime: 2021-11-21 21:06:55
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -48,7 +48,7 @@ void testPipeline()
 
     auto node3 = ppl.addPipeNode("P3Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process P3 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
         VTF_LOGD("request {0} process P3 node done", request->ID());
 
         return true;
@@ -56,7 +56,7 @@ void testPipeline()
 
     auto node4 = ppl.addPipeNode("MDP", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
         VTF_LOGD("request {0} process MDP node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
+        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
         VTF_LOGD("request {0} process MDP node done", request->ID());
         return true;
     });
@@ -78,7 +78,11 @@ void testPipeline()
     node3->connect(node4);
 
     ppl.addNotifier("pipeline_result_notifier", 8, [](std::shared_ptr<vtf::pipeline::Request> request) {
-        VTF_LOGD("result {0} notify it", request->ID());
+        if (request->getNotifyStatus() == NotifyStatus::ERROR) {
+            VTF_LOGE("result {0} notify ERROR", request->ID());
+        } else {
+            VTF_LOGE("result {0} notify OK", request->ID());
+        }
         return true;
     });
     ppl.start();
@@ -87,9 +91,7 @@ void testPipeline()
     int cnt = 0;
     while (true) {
         if (cnt == 100) {
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
             ppl.stop();
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
 
             VTF_LOGD("start stop");
             isSTop = true;

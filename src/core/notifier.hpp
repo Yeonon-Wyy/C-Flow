@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 19:16:11
+ * @LastEditTime: 2021-11-21 20:59:47
  */
 #pragma once
 
@@ -31,8 +31,6 @@ namespace vtf {
 template<typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
 public:
-    using ReadyQueue = BlockingQueue<std::shared_ptr<Item>>;
-
     using NotifierProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
 
     Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
