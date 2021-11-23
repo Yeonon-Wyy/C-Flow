@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:55:33
+ * @LastEditTime: 2021-11-23 22:42:41
  */
 #pragma once
 #include <memory>
@@ -15,18 +15,22 @@
 namespace vtf {
 
 #define DISPATCHER_DEFAULT_PREFIX "dispacther_"
+constexpr int defaultDsiapctherQueueSize = 8;
+
 
 template<typename Item>
 class Dispatcher : public ThreadLoop<std::shared_ptr<Item>> {
 public:
-    Dispatcher()
-        :m_id(m_idGenerator.generate()),
+    Dispatcher(int queueSize = defaultDsiapctherQueueSize)
+        :ThreadLoop<std::shared_ptr<Item>>(queueSize),
+         m_id(m_idGenerator.generate()),
          m_name(DISPATCHER_DEFAULT_PREFIX + vtf::util::StringConvetor::digit2String(m_id))
     {
     }
 
-    Dispatcher(std::string&& name)
-        :m_id(m_idGenerator.generate()),
+    Dispatcher(std::string&& name, int queueSize = defaultDsiapctherQueueSize)
+        :ThreadLoop<std::shared_ptr<Item>>(queueSize),
+         m_id(m_idGenerator.generate()),
          m_name(name)
     {
     }

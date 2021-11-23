@@ -4,11 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:06:55
+ * @LastEditTime: 2021-11-23 22:34:51
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
 #include "../core/pipeline/pipeline.hpp"
+#include "../core/notifier.hpp"
 
 using namespace vtf::pipeline;
 
@@ -78,7 +79,7 @@ void testPipeline()
     node3->connect(node4);
 
     ppl.addNotifier("pipeline_result_notifier", 8, [](std::shared_ptr<vtf::pipeline::Request> request) {
-        if (request->getNotifyStatus() == NotifyStatus::ERROR) {
+        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
             VTF_LOGE("result {0} notify ERROR", request->ID());
         } else {
             VTF_LOGE("result {0} notify OK", request->ID());

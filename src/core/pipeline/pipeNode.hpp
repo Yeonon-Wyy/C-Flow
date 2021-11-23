@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:51:04
+ * @LastEditTime: 2021-11-23 22:30:44
  */
 #pragma once
 #include "../dag.hpp"
@@ -170,7 +170,6 @@ void PipeNode<Item>::stop()
 { 
     VTF_LOGD("PipeNode [{0}] stop start", m_name);
     VTF_LOGD("PipeNode [{0}] stop end", m_name);
-    
 }
 
 } //namespace pipeline

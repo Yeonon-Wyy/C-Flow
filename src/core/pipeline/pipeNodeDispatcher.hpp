@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:49:57
+ * @LastEditTime: 2021-11-23 22:42:19
  */
 #pragma once
 
@@ -20,17 +20,15 @@
 namespace vtf {
 namespace pipeline {
 
-constexpr int defaultQueueSize = 32;
 constexpr int defaultThreadPoolSize = 8;
 
 template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {
 public:    
-    using ItemQueue = BlockingQueue<std::shared_ptr<Item>>;
     using PipeNodeMap = std::unordered_map<long, std::weak_ptr<PipeNode<Item>>>;
-    PipeNodeDispatcher(int dispatchQueueSize = defaultQueueSize)
-        :m_threadPool(defaultThreadPoolSize),
-         m_isStop(false)
+    PipeNodeDispatcher(int dispatchQueueSize = defaultDsiapctherQueueSize)
+        :Dispatcher<Item>(dispatchQueueSize),
+         m_threadPool(defaultThreadPoolSize)
     {}
 
     ~PipeNodeDispatcher()
@@ -101,7 +99,6 @@ private:
     PipeNodeMap m_pipeNodeMaps;
     std::vector<std::weak_ptr<Notifier<Item>>> m_resultNotifiers;
     vtf::ThreadPool m_threadPool;
-    std::atomic_bool m_isStop;
 };
 
 template<typename Item>

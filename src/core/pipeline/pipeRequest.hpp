@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:50:44
+ * @LastEditTime: 2021-11-23 22:34:02
  */
 #pragma once
 
@@ -157,7 +157,7 @@ private:
     bool notifyResult();
 private:
     std::vector<Dependency> m_dependencies;
-    std::weak_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDIspatcher;
+    std::weak_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDispatcher;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
     long m_currentProcessNodeId;
@@ -222,7 +222,7 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::sh
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     m_nextNodeId = findNextNode();
 
-    m_pipeNodeDIspatcher = dispatcher;
+    m_pipeNodeDispatcher = dispatcher;
 
     //dump
     if (m_enableDebug) {
@@ -271,7 +271,7 @@ void PipeRequest::markCurrentNodeReady()
     long nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
-    auto dispatcherSp = m_pipeNodeDIspatcher.lock();
+    auto dispatcherSp = m_pipeNodeDispatcher.lock();
 
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
         VTF_LOGD("request {0} node [{1}] have done.", ID(), m_currentProcessNodeId);

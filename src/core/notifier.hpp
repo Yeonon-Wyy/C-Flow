@@ -4,13 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:56:53
+ * @LastEditTime: 2021-11-23 22:39:01
  */
 #pragma once
 
 #include "threadLoop.hpp"
-#include "blocking_queue.hpp"
 #include "utils.hpp"
+
+
 #include <mutex>
 #include <condition_variable>
 #include <memory>
@@ -19,6 +20,12 @@
 
 namespace vtf {
 
+using NotifierType = uint32_t;
+
+enum NotifyStatus {
+    OK,
+    ERROR
+};
 
 #define NOTIFIER_DEFAULT_PREFIX "notfier_";
 constexpr long initExpectItemId = 1;
@@ -35,7 +42,8 @@ public:
     using NotifierProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
 
     Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
-        :m_id(m_idGenerator.generate()),
+        :ThreadLoop<std::shared_ptr<Item>>(readyQueueSize),
+         m_id(m_idGenerator.generate()),
          m_name(name),
          m_processFunction(std::move(pf)),
          m_expectItemId(initExpectItemId)
@@ -83,9 +91,9 @@ private:
     long m_id;
     std::string m_name;
     NotifierProcessFunction m_processFunction;
-
     std::map<long, std::shared_ptr<Item>> m_pendingItemMap;
     long m_expectItemId = initExpectItemId;
+    NotifierType m_type;
 };
 
 template<typename Item>
