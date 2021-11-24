@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:42:19
+ * @LastEditTime: 2021-11-24 23:34:56
  */
 #pragma once
 
@@ -22,6 +22,10 @@ namespace pipeline {
 
 constexpr int defaultThreadPoolSize = 8;
 
+/**
+ * @name: PipeNodeDispatcher
+ * @Descripttion: 
+ */
 template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {
 public:    
@@ -85,38 +89,58 @@ public:
     void stop() override;
 
     /**
-     * @name: addResultNotifier
+     * @name: addNotifier
      * @Descripttion: add a result notifier to dispatcher, note the notifier object will use weak_ptr to save
      * @param {shared_ptr<Notifier<Item>>} notifier
      * @return {*}
      */    
-    void addResultNotifier(std::shared_ptr<Notifier<Item>> notifier)
+    void addNotifier(std::shared_ptr<Notifier<Item>> notifier)
     {
-        m_resultNotifiers.push_back(notifier);
+        m_notifierMaps[notifier->type()].push_back(notifier);
     }
 
 private:
     PipeNodeMap m_pipeNodeMaps;
-    std::vector<std::weak_ptr<Notifier<Item>>> m_resultNotifiers;
+    std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>> > m_notifierMaps;
     vtf::ThreadPool m_threadPool;
 };
 
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {    
-    VTF_LOGD("dispatch item id({0}) nextNodeId {1}", item->ID(), item->getCurrentNode());
+    VTF_LOGD("dispatch item id({0}) nextNodeId {1} m_notifierMaps.size ({2})", item->ID(), item->getCurrentNode(), m_notifierMaps.size());
+    //final or pipeline is stoped, will call notifier
     if (item->getCurrentNode() == -1 || m_threadPool.isStoped()) {
-        for (auto notifier : m_resultNotifiers) {
-            auto notifierSp = notifier.lock();
-            if (m_threadPool.isStoped()) {
-                item->setNotifyStatus(NotifyStatus::ERROR);
-            }
-            if (notifierSp) {
-                notifierSp->notify(item);
+        //just call final notifier
+        if (m_notifierMaps.count(NotifierType::FINAL)) {
+            auto notfiers = m_notifierMaps[NotifierType::FINAL];
+            for (auto notifier : notfiers) {
+                auto notifierSp = notifier.lock();
+                if (m_threadPool.isStoped()) {
+                    item->setNotifyStatus(NotifyStatus::ERROR);
+                }
+                if (notifierSp) {
+                    notifierSp->notify(item);
+                }
             }
         }
         return true;
+    } else {
+        for (auto[notifierType, notifiers] : m_notifierMaps) {
+            if (notifierType != NotifierType::FINAL) {
+                for (auto notifier : notifiers) {
+                    auto notifierSp = notifier.lock();
+                    if (m_threadPool.isStoped()) {
+                        item->setNotifyStatus(NotifyStatus::ERROR);
+                    }
+                    if (notifierSp) {
+                        notifierSp->notify(item);
+                    }
+                }
+            }
+        }
     }
+
     if (item->checkDependencyIsReady()) {
         long currentProcessNodeId = item->getCurrentNode();
         
@@ -180,7 +204,7 @@ void PipeNodeDispatcher<Item>::stop()
     m_threadPool.stop();
     ThreadLoop<std::shared_ptr<Item>>::stop();
     m_pipeNodeMaps.clear();
-    m_resultNotifiers.clear();
+    m_notifierMaps.clear();
     VTF_LOGD("pipeNodeDispatcher stop end");
 }
 

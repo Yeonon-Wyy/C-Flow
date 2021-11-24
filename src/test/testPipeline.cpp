@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 21:05:57
+ * @LastEditTime: 2021-11-24 23:18:24
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -91,6 +91,22 @@ void testPipeline()
                     return true;
             },
             vtf::NotifierType::FINAL,
+            8
+        }
+    );
+
+    ppl.addNotifier(
+        {
+            "pipeline_node_done_notifier",
+            [](std::shared_ptr<vtf::pipeline::Request> request) {
+                    if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
+                        VTF_LOGE("node done {0} notify ERROR", request->ID());
+                    } else {
+                        VTF_LOGE("node done {0} notify OK", request->ID());
+                    }
+                    return true;
+            },
+            vtf::NotifierType::DATA_LISTEN,
             8
         }
     );

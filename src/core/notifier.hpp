@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 21:09:45
+ * @LastEditTime: 2021-11-24 23:34:28
  */
 #pragma once
 
@@ -22,7 +22,7 @@ namespace vtf {
 
 enum NotifierType {
     NOTIFIER_TYPE_START,
-    NORMAL,
+    DATA_LISTEN,
     FINAL,
     NOTIFIER_TYPE_END
 };
@@ -40,8 +40,8 @@ constexpr int defaultNotifierQueueSize = 8;
  * @name: Notifier
  * @Descripttion: Notifier is a common class. user can inheriting this class for user requirement.
  * Notifier don't lock any function, so if user need lock, user should lock self.
- * @param {*}
- * @return {*}
+ * Note: if notifier type is NotifierType::FINAL, it will start a thread for loop.
+ *       And if notier type is DATA_LISTEN or is other "data-feedback-like" will not start a thread, because it's no need for thread, so you shouln only put some light logic in callback.
  */
 template<typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
@@ -113,6 +113,12 @@ public:
      */    
     std::string name() { return m_name; }
 
+    /**
+     * @name: type
+     * @Descripttion: return notifier's type
+     * @param {*}
+     * @return {*}
+     */    
     NotifierType type() { return m_type; }
 
     /**
@@ -181,7 +187,12 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
 template<typename Item>
 void Notifier<Item>::notify(std::shared_ptr<Item> item)
 {
-    ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
+    if (m_type == NotifierType::DATA_LISTEN) {
+        //just call directly, please ensure the process callback don't need a lot of time, or else will effect performance
+        m_processCallback(item);
+    } else {
+        ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
+    }
 }
 
 template<typename Item>
@@ -229,7 +240,7 @@ typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setQu
 template<typename Item>
 std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
 {
-    if (m_readyQueueSize <= 0) {
+    if (m_type == NotifierType::FINAL && m_readyQueueSize <= 0) {
         VTF_LOGE("notifier queue size can't less than 1");
         return nullptr;
     }
@@ -247,7 +258,8 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     notifier->m_name = m_name;
     notifier->m_processCallback = m_processCallback;
     notifier->m_type = m_type;
-    
+
+
     return notifier;
 }
 

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 21:04:06
+ * @LastEditTime: 2021-11-24 23:35:52
  */
 
 #pragma once
@@ -54,7 +54,20 @@ public:
      */    
     bool addPipeNode(std::shared_ptr<PipeNode<Item>> node);
 
+    /**
+     * @name: addNotifier
+     * @Descripttion: add a exist notifier object
+     * @param {shared_ptr<Notifier<Item>>} notifier
+     * @return {*}
+     */    
     void addNotifier(std::shared_ptr<Notifier<Item>> notifier);
+
+    /**
+     * @name: addNotifier
+     * @Descripttion: add a notifier by create infos, will return a notifier object
+     * @param {typename} Notifier
+     * @return {*}
+     */    
     void addNotifier(typename Notifier<Item>::NotifierCreateInfo createInfo);
 
     /**
@@ -74,7 +87,20 @@ public:
      */    
     bool submit(std::shared_ptr<Item> item);
 
+    /**
+     * @name: start
+     * @Descripttion: start pipeline, must call it
+     * @param {*}
+     * @return {*}
+     */    
     void start();
+
+    /**
+     * @name: stop
+     * @Descripttion: stop pipeline, will release dag info, node info, etc.., so if you want reuse it. you should add node info again
+     * @param {*}
+     * @return {*}
+     */    
     void stop();
 
 private:
@@ -168,6 +194,9 @@ void PipeLine<Item>::addNotifier(std::shared_ptr<Notifier<Item>> notifier)
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return;
     m_notifierMaps[notifier->type()].push_back(notifier);
+    if (notifier->type() == NotifierType::FINAL) {
+        notifier->start();
+    }
 }
 
 template<typename Item>
@@ -182,7 +211,16 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
         ->setType(std::move(createInfo.type))
         ->setQueueSize(createInfo.readyQueueSize)
         ->build();
+
+    if (!notifier) {
+        VTF_LOGE("create notifier failed. please check notifier buidler's build progress");
+        return;
+    }
+    VTF_LOGD("add notifier type is {0}", notifier->type());
     m_notifierMaps[notifier->type()].push_back(notifier);
+    if (notifier->type() == NotifierType::FINAL) {
+        notifier->start();
+    }
 }
 
 template<typename Item>
@@ -192,12 +230,11 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     if (!checkValid()) return false;
     if (!m_pipelineModified) return true;
 
-    if (m_notifierMaps.count(NotifierType::FINAL)) {
-        for (auto notifier : m_notifierMaps[NotifierType::FINAL]) {
-            m_pipeNodeDispatcher->addResultNotifier(notifier);
+    for (auto[notifierType, notifiers] : m_notifierMaps) {
+        for (auto notifier : notifiers) {
+            m_pipeNodeDispatcher->addNotifier(notifier);
         }
     }
-
 
     //get all scenario
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
@@ -268,7 +305,12 @@ template<typename Item>
 void PipeLine<Item>::start()
 {
     if (!checkValid()) return;
+    VTF_LOGD("pipeline start...");
+    m_isStop = false;
     constructPipelinesByScenario();
+    m_pipeNodeDispatcher->start();
+    VTF_LOGD("pipeline start END");
+
 }
 
 template<typename Item>

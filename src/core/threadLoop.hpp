@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 22:03:10
+ * @LastEditTime: 2021-11-24 23:22:47
  */
 #pragma once
 
@@ -25,9 +25,10 @@ public:
 
     ThreadLoop(int queueSize = threadLoopDefaultQueueSize)
         :m_isStop(false),
-         m_thread(&ThreadLoop::_threadLoop, this),
+         m_isNeedLoop(false),
          m_queueSize(queueSize)
     {
+
     }
 
     ~ThreadLoop();
@@ -40,6 +41,14 @@ public:
      * @return {*} true mean continue, false mean stop loop
      */    
     virtual bool threadLoop(T item) = 0;
+
+    /**
+     * @name: start
+     * @Descripttion: start a thread for loop,if you want a threadLoop, you must call start first
+     * @param {*}
+     * @return {*}
+     */    
+    void start();
 
     /**
      * @name: stop
@@ -61,6 +70,7 @@ private:
     void _threadLoop();
 private:
     std::atomic_bool m_isStop;
+    std::atomic_bool m_isNeedLoop;
     std::thread m_thread;
     std::mutex m_mutex;
     std::condition_variable m_condition;
@@ -126,6 +136,13 @@ void ThreadLoop<T>::queueItem(T item)
 }
 
 template<typename T>
+void ThreadLoop<T>::start()
+{
+    m_isNeedLoop = true;
+    m_thread = std::thread(&ThreadLoop::_threadLoop, this);
+}
+
+template<typename T>
 void ThreadLoop<T>::stop()
 {
     {
@@ -134,8 +151,10 @@ void ThreadLoop<T>::stop()
     }
     m_condition.notify_one();
 
-    //wait thread exit, note it is must do, or else maybe will core dump
-    m_thread.join();
+    if (m_isNeedLoop) {
+        //wait thread exit, note it is must do, or else maybe will core dump
+        m_thread.join();
+    }
 }
 
 template<typename T>
