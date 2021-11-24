@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:39:01
+ * @LastEditTime: 2021-11-24 21:09:45
  */
 #pragma once
 
@@ -20,15 +20,22 @@
 
 namespace vtf {
 
-using NotifierType = uint32_t;
+enum NotifierType {
+    NOTIFIER_TYPE_START,
+    NORMAL,
+    FINAL,
+    NOTIFIER_TYPE_END
+};
 
 enum NotifyStatus {
     OK,
     ERROR
 };
 
-#define NOTIFIER_DEFAULT_PREFIX "notfier_";
+#define NOTIFIER_DEFAULT_PREFIX "notfier_default";
 constexpr long initExpectItemId = 1;
+constexpr int defaultNotifierQueueSize = 8;
+
 /**
  * @name: Notifier
  * @Descripttion: Notifier is a common class. user can inheriting this class for user requirement.
@@ -39,13 +46,38 @@ constexpr long initExpectItemId = 1;
 template<typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
 public:
-    using NotifierProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
+    using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
 
-    Notifier(const std::string& name, int readyQueueSize, NotifierProcessFunction&& pf)
+    struct NotifierCreateInfo {
+        std::string name;
+        NotifierProcessCallback processCallback;
+        NotifierType type;
+        int readyQueueSize;
+    };
+
+    class NotifierBuilder {
+    public:
+        NotifierBuilder()
+            :m_type(NotifierType::FINAL),
+             m_readyQueueSize(defaultNotifierQueueSize)
+        {}
+        NotifierBuilder* setName(const std::string& name);
+        NotifierBuilder* setProcessCallback(NotifierProcessCallback&& cb);
+        NotifierBuilder* setType(NotifierType&& type);
+        NotifierBuilder* setQueueSize(int readyQueueSize);
+        
+        std::shared_ptr<Notifier<Item>> build();
+    private:
+        std::string m_name;
+        NotifierProcessCallback m_processCallback;
+        NotifierType m_type;
+        int m_readyQueueSize;
+    };
+public:
+
+    Notifier(int readyQueueSize = defaultNotifierQueueSize)
         :ThreadLoop<std::shared_ptr<Item>>(readyQueueSize),
          m_id(m_idGenerator.generate()),
-         m_name(name),
-         m_processFunction(std::move(pf)),
          m_expectItemId(initExpectItemId)
     {
     }
@@ -54,6 +86,8 @@ public:
     {
         VTF_LOGD("notifier {0} destory", m_name);
     }
+
+    static NotifierBuilder builder() { return NotifierBuilder(); }
 
     /**
      * @name: threadLoop
@@ -79,6 +113,8 @@ public:
      */    
     std::string name() { return m_name; }
 
+    NotifierType type() { return m_type; }
+
     /**
      * @name: stop
      * @Descripttion: stop notifier. 
@@ -90,12 +126,17 @@ private:
     static vtf::util::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
-    NotifierProcessFunction m_processFunction;
+    NotifierProcessCallback m_processCallback;
     std::map<long, std::shared_ptr<Item>> m_pendingItemMap;
     long m_expectItemId = initExpectItemId;
     NotifierType m_type;
 };
 
+/*
+*
+* Implementation of class Notifier
+*
+*/
 template<typename Item>
 vtf::util::IDGenerator Notifier<Item>::m_idGenerator;
 
@@ -103,7 +144,7 @@ template<typename Item>
 bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
 {
     bool ret = true;
-    if (!m_processFunction) {
+    if (!m_processCallback) {
         VTF_LOGD("user must give a process function for notify.");
         return false;
     }
@@ -111,7 +152,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
         //if current item id equal m_expectItemId
 
         //process current item first
-        ret = m_processFunction(item);
+        ret = m_processCallback(item);
         //update m_expectItemId
         m_expectItemId = item->ID() + 1;
         VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
@@ -120,7 +161,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
         for (auto it = m_pendingItemMap.begin(); it != m_pendingItemMap.end();) {
             //need one-by-one process, so we need juge m_expectItemId and item id.
             if (it->first == m_expectItemId) {
-                m_processFunction(it->second);
+                m_processCallback(it->second);
                 //update m_expectItemId
                 m_expectItemId = it->second->ID() + 1;
                 VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
@@ -151,6 +192,63 @@ void Notifier<Item>::stop()
     m_pendingItemMap.clear();
     m_expectItemId = initExpectItemId;
     VTF_LOGD("notifier [{0}] stop end", m_name);
+}
+
+/*
+*
+* Implementation of class Notifier::NotifierBuilder
+*
+*/
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setName(const std::string& name)
+{
+    m_name = name;
+    return this;
+}
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setProcessCallback(NotifierProcessCallback&& cb)
+{
+    m_processCallback = std::move(cb);
+    return this;
+}
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setType(NotifierType&& type)
+{
+    m_type = std::move(type);
+    return this;
+}
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setQueueSize(int readyQueueSize)
+{
+    m_readyQueueSize = readyQueueSize;
+    return this;
+}
+
+template<typename Item>
+std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
+{
+    if (m_readyQueueSize <= 0) {
+        VTF_LOGE("notifier queue size can't less than 1");
+        return nullptr;
+    }
+    if (!m_processCallback) {
+        VTF_LOGE("notifier process callback must be given!");
+        return nullptr;
+    }
+
+    //set field
+    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_readyQueueSize);
+    if (m_name == "") {
+        m_name = NOTIFIER_DEFAULT_PREFIX;
+    }
+
+    notifier->m_name = m_name;
+    notifier->m_processCallback = m_processCallback;
+    notifier->m_type = m_type;
+    
+    return notifier;
 }
 
 }

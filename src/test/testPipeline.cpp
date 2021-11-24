@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:34:51
+ * @LastEditTime: 2021-11-24 21:05:57
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -78,14 +78,22 @@ void testPipeline()
     node2->connect(node4);
     node3->connect(node4);
 
-    ppl.addNotifier("pipeline_result_notifier", 8, [](std::shared_ptr<vtf::pipeline::Request> request) {
-        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
-            VTF_LOGE("result {0} notify ERROR", request->ID());
-        } else {
-            VTF_LOGE("result {0} notify OK", request->ID());
+    
+    ppl.addNotifier(
+        {
+            "pipeline_result_notifier",
+            [](std::shared_ptr<vtf::pipeline::Request> request) {
+                    if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
+                        VTF_LOGE("result {0} notify ERROR", request->ID());
+                    } else {
+                        VTF_LOGE("result {0} notify OK", request->ID());
+                    }
+                    return true;
+            },
+            vtf::NotifierType::FINAL,
+            8
         }
-        return true;
-    });
+    );
     ppl.start();
 
     bool isSTop = false;

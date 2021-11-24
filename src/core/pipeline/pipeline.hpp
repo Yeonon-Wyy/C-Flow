@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-21 21:46:35
+ * @LastEditTime: 2021-11-24 21:04:06
  */
 
 #pragma once
@@ -55,7 +55,7 @@ public:
     bool addPipeNode(std::shared_ptr<PipeNode<Item>> node);
 
     void addNotifier(std::shared_ptr<Notifier<Item>> notifier);
-    void addNotifier(const std::string& name, int notifierQueueSize, std::function<bool(std::shared_ptr<Item>)>&& pf);
+    void addNotifier(typename Notifier<Item>::NotifierCreateInfo createInfo);
 
     /**
      * @name: constructPipelinesByScenario
@@ -111,7 +111,9 @@ private:
     std::vector<std::vector<long>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<long>> m_scenario2PipelineMaps;
     std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
-    std::vector<std::shared_ptr<Notifier<Item>>> m_notifiers;
+
+    //<notifierType, notfiers>
+    std::unordered_map<NotifierType,std::vector<std::shared_ptr<Notifier<Item>>> > m_notifierMaps;
 
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
@@ -165,16 +167,22 @@ void PipeLine<Item>::addNotifier(std::shared_ptr<Notifier<Item>> notifier)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return;
-    m_notifiers.push_back(notifier);
+    m_notifierMaps[notifier->type()].push_back(notifier);
 }
 
 template<typename Item>
-void PipeLine<Item>::addNotifier(const std::string& name, int notifierQueueSize, std::function<bool(std::shared_ptr<Item>)>&& pf)
+void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo createInfo)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return;
-    auto notifier = std::make_shared<Notifier<Item>>(name, notifierQueueSize, std::forward<std::function<bool(std::shared_ptr<Item>)>>(pf));
-    m_notifiers.push_back(notifier);
+
+    auto notifier = Notifier<Item>::builder()
+        .setName(createInfo.name)
+        ->setProcessCallback(std::move(createInfo.processCallback))
+        ->setType(std::move(createInfo.type))
+        ->setQueueSize(createInfo.readyQueueSize)
+        ->build();
+    m_notifierMaps[notifier->type()].push_back(notifier);
 }
 
 template<typename Item>
@@ -183,10 +191,13 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
     if (!m_pipelineModified) return true;
-    VTF_LOGD("m_notifiers.size {0}", m_notifiers.size());
-    for (auto notifier : m_notifiers) {
-        m_pipeNodeDispatcher->addResultNotifier(notifier);
+
+    if (m_notifierMaps.count(NotifierType::FINAL)) {
+        for (auto notifier : m_notifierMaps[NotifierType::FINAL]) {
+            m_pipeNodeDispatcher->addResultNotifier(notifier);
+        }
     }
+
 
     //get all scenario
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
@@ -269,9 +280,14 @@ void PipeLine<Item>::stop()
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
         node->stop();
     }
-    for (auto notifier : m_notifiers) {
-        notifier->stop();
+
+    for (auto[notifierType, notfiers] : m_notifierMaps) {
+        for (auto notifier : notfiers) {
+            notifier->stop();
+        }
     }
+
+
 
     //clear info
     m_dag.clear();
