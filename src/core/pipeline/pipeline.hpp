@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 23:35:52
+ * @LastEditTime: 2021-11-26 21:14:16
  */
 
 #pragma once
@@ -143,7 +143,6 @@ private:
 
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
-    long m_finalSubmitedItemID = -1;
 
     std::mutex m_mutex;
 };
@@ -297,7 +296,6 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
     item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
-    m_finalSubmitedItemID = item->ID();
     return true;
 }
 

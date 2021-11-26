@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:30:44
+ * @LastEditTime: 2021-11-26 21:12:45
  */
 #pragma once
 #include "../dag.hpp"
@@ -24,6 +24,12 @@ namespace pipeline {
 
 #define PIPENODE_DEFAULT_NAME_PREFIX "pipeNode_"
 constexpr int defaultPipeNodeQueueSize = 32;
+
+enum PipeNodeStatus {
+    PROCESSING,
+    IDLE,
+    STOP,
+};
 
 template<typename Item>
 class PipeNode : 
