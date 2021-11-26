@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 23:34:56
+ * @LastEditTime: 2021-11-26 22:12:36
  */
 #pragma once
 
@@ -23,8 +23,8 @@ namespace pipeline {
 constexpr int defaultThreadPoolSize = 8;
 
 /**
- * @name: PipeNodeDispatcher
- * @Descripttion: 
+ * @name: class PipeNodeDispatcher
+ * @Descripttion: a dispatcher, will auto dispatch data in pipeline by data dependency.
  */
 template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {

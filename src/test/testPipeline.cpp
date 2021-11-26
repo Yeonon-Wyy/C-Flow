@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-24 23:18:24
+ * @LastEditTime: 2021-11-26 22:04:44
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -35,43 +35,73 @@ void testDispatch()
 void testPipeline()
 {
     vtf::pipeline::PipeLine<vtf::pipeline::Request> ppl;
-    auto node1 = ppl.addPipeNode("P1Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
-        VTF_LOGD("request {0} process P1 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
-        return true;
-    });
 
-    auto node2 = ppl.addPipeNode("P2Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
-        VTF_LOGD("request {0} process P2 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
-        return true;
-    });
 
-    auto node3 = ppl.addPipeNode("P3Node", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
-        VTF_LOGD("request {0} process P3 node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
-        VTF_LOGD("request {0} process P3 node done", request->ID());
 
-        return true;
-    });
+    auto node1 = ppl.addPipeNode(
+        {
+            1,
+            "P1Node",
+            {MyScenario::Scenario1, MyScenario::Scenario2},
+            [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
+                VTF_LOGD("request {0} process P1 node", request->ID());
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                return true;
+            }
+        }
+    );
 
-    auto node4 = ppl.addPipeNode("MDP", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
-        VTF_LOGD("request {0} process MDP node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
-        VTF_LOGD("request {0} process MDP node done", request->ID());
-        return true;
-    });
+    auto node2 = ppl.addPipeNode(
+        {
+            2,
+            "P2Node",
+            {MyScenario::Scenario1},
+            [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
+                VTF_LOGD("request {0} process P2 node", request->ID());
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                return true;
+            }
+        }
+    );
 
-    auto node5 = ppl.addPipeNode("WPE", [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
-        VTF_LOGD("request {0} process WPE node", request->ID());
-        std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
-        return true;
-    });
+    auto node3 = ppl.addPipeNode(
+        {
+            3,
+            "P3Node",
+            {MyScenario::Scenario2},
+            [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
+                VTF_LOGD("request {0} process P3 node", request->ID());
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+                return true;
+            }
+        }
+    );
 
-    node1->addScenarios({MyScenario::Scenario1, MyScenario::Scenario2});
-    node2->addScenarios(MyScenario::Scenario1);
-    node3->addScenarios(MyScenario::Scenario2);
-    node4->addScenarios({MyScenario::Scenario1,MyScenario::Scenario2});
+    auto node4 = ppl.addPipeNode(
+        {
+            4,
+            "MDPNode",
+            {MyScenario::Scenario1, MyScenario::Scenario2},
+            [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
+                VTF_LOGD("request {0} process MDP node", request->ID());
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+                return true;
+            }
+        }
+    );
+
+    auto node5 = ppl.addPipeNode(
+        {
+            5,
+            "WPENode",
+            {MyScenario::Scenario1, MyScenario::Scenario2},
+            [](std::shared_ptr<vtf::pipeline::Request> request) -> bool {
+                VTF_LOGD("request {0} process WPE node", request->ID());
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                return true;
+            }
+        }
+    );
 
     node1->connect(node2);
     node1->connect(node3);
@@ -133,7 +163,6 @@ void testPipeline()
         cnt++;
     }
     VTF_LOGD("test pipeline stop");
-    VTF_LOGD("node1 useCount {0}", node1.use_count());
 }
 
 int main()

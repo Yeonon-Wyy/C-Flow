@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:34:02
+ * @LastEditTime: 2021-11-26 22:18:11
  */
 #pragma once
 
@@ -18,6 +18,15 @@ namespace pipeline {
 
 using GraphType = std::unordered_map<long, std::vector<long>>;
 
+
+/**
+ * @name: class Request
+ * @Descripttion: it is a pipeline data object. 
+ *                but this class just a pure virtual class. provider some interface, users must implement these interfaces.
+ *                
+ * @param {*}
+ * @return {*}
+ */
 class Request : public std::enable_shared_from_this<Request>{
 
 public:
@@ -112,6 +121,14 @@ private:
 
 vtf::util::IDGenerator Request::m_idGenerator;
 
+/**
+ * @name: class PipeRequest
+ * @Descripttion: it is a sample code for user. just default implementation for Request class.
+ *                users can use it directly, and if the user wants to do some customization, can inherit it and override some interfaces.
+ *                WARNING: user can't change this class.
+ * @param {*}
+ * @return {*}
+ */
 class PipeRequest : public Request {
 public:
 

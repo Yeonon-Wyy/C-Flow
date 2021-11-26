@@ -4,19 +4,16 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-26 21:12:45
+ * @LastEditTime: 2021-11-26 22:11:27
  */
 #pragma once
 #include "../dag.hpp"
 #include "../threadLoop.hpp"
 #include "../log.hpp"
 #include "../utils.hpp"
-#include "../blocking_queue.hpp"
 #include "common_types.hpp"
 
-#include <mutex>
 #include <memory>
-#include <condition_variable>
 #include <unordered_map>
 
 namespace vtf {
@@ -31,42 +28,68 @@ enum PipeNodeStatus {
     STOP,
 };
 
+/**
+ * @name: class PipeNode
+ * @Descripttion: pipeNode as business processing unit, user only need provide a processCallback, our framework will dispatch some data and call it.
+ * @param {*}
+ * @return {*}
+ */
 template<typename Item>
 class PipeNode : 
     public vtf::DAGNode,
     public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:
-    using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
-    using ItemQueue = vtf::BlockingQueue<std::shared_ptr<Item>>;
+    using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
 
-    PipeNode(int queueSize = defaultPipeNodeQueueSize)
-         :DAGNode(m_idGenerator.generate()),
-         m_id(getNodeId()),
+    struct PipeNodeCreateInfo {
+        PipeNodeId id;
+        std::string name;
+        std::initializer_list<PipelineScenario> pipelineScenarios;
+        ProcessCallback processCallback;
+    };
+
+    class PipeNodeBuilder {
+    public:
+        PipeNodeBuilder()
+             :id(-1)
+        {}
+        PipeNodeBuilder* setID(PipeNodeId&& id);
+        PipeNodeBuilder* setName(const std::string& name);
+        PipeNodeBuilder* setProcessCallback(ProcessCallback&& cb);
+        PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
+        PipeNodeBuilder* addScenarios(std::initializer_list<PipelineScenario> scenarios);
+
+        std::shared_ptr<PipeNode<Item>> build();
+    private:
+        PipeNodeId id;
+        std::string name;
+        std::vector<PipelineScenario> pipelineScenarios;
+        ProcessCallback processCallback;
+    };
+
+public:
+    PipeNode(PipeNodeId id)
+         :DAGNode(id),
+         m_id(id),
          m_status(PipeNodeStatus::IDLE)
     {
         m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(m_id);
-    }
-
-    PipeNode(const std::string& name, int queueSize = defaultPipeNodeQueueSize)
-         :DAGNode(m_idGenerator.generate()),
-         m_id(getNodeId()),
-         m_name(name),
-         m_status(PipeNodeStatus::IDLE)
-    {
     }
 
     ~PipeNode() {
         VTF_LOGD("node {0} destory", m_name);
     }
 
+    static PipeNodeBuilder builder() { return PipeNodeBuilder(); }
+
     /**
-     * @name: setProcessFunction
+     * @name: setProcessCallback
      * @Descripttion: setter for user define process function
-     * @param {ProcessFunction&&} pf is user define process function
+     * @param {ProcessCallback&&} pf is user define process function
      * @return {*}
      */    
-    void setProcessFunction(ProcessFunction&& pf) { m_processFunction = std::move(pf); }
+    void setProcessCallback(ProcessCallback&& pf) { m_processCallback = std::move(pf); }
 
     /**
      * @name: name
@@ -126,25 +149,23 @@ public:
      */    
     bool process(std::shared_ptr<Item>);
 private:
-    static vtf::util::IDGenerator m_idGenerator;
-    long m_id;
+    PipeNodeId m_id;
     std::string m_name;
     PipeNodeStatus m_status;
     std::vector<PipelineScenario> m_pipelineScenarios;
-    ProcessFunction m_processFunction;
-    std::mutex m_mutex;
+    ProcessCallback m_processCallback;
 };
 
-template<typename Item>
-vtf::util::IDGenerator PipeNode<Item>::m_idGenerator;
-
-
+/*
+*
+* Implementation of class PipeNode
+*/
 template<typename Item>
 bool PipeNode<Item>::process(std::shared_ptr<Item> item)
 {
     bool ret = true;
     m_status = PipeNodeStatus::PROCESSING;
-    ret = m_processFunction(item);
+    ret = m_processCallback(item);
     if (ret) {
         item->markCurrentNodeReady();
     }
@@ -176,6 +197,66 @@ void PipeNode<Item>::stop()
 { 
     VTF_LOGD("PipeNode [{0}] stop start", m_name);
     VTF_LOGD("PipeNode [{0}] stop end", m_name);
+}
+
+
+/*
+*
+* Implementation of class PipeNode::PipeNodeBuilder
+*/
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setID(PipeNodeId&& id)
+{
+    this->id = std::move(id);
+    return this;
+}
+
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setName(const std::string& name)
+{
+    this->name = name;
+    return this;
+}
+
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setProcessCallback(ProcessCallback&& cb)
+{
+    this->processCallback = std::move(cb);
+    return this;
+}
+
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(PipelineScenario&& scenario)
+{
+    this->pipelineScenarios.push_back(std::move(scenario));
+    return this;
+}
+
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(std::initializer_list<PipelineScenario> scenarios)
+{
+    this->pipelineScenarios.insert(this->pipelineScenarios.end(), scenarios.begin(), scenarios.end());
+    return this;
+}
+
+template<typename Item>
+std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build()
+{
+    if (id < 0) {
+        VTF_LOGE("id must set greater than 0");
+        return nullptr;
+    }
+
+    if (name == "") {
+        name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(id);
+    }
+
+    std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id);
+    pipeNode->m_name = name;
+    pipeNode->m_processCallback = processCallback;
+    pipeNode->m_pipelineScenarios = pipelineScenarios;
+
+    return pipeNode;
 }
 
 } //namespace pipeline

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-26 21:14:16
+ * @LastEditTime: 2021-11-26 22:09:11
  */
 
 #pragma once
@@ -19,11 +19,19 @@
 namespace vtf {
 namespace pipeline {
 
-
-
+/**
+ * @name: class PipeLine
+ * @Descripttion: unified entry as a business, manage all resource(include dispatcher, node, notifier, etc..) and their life cycles
+ *                use only need call "submit" to submit a data, pipelien will auto construct denpendcy with scenurio. and run it until stop
+ * @param {*}
+ * @return {*}
+ */
 template<typename Item>
 class PipeLine {
 public:
+    using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
+    using GraphType = std::unordered_map<long, std::vector<long>>;
+    
     PipeLine()
         :m_dag(),
          m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
@@ -34,17 +42,13 @@ public:
 
     }
 
-
-    using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
-    using GraphType = std::unordered_map<long, std::vector<long>>;
-
     /**
      * @name: addPipeNode
      * @Descripttion: add a pipe node to pipeline. pipeline will generate a new node object for user.
      * @param {ProcessFunction&&} pf is node process function.
      * @return {*}
      */    
-    std::shared_ptr<PipeNode<Item>> addPipeNode(const std::string& name, ProcessFunction&& pf);
+    std::shared_ptr<PipeNode<Item>> addPipeNode(typename PipeNode<Item>::PipeNodeCreateInfo createInfo);
 
     /**
      * @name: addPipeNode
@@ -158,12 +162,19 @@ bool PipeLine<Item>::checkValid()
 }
 
 template<typename Item>
-std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(const std::string& name, ProcessFunction&& pf)
+std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(typename PipeNode<Item>::PipeNodeCreateInfo createInfo)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return nullptr;
-    std::shared_ptr<PipeNode<Item>> node = std::make_shared<PipeNode<Item>>(name);
-    node->setProcessFunction(std::forward<ProcessFunction>(pf));
+
+
+    auto node = PipeNode<Item>::builder()
+                .setName(createInfo.name)
+                ->setID(std::move(createInfo.id))
+                ->setProcessCallback(std::move(createInfo.processCallback))
+                ->addScenarios(createInfo.pipelineScenarios)
+                ->build();
+
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
     m_pipeNodeDispatcher->addPipeNode(node);
