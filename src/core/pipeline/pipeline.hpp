@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-26 22:09:11
+ * @LastEditTime: 2021-11-27 19:55:22
  */
 
 #pragma once
@@ -173,7 +173,7 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(typename PipeNode<It
                 ->setID(std::move(createInfo.id))
                 ->setProcessCallback(std::move(createInfo.processCallback))
                 ->addScenarios(createInfo.pipelineScenarios)
-                ->build();
+                ->build(m_pipeNodeDispatcher);
 
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
@@ -304,7 +304,7 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
-    item->constructDependency(getPipelineWithScenario(item->scenario()), m_pipeNodeDispatcher);
+    item->constructDependency(getPipelineWithScenario(item->scenario()));
     m_pipeNodeDispatcher->queueInDispacther(item);
     VTF_LOGD("submit a item {0}", item->ID());
     return true;

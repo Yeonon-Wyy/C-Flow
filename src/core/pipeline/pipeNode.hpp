@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-26 22:11:27
+ * @LastEditTime: 2021-11-27 19:58:18
  */
 #pragma once
 #include "../dag.hpp"
@@ -35,6 +35,10 @@ enum PipeNodeStatus {
  * @return {*}
  */
 template<typename Item>
+class PipeNodeDispatcher;
+
+
+template<typename Item>
 class PipeNode : 
     public vtf::DAGNode,
     public std::enable_shared_from_this<PipeNode<Item>>
@@ -60,7 +64,7 @@ public:
         PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
         PipeNodeBuilder* addScenarios(std::initializer_list<PipelineScenario> scenarios);
 
-        std::shared_ptr<PipeNode<Item>> build();
+        std::shared_ptr<PipeNode<Item>> build(std::shared_ptr<PipeNodeDispatcher<Item>>);
     private:
         PipeNodeId id;
         std::string name;
@@ -154,6 +158,7 @@ private:
     PipeNodeStatus m_status;
     std::vector<PipelineScenario> m_pipelineScenarios;
     ProcessCallback m_processCallback;
+    std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
 };
 
 /*
@@ -169,6 +174,11 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
     if (ret) {
         item->markCurrentNodeReady();
     }
+    auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
+    if (pipeNodeDispatcherSp) {
+        pipeNodeDispatcherSp->queueInDispacther(item);
+    }
+
     m_status = PipeNodeStatus::IDLE;
     return ret;
 }
@@ -240,7 +250,7 @@ typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addSc
 }
 
 template<typename Item>
-std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build()
+std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shared_ptr<PipeNodeDispatcher<Item>> dispatcher)
 {
     if (id < 0) {
         VTF_LOGE("id must set greater than 0");
@@ -255,7 +265,7 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build()
     pipeNode->m_name = name;
     pipeNode->m_processCallback = processCallback;
     pipeNode->m_pipelineScenarios = pipelineScenarios;
-
+    pipeNode->m_pipeNodeDispatcher = dispatcher;
     return pipeNode;
 }
 

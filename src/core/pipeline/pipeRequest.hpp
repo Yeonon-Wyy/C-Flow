@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-26 22:18:11
+ * @LastEditTime: 2021-11-27 20:12:18
  */
 #pragma once
 
@@ -27,7 +27,7 @@ using GraphType = std::unordered_map<long, std::vector<long>>;
  * @param {*}
  * @return {*}
  */
-class Request : public std::enable_shared_from_this<Request>{
+class Request{
 
 public:
     Request()
@@ -47,7 +47,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual bool constructDependency(const std::vector<long>&, std::shared_ptr<PipeNodeDispatcher<Request>>) = 0;
+    virtual bool constructDependency(const std::vector<long>&) = 0;
 
     /**
      * @name: findNextNodes
@@ -153,7 +153,7 @@ public:
         VTF_LOGD("pipe request {0} destory", ID());
     }
 
-    bool constructDependency(const std::vector<long>& pipeline, std::shared_ptr<PipeNodeDispatcher<Request>> dispatcher) override;
+    bool constructDependency(const std::vector<long>& pipeline) override;
 
     PipelineScenario scenario() override { return m_scenario; }
 
@@ -167,14 +167,12 @@ public:
     void setNotifyStatus(NotifyStatus&& status) override { m_notifyStatus = std::move(status); };
 
     NotifyStatus getNotifyStatus() { return m_notifyStatus; }
-
 private:
     bool checkDependencyValid();
     long findNextNode();
     bool notifyResult();
 private:
     std::vector<Dependency> m_dependencies;
-    std::weak_ptr<PipeNodeDispatcher<Request>> m_pipeNodeDispatcher;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
     long m_currentProcessNodeId;
@@ -199,7 +197,7 @@ PipeRequest::PipeRequest(PipelineScenario scenario, bool enableDebug)
 }
 
 
-bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::shared_ptr<PipeNodeDispatcher<Request>> dispatcher)
+bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
 {
     m_dependencies.clear();
     for (int i = 0; i < pipeline.size(); i++) {
@@ -239,14 +237,13 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline, std::sh
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     m_nextNodeId = findNextNode();
 
-    m_pipeNodeDispatcher = dispatcher;
 
     //dump
     if (m_enableDebug) {
         for (auto& dependency : m_dependencies) {
-            VTF_LOGD("node : [{0}:{1}]", dependency.curNodeId, dispatcher->getNodeNameByNodeId(dependency.curNodeId));
-            VTF_LOGD("pre : [{0}:{1}]", dependency.precursors.first, dispatcher->getNodeNameByNodeId(dependency.precursors.first));
-            VTF_LOGD("suc : [{0}:{1}]", dependency.successors.first), dispatcher->getNodeNameByNodeId(dependency.successors.first);
+            VTF_LOGD("node : [{0}]", dependency.curNodeId);
+            VTF_LOGD("pre : [{0}]", dependency.precursors.first);
+            VTF_LOGD("suc : [{0}]", dependency.successors.first);
             VTF_LOGD("--------------------------------------");  
         }
     }
@@ -288,16 +285,12 @@ void PipeRequest::markCurrentNodeReady()
     long nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
-    auto dispatcherSp = m_pipeNodeDispatcher.lock();
-
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
         VTF_LOGD("request {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
         m_nextNodeIdx = -1;
-        if (dispatcherSp)
-            dispatcherSp->queueInDispacther(shared_from_this());
         VTF_LOGD("request {0} all node already process done.", ID());
         return;
     }
@@ -317,9 +310,6 @@ void PipeRequest::markCurrentNodeReady()
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
-    //queue in dispatcher
-    if (dispatcherSp)
-        dispatcherSp->queueInDispacther(shared_from_this());
 }
 
 //private
