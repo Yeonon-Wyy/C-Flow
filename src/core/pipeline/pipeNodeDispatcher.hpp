@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-27 20:07:10
+ * @LastEditTime: 2021-11-28 18:37:57
  */
 #pragma once
 
@@ -155,8 +155,10 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 
         auto currentNodeSp = m_pipeNodeMaps[currentProcessNodeId].lock();
         //submit to thread pool
-        if (currentNodeSp && !m_threadPool.isStoped())
+        if (currentNodeSp && !m_threadPool.isStoped()) {
+            VTF_LOGD("node process {0}", item->ID());
             m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, item);
+        }
     }
     return true;
 }

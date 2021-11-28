@@ -4,7 +4,7 @@ project(vtf)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DVTF_DEBUG_MODE")
-set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -g -Wall -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
 
 include_directories("../src/core/")
 include_directories("../src/core/pipeline")
@@ -13,6 +13,8 @@ include_directories("/usr/include/")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
+find_package(OpenCV REQUIRED)
+
 
 SET(EXECUTABLE_OUTPUT_PATH "../bin/test/")
 
@@ -39,3 +41,6 @@ target_link_libraries(testThreadLoop PUBLIC Threads::Threads)
 
 add_executable(testPipeline "../src/test/testPipeline.cpp")
 target_link_libraries(testPipeline PUBLIC Threads::Threads)
+
+add_executable(testPipelineWithOpenCV "../src/test/testPipelineWithOpenCV.cpp")
+target_link_libraries(testPipelineWithOpenCV PUBLIC Threads::Threads ${OpenCV_LIBS})
