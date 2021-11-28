@@ -4,26 +4,33 @@
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 19:27:41
+ * @LastEditTime: 2021-11-28 21:54:26
  */
 #pragma once
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn/dnn.hpp>
+#include "FrameRequest.hpp"
+#include <mutex>
 
 using namespace std;
 using namespace cv;
+
+class FrameRequest;
 
 class dnnfacedetect
 {
 private:
   string _modelbinary, _modeldesc;
   dnn::Net _net;
+  std::mutex m_mutex;
 
 public:
   //构造函数 传入模型文件
   dnnfacedetect();
   dnnfacedetect(string modelBinary, string modelDesc);
+
+  void config();
 
   ~dnnfacedetect();
   //置信阈值
@@ -37,13 +44,17 @@ public:
   bool initdnnNet();
 
   //人脸检测
-  void detect(Mat frame);
+  bool detect(std::shared_ptr<FrameRequest> request);
+  bool detectFix(std::shared_ptr<FrameRequest> request);
+
 };
 
 dnnfacedetect::dnnfacedetect()
 {
   dnnfacedetect("", "");
 }
+
+
 
 //构造函数
 dnnfacedetect::dnnfacedetect(string modelBinary, string modelDesc)
@@ -57,6 +68,25 @@ dnnfacedetect::dnnfacedetect(string modelBinary, string modelDesc)
   inWidth = 300;
   inHeight = 300;
   meanVal = Scalar(104.0, 177.0, 123.0);
+}
+
+void dnnfacedetect::config()
+{
+	char filepath[256];
+	getcwd(filepath, sizeof(filepath));
+	VTF_LOGD("filePath: {0}", filepath);
+	//定义模型文件
+	string ModelBinary = (string)filepath + "/opencv_face_detector_uint8.pb";
+	string ModelDesc = (string)filepath + "/opencv_face_detector.pbtxt";
+
+  _modelbinary = ModelBinary;
+  _modeldesc = ModelDesc;
+
+  if (!initdnnNet())
+  {
+    VTF_LOGD("init faild");
+    return;
+  }
 }
 
 dnnfacedetect::~dnnfacedetect()
@@ -75,22 +105,28 @@ bool dnnfacedetect::initdnnNet()
 }
 
 //人脸检测
-void dnnfacedetect::detect(Mat frame)
+bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
 {
+  //bypass
+  std::unique_lock<std::mutex> lk(m_mutex);
+
+  auto start = std::chrono::system_clock::now();
+  auto frame = *(request->getFrame());
   Mat tmpsrc = frame;
   // 修改通道数
   if (tmpsrc.channels() == 4)
     cvtColor(tmpsrc, tmpsrc, COLOR_BGRA2BGR);
   // 输入数据调整
   Mat inputBlob = dnn::blobFromImage(tmpsrc, inScaleFactor,
-                                     Size(inWidth, inHeight), meanVal, false, false);
+                                    Size(inWidth, inHeight), meanVal, false, false);
   _net.setInput(inputBlob, "data");
 
   //人脸检测
   Mat detection = _net.forward("detection_out");
 
+  
   Mat detectionMat(detection.size[2], detection.size[3],
-                   CV_32F, detection.ptr<float>());
+                  CV_32F, detection.ptr<float>());
 
   //检测出的结果进行绘制和存放到dsts中
   for (int i = 0; i < detectionMat.rows; i++)
@@ -114,4 +150,26 @@ void dnnfacedetect::detect(Mat frame)
       rectangle(frame, rect, Scalar(0, 0, 255));
     }
   }
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> runTime = end - start;
+  VTF_LOGD("faceDected id{0} need {1}ms ", request->ID(), vtf::util::TimeUtil::convertTime<std::chrono::milliseconds>(runTime).count());
+  return true;
+}
+
+bool dnnfacedetect::detectFix(std::shared_ptr<FrameRequest> request)
+{
+  auto frame = *(request->getFrame());
+  //计算矩形
+  int xLeftBottom = static_cast<int>(160);
+  int yLeftBottom = static_cast<int>(120);
+  int xRightTop = static_cast<int>(160 + 320);
+  int yRightTop = static_cast<int>(120 + 240);
+  //生成矩形
+  Rect rect((int)xLeftBottom, (int)yLeftBottom,
+            (int)(xRightTop - xLeftBottom),
+            (int)(yRightTop - yLeftBottom));
+
+  //在原图上用红框画出矩形
+  rectangle(frame, rect, Scalar(0, 0, 255));
+  return true;
 }

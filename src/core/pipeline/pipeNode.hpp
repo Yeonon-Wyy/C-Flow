@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 18:49:17
+ * @LastEditTime: 2021-11-28 20:16:18
  */
 #pragma once
 #include "../dag.hpp"
@@ -45,12 +45,16 @@ class PipeNode :
 {
 public:
     using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
+    using ConfigProgress = std::function<void()>;
+    using StopProgress = std::function<void()>;
 
     struct PipeNodeCreateInfo {
         PipeNodeId id;
         std::string name;
         std::initializer_list<PipelineScenario> pipelineScenarios;
         ProcessCallback processCallback;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
     };
 
     class PipeNodeBuilder {
@@ -60,7 +64,10 @@ public:
         {}
         PipeNodeBuilder* setID(PipeNodeId&& id);
         PipeNodeBuilder* setName(const std::string& name);
-        PipeNodeBuilder* setProcessCallback(ProcessCallback&& cb);
+        PipeNodeBuilder* setProcessCallback(ProcessCallback&&);
+        PipeNodeBuilder* setConfigProgress(ConfigProgress&&);
+        PipeNodeBuilder* setStopProgress(StopProgress&& cb);
+
         PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
         PipeNodeBuilder* addScenarios(std::initializer_list<PipelineScenario> scenarios);
 
@@ -70,6 +77,8 @@ public:
         std::string name;
         std::vector<PipelineScenario> pipelineScenarios;
         ProcessCallback processCallback;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
     };
 
 public:
@@ -129,6 +138,10 @@ public:
 
 
     std::vector<PipelineScenario> getScenarios() { return m_pipelineScenarios; }
+
+
+    void config();
+
     /**
      * @name: stop
      * @Descripttion: stop process
@@ -158,6 +171,8 @@ private:
     PipeNodeStatus m_status;
     std::vector<PipelineScenario> m_pipelineScenarios;
     ProcessCallback m_processCallback;
+    ConfigProgress m_configProgress;
+    StopProgress m_stopProgress;
     std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
 };
 
@@ -202,9 +217,23 @@ bool PipeNode<Item>::hasScenario(PipelineScenario scenario)
 }
 
 template<typename Item>
+void PipeNode<Item>::config()
+{
+    VTF_LOGD("pipeNode [{0}:{1}] config start", m_id, m_name);
+    if (m_configProgress) {
+        m_configProgress();
+    }
+    VTF_LOGD("pipeNode [{0}:{1}] config end", m_id, m_name);
+
+}
+
+template<typename Item>
 void PipeNode<Item>::stop() 
 { 
     VTF_LOGD("PipeNode [{0}] stop start", m_name);
+    if (m_stopProgress) {
+        m_stopProgress();
+    }
     VTF_LOGD("PipeNode [{0}] stop end", m_name);
 }
 
@@ -235,6 +264,22 @@ typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setPr
 }
 
 template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setStopProgress(StopProgress&& stopProgress)
+{
+    this->stopProgress = std::move(stopProgress);
+    return this;
+}
+
+
+template<typename Item>
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setConfigProgress(ConfigProgress&& configProgress)
+{
+    this->configProgress = std::move(configProgress);
+    return this;
+}
+
+
+template<typename Item>
 typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(PipelineScenario&& scenario)
 {
     this->pipelineScenarios.push_back(std::move(scenario));
@@ -262,9 +307,18 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 
     std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id);
     pipeNode->m_name = name;
-    pipeNode->m_processCallback = processCallback;
     pipeNode->m_pipelineScenarios = pipelineScenarios;
     pipeNode->m_pipeNodeDispatcher = dispatcher;
+    if (processCallback) {
+        pipeNode->m_processCallback = processCallback;
+    }
+    if (configProgress) {
+        pipeNode->m_configProgress = configProgress;
+    }
+    if (stopProgress) {
+        pipeNode->m_stopProgress = stopProgress;
+    }
+
     return pipeNode;
 }
 

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-27 19:55:22
+ * @LastEditTime: 2021-11-28 21:22:09
  */
 
 #pragma once
@@ -172,9 +172,12 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(typename PipeNode<It
                 .setName(createInfo.name)
                 ->setID(std::move(createInfo.id))
                 ->setProcessCallback(std::move(createInfo.processCallback))
+                ->setConfigProgress(std::move(createInfo.configProgress))
+                ->setStopProgress(std::move(createInfo.stopProgress))
                 ->addScenarios(createInfo.pipelineScenarios)
                 ->build(m_pipeNodeDispatcher);
 
+    node->config();
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
     m_pipeNodeDispatcher->addPipeNode(node);
