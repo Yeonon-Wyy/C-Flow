@@ -41,6 +41,3 @@ target_link_libraries(testThreadLoop PUBLIC Threads::Threads)
 
 add_executable(testPipeline "../src/test/testPipeline.cpp")
 target_link_libraries(testPipeline PUBLIC Threads::Threads)
-
-add_executable(testPipelineWithOpenCV "../src/test/testPipelineWithOpenCV.cpp")
-target_link_libraries(testPipelineWithOpenCV PUBLIC Threads::Threads ${OpenCV_LIBS})

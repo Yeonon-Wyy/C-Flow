@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 21:22:09
+ * @LastEditTime: 2021-12-01 20:12:07
  */
 
 #pragma once
@@ -175,6 +175,7 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(typename PipeNode<It
                 ->setConfigProgress(std::move(createInfo.configProgress))
                 ->setStopProgress(std::move(createInfo.stopProgress))
                 ->addScenarios(createInfo.pipelineScenarios)
+                ->setThreadPoolSize(createInfo.threadPoolSize)
                 ->build(m_pipeNodeDispatcher);
 
     node->config();
@@ -330,18 +331,17 @@ void PipeLine<Item>::stop()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     m_isStop = true;
-    m_pipeNodeDispatcher->stop();
+
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
         node->stop();
     }
+    m_pipeNodeDispatcher->stop();
 
     for (auto[notifierType, notfiers] : m_notifierMaps) {
         for (auto notifier : notfiers) {
             notifier->stop();
         }
     }
-
-
 
     //clear info
     m_dag.clear();

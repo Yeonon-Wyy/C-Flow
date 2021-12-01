@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-27 20:24:18
+ * @LastEditTime: 2021-12-01 19:40:15
  */
 #include "../core/pipeline/pipeRequest.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -56,7 +56,7 @@ void testPipeline()
             {MyScenario::Scenario1, MyScenario::Scenario2},
             [](std::shared_ptr<PipelineRequest> request) -> bool {
                 VTF_LOGD("request {0} process P1 node", request->ID());
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
                 return true;
             }
         }
@@ -69,7 +69,7 @@ void testPipeline()
             {MyScenario::Scenario1},
             [](std::shared_ptr<PipelineRequest> request) -> bool {
                 VTF_LOGD("request {0} process P2 node", request->ID());
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
                 return true;
             }
         }
@@ -82,7 +82,7 @@ void testPipeline()
             {MyScenario::Scenario2},
             [](std::shared_ptr<PipelineRequest> request) -> bool {
                 VTF_LOGD("request {0} process P3 node", request->ID());
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
                 return true;
             }
         }
@@ -95,7 +95,7 @@ void testPipeline()
             {MyScenario::Scenario1, MyScenario::Scenario2},
             [](std::shared_ptr<PipelineRequest> request) -> bool {
                 VTF_LOGD("request {0} process MDP node", request->ID());
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(1000));
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
                 return true;
             }
         }
@@ -108,7 +108,7 @@ void testPipeline()
             {MyScenario::Scenario1, MyScenario::Scenario2},
             [](std::shared_ptr<PipelineRequest> request) -> bool {
                 VTF_LOGD("request {0} process WPE node", request->ID());
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(20));
+                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
                 return true;
             }
         }
