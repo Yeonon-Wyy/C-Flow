@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 20:23:10
+ * @LastEditTime: 2021-12-01 20:49:29
  */
 #pragma once
 
@@ -112,7 +112,7 @@ private:
 template<typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 {    
-    VTF_LOGD("dispatch item id({0}) nextNodeId {1} m_notifierMaps.size ({2})", item->ID(), item->getCurrentNode(), m_notifierMaps.size());
+    VTF_LOGD("dispatch item id({0}) nextNodeId {1}", item->ID(), item->getCurrentNode());
     //final or pipeline is stoped, will call notifier
     if (item->getCurrentNode() == -1 || m_threadPool.isStoped()) {
         //just call final notifier
@@ -128,7 +128,6 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
 
     if (item->checkDependencyIsReady()) {
         long currentProcessNodeId = item->getCurrentNode();
-        
         if (currentProcessNodeId < 0) {
             //finish
             return true;
@@ -143,6 +142,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
         if (currentNodeSp && !m_threadPool.isStoped() && !currentNodeSp->isStop()) {
             currentNodeSp->submit(item);
         } else {
+            //if node already stop or destory, should notify error
             notifyFinal(item, NotifyStatus::ERROR);
         }
     }

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 20:22:38
+ * @LastEditTime: 2021-12-01 20:44:38
  */
 #pragma once
 #include "../dag.hpp"
@@ -192,7 +192,7 @@ private:
     StopProgress m_stopProgress;
     std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
     ThreadPool m_threadPool;
-    std::atomic_bool m_isStop;
+    std::atomic_bool m_isStop = false;
 };
 
 /*
