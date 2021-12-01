@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 21:54:26
+ * @LastEditTime: 2021-12-01 00:08:15
  */
 #pragma once
 
@@ -23,12 +23,18 @@ class dnnfacedetect
 private:
   string _modelbinary, _modeldesc;
   dnn::Net _net;
+  bool m_isInit = false;
   std::mutex m_mutex;
-
-public:
   //构造函数 传入模型文件
   dnnfacedetect();
-  dnnfacedetect(string modelBinary, string modelDesc);
+  // dnnfacedetect(string modelBinary, string modelDesc);
+
+
+public:
+  static dnnfacedetect* getInstance() {
+    static dnnfacedetect fd;
+    return &fd;
+  }
 
   void config();
 
@@ -51,27 +57,7 @@ public:
 
 dnnfacedetect::dnnfacedetect()
 {
-  dnnfacedetect("", "");
-}
 
-
-
-//构造函数
-dnnfacedetect::dnnfacedetect(string modelBinary, string modelDesc)
-{
-  _modelbinary = modelBinary;
-  _modeldesc = modelDesc;
-
-  //初始化置信阈值
-  confidenceThreshold = 0.6;
-  inScaleFactor = 0.5;
-  inWidth = 300;
-  inHeight = 300;
-  meanVal = Scalar(104.0, 177.0, 123.0);
-}
-
-void dnnfacedetect::config()
-{
 	char filepath[256];
 	getcwd(filepath, sizeof(filepath));
 	VTF_LOGD("filePath: {0}", filepath);
@@ -81,12 +67,26 @@ void dnnfacedetect::config()
 
   _modelbinary = ModelBinary;
   _modeldesc = ModelDesc;
+  VTF_LOGD("dnnfaceDected construct, this {0}", fmt::ptr(this));
+  //初始化置信阈值
+  confidenceThreshold = 0.6;
+  inScaleFactor = 0.5;
+  inWidth = 300;
+  inHeight = 300;
+  meanVal = Scalar(104.0, 177.0, 123.0);
+}
 
+
+
+void dnnfacedetect::config()
+{
   if (!initdnnNet())
   {
     VTF_LOGD("init faild");
     return;
   }
+  m_isInit = true;
+  VTF_LOGD("init success");
 }
 
 dnnfacedetect::~dnnfacedetect()
@@ -97,6 +97,7 @@ dnnfacedetect::~dnnfacedetect()
 //初始化dnnnet
 bool dnnfacedetect::initdnnNet()
 {
+  VTF_LOGD("_modelbinary {0}, _modeldesc {1}", _modelbinary, _modeldesc);
   _net = dnn::readNetFromTensorflow(_modelbinary, _modeldesc);
   _net.setPreferableBackend(dnn::DNN_BACKEND_OPENCV);
   _net.setPreferableTarget(dnn::DNN_TARGET_CPU);
@@ -107,33 +108,36 @@ bool dnnfacedetect::initdnnNet()
 //人脸检测
 bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
 {
-  //bypass
   std::unique_lock<std::mutex> lk(m_mutex);
 
+  VTF_LOGD("faceDected inScaleFactor = {0} this {1}", inScaleFactor, fmt::ptr(this));
   auto start = std::chrono::system_clock::now();
-  auto frame = *(request->getFrame());
-  Mat tmpsrc = frame;
+  Mat tmpsrc = *(request->getFrame());
   // 修改通道数
   if (tmpsrc.channels() == 4)
     cvtColor(tmpsrc, tmpsrc, COLOR_BGRA2BGR);
   // 输入数据调整
-  Mat inputBlob = dnn::blobFromImage(tmpsrc, inScaleFactor,
-                                    Size(inWidth, inHeight), meanVal, false, false);
-  _net.setInput(inputBlob, "data");
+  Mat detection;
+  {
+    Mat inputBlob = dnn::blobFromImage(tmpsrc, inScaleFactor,
+                                      Size(inWidth, inHeight), meanVal, false, false);
+    //人脸检测
+    _net.setInput(inputBlob, "data");
+    detection = _net.forward("detection_out");
+  }
 
-  //人脸检测
-  Mat detection = _net.forward("detection_out");
 
-  
+
   Mat detectionMat(detection.size[2], detection.size[3],
                   CV_32F, detection.ptr<float>());
-
+  VTF_LOGD("faceDected dected {0} face, inScaleFactor = {1} this {2}", detectionMat.rows, inScaleFactor, fmt::ptr(this));
   //检测出的结果进行绘制和存放到dsts中
   for (int i = 0; i < detectionMat.rows; i++)
   {
     //置值度获取
     float confidence = detectionMat.at<float>(i, 2);
     //如果大于阈值说明检测到人脸
+
     if (confidence > confidenceThreshold)
     {
       //计算矩形
@@ -147,7 +151,7 @@ bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
                 (int)(yRightTop - yLeftBottom));
 
       //在原图上用红框画出矩形
-      rectangle(frame, rect, Scalar(0, 0, 255));
+      rectangle(*(request->getFrame()), rect, Scalar(0, 0, 255));
     }
   }
   auto end = std::chrono::system_clock::now();
@@ -158,6 +162,8 @@ bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
 
 bool dnnfacedetect::detectFix(std::shared_ptr<FrameRequest> request)
 {
+  std::unique_lock<std::mutex> lk(m_mutex);
+
   auto frame = *(request->getFrame());
   //计算矩形
   int xLeftBottom = static_cast<int>(160);
@@ -171,5 +177,6 @@ bool dnnfacedetect::detectFix(std::shared_ptr<FrameRequest> request)
 
   //在原图上用红框画出矩形
   rectangle(frame, rect, Scalar(0, 0, 255));
+  std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
   return true;
 }

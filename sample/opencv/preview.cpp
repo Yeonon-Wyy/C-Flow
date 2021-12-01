@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 21:56:27
+ * @LastEditTime: 2021-12-01 20:46:26
  */
 // #include "../../src/core/pipeline/pipeRequest.hpp"
 #include "../../src/core/pipeline/pipeNodeDispatcher.hpp"
@@ -55,6 +55,9 @@ bool watermark(std::shared_ptr<FrameRequest> request)
 			FONT_HERSHEY_COMPLEX, 1,
 			Scalar(255, 255, 255),
 			1, LINE_AA);
+	
+	
+	std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
 	return true;
 }
 
@@ -68,7 +71,7 @@ bool resultCallback(std::shared_ptr<FrameRequest> request)
 	return true;
 }
 
-std::shared_ptr<PipeLine<FrameRequest>> constructPipeline(std::shared_ptr<dnnfacedetect> fd)
+std::shared_ptr<PipeLine<FrameRequest>> constructPipeline()
 {
 	std::shared_ptr<PipeLine<FrameRequest>> ppl = std::make_shared<PipeLine<FrameRequest>>();
 
@@ -79,8 +82,8 @@ std::shared_ptr<PipeLine<FrameRequest>> constructPipeline(std::shared_ptr<dnnfac
 			.id = 1,
 			.name = "FDNode",
 			.pipelineScenarios = {CVTestScenario::PREVIEW},
-			.processCallback = std::bind(&dnnfacedetect::detectFix, fd, std::placeholders::_1),
-			.configProgress = std::bind(&dnnfacedetect::config, fd)
+			.processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
+			.configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
 		}
 	);
 
@@ -111,8 +114,7 @@ std::shared_ptr<PipeLine<FrameRequest>> constructPipeline(std::shared_ptr<dnnfac
 int main()
 {
     VideoCapture capture(0);//读取视摄像头实时画面数据，0默认是笔记本的摄像头；如果是外接摄像头，这里改为1
-    std::shared_ptr<dnnfacedetect> fd = std::make_shared<dnnfacedetect>();
-	auto ppl = constructPipeline(fd);
+	auto ppl = constructPipeline();
 	ppl->start();
     while (true)
     {
@@ -123,7 +125,7 @@ int main()
 			std::shared_ptr<FrameRequest> request = std::make_shared<FrameRequest>(CVTestScenario::PREVIEW, frame);
 			ppl->submit(request);
         }
-        if(waitKey(33) == 'q')   //延时33ms,获取用户是否按键的情况，如果按下q，会推出程序 
+        if(waitKey(66) == 'q')   //延时33ms,获取用户是否按键的情况，如果按下q，会推出程序 
 		break;
     }
 	ppl->stop();
