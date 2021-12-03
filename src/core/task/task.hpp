@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 22:59:25
+ * @LastEditTime: 2021-12-03 23:15:06
  */
 #pragma once
 
@@ -17,7 +17,8 @@
 #include <future>
 
 #include "../dag.hpp"
-#include "../utils.hpp"
+#include "../utils/IDGenerator.hpp"
+#include "../utils/stringConvetor.hpp"
 #include "../log.hpp"
 
 
@@ -46,7 +47,7 @@ public:
          m_ID(getNodeId()),
          m_priority(TaskPriority::NORMAL)
     {
-        m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+        m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID);
     }
 
     Task(TaskCreateInfo&& createInfo) 
@@ -55,7 +56,7 @@ public:
          m_priority(createInfo.priority)
     {
         if (createInfo.name == "") {
-            m_name = TASK_NAME_PREFIX + util::StringConvetor::digit2String(m_ID);
+            m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID);
         } else {
             m_name = std::move(createInfo.name);
         }
@@ -113,7 +114,7 @@ public:
     }
 
 private:
-    static util::IDGenerator m_idGenerator;
+    static utils::IDGenerator m_idGenerator;
     std::string m_name;                                  //task name
     long m_ID;                                           //task id
     std::function<void()> m_taskFunc;                    //task function, will execute user task
@@ -122,7 +123,7 @@ private:
 
 };
 
-util::IDGenerator Task::m_idGenerator;
+utils::IDGenerator Task::m_idGenerator;
 
 template<typename Function, typename... Args>
 auto Task::commit(Function&& f, Args&&... args)

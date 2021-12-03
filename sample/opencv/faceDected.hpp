@@ -4,14 +4,16 @@
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 00:08:15
+ * @LastEditTime: 2021-12-03 23:26:10
  */
 #pragma once
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/dnn/dnn.hpp>
-#include "FrameRequest.hpp"
 #include <mutex>
+
+#include "FrameRequest.hpp"
+#include "../../src/core/utils/timeUtil.hpp"
 
 using namespace std;
 using namespace cv;
@@ -156,7 +158,7 @@ bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
   }
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> runTime = end - start;
-  VTF_LOGD("faceDected id{0} need {1}ms ", request->ID(), vtf::util::TimeUtil::convertTime<std::chrono::milliseconds>(runTime).count());
+  VTF_LOGD("faceDected id{0} need {1}ms ", request->ID(), vtf::utils::TimeUtil::convertTime<std::chrono::milliseconds>(runTime).count());
   return true;
 }
 
@@ -177,6 +179,6 @@ bool dnnfacedetect::detectFix(std::shared_ptr<FrameRequest> request)
 
   //在原图上用红框画出矩形
   rectangle(frame, rect, Scalar(0, 0, 255));
-  std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(33));
+  std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
   return true;
 }

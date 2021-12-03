@@ -4,12 +4,13 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 18:56:41
+ * @LastEditTime: 2021-12-03 23:14:19
  */
 #pragma once
 
 #include "threadLoop.hpp"
-#include "utils.hpp"
+#include "utils/IDGenerator.hpp"
+#include "utils/stringConvetor.hpp"
 
 
 #include <mutex>
@@ -129,7 +130,7 @@ public:
      */    
     void stop();
 private:
-    static vtf::util::IDGenerator m_idGenerator;
+    static vtf::utils::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
     NotifierProcessCallback m_processCallback;
@@ -144,7 +145,7 @@ private:
 *
 */
 template<typename Item>
-vtf::util::IDGenerator Notifier<Item>::m_idGenerator;
+vtf::utils::IDGenerator Notifier<Item>::m_idGenerator;
 
 template<typename Item>
 bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)

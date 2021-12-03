@@ -4,11 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 21:12:07
+ * @LastEditTime: 2021-12-03 23:13:36
  */
 #pragma once
 
-#include "../utils.hpp"
+#include "../utils/stringConvetor.hpp"
+#include "../utils/IDGenerator.hpp"
 #include "common_types.hpp"
 #include "pipeNodeDispatcher.hpp"
 #include "../notifier.hpp"
@@ -114,11 +115,11 @@ public:
     virtual NotifyStatus getNotifyStatus() = 0;
 
 private:
-    static vtf::util::IDGenerator m_idGenerator;
+    static vtf::utils::IDGenerator m_idGenerator;
     long m_id;
 };
 
-vtf::util::IDGenerator Data::m_idGenerator;
+vtf::utils::IDGenerator Data::m_idGenerator;
 
 /**
  * @name: class PipeData

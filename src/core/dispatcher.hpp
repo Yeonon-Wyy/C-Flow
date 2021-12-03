@@ -4,11 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-23 22:42:41
+ * @LastEditTime: 2021-12-03 23:11:09
  */
 #pragma once
 #include <memory>
-#include "utils.hpp"
+#include "utils/IDGenerator.hpp"
+#include "utils/stringConvetor.hpp"
 #include "threadLoop.hpp"
 #include "notifier.hpp"
 
@@ -24,7 +25,7 @@ public:
     Dispatcher(int queueSize = defaultDsiapctherQueueSize)
         :ThreadLoop<std::shared_ptr<Item>>(queueSize),
          m_id(m_idGenerator.generate()),
-         m_name(DISPATCHER_DEFAULT_PREFIX + vtf::util::StringConvetor::digit2String(m_id))
+         m_name(DISPATCHER_DEFAULT_PREFIX + vtf::utils::StringConvetor::digit2String(m_id))
     {
     }
 
@@ -59,12 +60,12 @@ public:
      */    
     virtual void stop() = 0;
 private:
-    static vtf::util::IDGenerator m_idGenerator;
+    static vtf::utils::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
 };
 
 template<typename Item>
-vtf::util::IDGenerator Dispatcher<Item>::m_idGenerator;
+vtf::utils::IDGenerator Dispatcher<Item>::m_idGenerator;
 
 } //namesapce vtf

@@ -4,10 +4,10 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:01:27
+ * @LastEditTime: 2021-12-03 23:18:29
  */
 #include "../core/task/taskflowctl.hpp"
-#include "../core/utils.hpp"
+#include "../core/utils/timeUtil.hpp"
 #include "../core/blocking_queue.hpp"
 #include <chrono>
 
@@ -38,7 +38,7 @@ int main()
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+            std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(200));
             outBufferQ->push(buffer);
         },
         p1MasterbufferQ,
@@ -52,7 +52,7 @@ int main()
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+            std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(200));
             outBufferQ->push(buffer);
         },
         p1SlavebufferQ,
@@ -66,7 +66,7 @@ int main()
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+            std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(200));
             outBufferQ->push(buffer);
         },
         P2MasterbufferQ,
@@ -80,7 +80,7 @@ int main()
             for (int col = 0; col < 4; col++) {
                 buffer[0][col] *= 2;
             }
-            std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+            std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(200));
             outBufferQ->push(buffer);
         },
         P2SlavebufferQ,
@@ -96,7 +96,7 @@ int main()
                     buffer[0][col] *= 2;
                 }
                 outBufferQ->push(buffer);
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(200));
+                std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(200));
 
             }
         },
@@ -155,7 +155,7 @@ int main()
 
                     VTF_LOGE("{0}]", ss.str());
                 }
-                std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(100));
+                std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(100));
             }
         },
         p1MasterbufferQ, 

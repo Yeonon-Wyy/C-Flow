@@ -4,12 +4,13 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 20:44:38
+ * @LastEditTime: 2021-12-03 23:13:06
  */
 #pragma once
 #include "../dag.hpp"
 #include "../log.hpp"
-#include "../utils.hpp"
+#include "../utils/IDGenerator.hpp"
+#include "../utils/stringConvetor.hpp"
 #include "common_types.hpp"
 #include "../threadPool.hpp"
 
@@ -92,7 +93,7 @@ public:
          m_status(PipeNodeStatus::IDLE),
          m_threadPool(threadPoolSize)
     {
-        m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(m_id);
+        m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(m_id);
     }
 
     ~PipeNode() {
@@ -341,7 +342,7 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
     }
 
     if (name == "") {
-        name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::util::StringConvetor::digit2String(id);
+        name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(id);
     }
 
     std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id, threadPoolSize);

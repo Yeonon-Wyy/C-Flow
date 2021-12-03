@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:53:09
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 19:05:12
+ * @LastEditTime: 2021-12-03 23:19:21
  */
 #include "../core/task/task.hpp"
 #include "../core/threadPool.hpp"
@@ -16,14 +16,14 @@
 int main()
 {
 
-    vtf::Task task1({1});
+    vtf::task::Task task1({1});
     auto task = task1.commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    task1.setPriority(vtf::TaskPriority::URGENCY);
+    task1.setPriority(vtf::task::TaskPriority::URGENCY);
     
-    vtf::Task task2();
+    vtf::task::Task task2({2});
 
     vtf::ThreadPool pool(4);
     auto future = pool.emplace([task]() {
