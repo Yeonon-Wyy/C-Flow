@@ -4,9 +4,9 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 19:40:15
+ * @LastEditTime: 2021-12-03 21:15:37
  */
-#include "../core/pipeline/pipeRequest.hpp"
+#include "../core/pipeline/pipeData.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
 #include "../core/pipeline/pipeline.hpp"
 #include "../core/notifier.hpp"
@@ -30,11 +30,11 @@ void testDispatch()
     // }
 }
 
-class MyPipeRequest : public vtf::pipeline::PipeRequest {
+class MypipeData : public vtf::pipeline::PipeData {
 
 public:
-    MyPipeRequest(PipelineScenario scenario, int d)
-        :vtf::pipeline::PipeRequest(scenario, true),
+    MypipeData(PipelineScenario scenario, int d)
+        :vtf::pipeline::PipeData(scenario, true),
         data(d) 
     {}
 
@@ -45,7 +45,7 @@ private:
 
 void testPipeline()
 {
-    using PipelineRequest = MyPipeRequest;
+    using PipelineRequest = MypipeData;
 
     vtf::pipeline::PipeLine<PipelineRequest> ppl;
 

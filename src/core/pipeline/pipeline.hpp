@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 20:12:07
+ * @LastEditTime: 2021-12-03 21:30:41
  */
 
 #pragma once
@@ -39,7 +39,9 @@ public:
 
     ~PipeLine()
     {
-
+        //Because the life cycle of these classes(pipeNode,pipeNodeDispatcher,notifier) is controlled by pipeLine,
+        //So, we only need call stop in pipeline's destructor, will not call "stop" of these classese.
+        stop();
     }
 
     /**

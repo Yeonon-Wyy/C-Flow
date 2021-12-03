@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-27 20:12:18
+ * @LastEditTime: 2021-12-03 21:12:07
  */
 #pragma once
 
@@ -27,15 +27,14 @@ using GraphType = std::unordered_map<long, std::vector<long>>;
  * @param {*}
  * @return {*}
  */
-class Request{
+class Data {
 
 public:
-    Request()
+    Data()
         :m_id(m_idGenerator.generate())
     {}
 
-    virtual ~Request() {
-        VTF_LOGD("request {0} destory", ID());
+    virtual ~Data() {
     }
 
 
@@ -43,7 +42,7 @@ public:
 
     /**
      * @name: constructDependency
-     * @Descripttion: use pipelines to construct dependency for current request
+     * @Descripttion: use pipelines to construct dependency for current PipelineData
      * @param {*}
      * @return {*}
      */    
@@ -119,17 +118,17 @@ private:
     long m_id;
 };
 
-vtf::util::IDGenerator Request::m_idGenerator;
+vtf::util::IDGenerator Data::m_idGenerator;
 
 /**
- * @name: class PipeRequest
+ * @name: class PipeData
  * @Descripttion: it is a sample code for user. just default implementation for Request class.
  *                users can use it directly, and if the user wants to do some customization, can inherit it and override some interfaces.
  *                WARNING: user can't change this class.
  * @param {*}
  * @return {*}
  */
-class PipeRequest : public Request {
+class PipeData: public Data {
 public:
 
     enum DependencyStatus
@@ -146,9 +145,9 @@ public:
     };
 
 
-    PipeRequest(PipelineScenario scenario, bool enableDebug = false);
+    PipeData(PipelineScenario scenario, bool enableDebug = false);
 
-    ~PipeRequest()
+    ~PipeData()
     {
         VTF_LOGD("pipe request {0} destory", ID());
     }
@@ -183,8 +182,8 @@ private:
 
 };
 
-PipeRequest::PipeRequest(PipelineScenario scenario, bool enableDebug)
-    :Request(),
+PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
+    :Data(),
         m_scenario(scenario),
         m_notifyStatus(NotifyStatus::OK),
         m_currentProcessNodeId(-1),
@@ -197,7 +196,7 @@ PipeRequest::PipeRequest(PipelineScenario scenario, bool enableDebug)
 }
 
 
-bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
+bool PipeData::constructDependency(const std::vector<long>& pipeline)
 {
     m_dependencies.clear();
     for (int i = 0; i < pipeline.size(); i++) {
@@ -251,7 +250,7 @@ bool PipeRequest::constructDependency(const std::vector<long>& pipeline)
     return true;
 }
 
-long PipeRequest::findNextNode()
+long PipeData::findNextNode()
 {
     if (!checkDependencyValid()) return -1;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
@@ -263,7 +262,7 @@ long PipeRequest::findNextNode()
     return -1;
 }
 
-bool PipeRequest::checkDependencyIsReady()
+bool PipeData::checkDependencyIsReady()
 {
     if (!checkDependencyValid()) return false;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
@@ -280,7 +279,7 @@ bool PipeRequest::checkDependencyIsReady()
 }
 
 
-void PipeRequest::markCurrentNodeReady()
+void PipeData::markCurrentNodeReady()
 {
     long nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
@@ -313,7 +312,7 @@ void PipeRequest::markCurrentNodeReady()
 }
 
 //private
-bool PipeRequest::checkDependencyValid()
+bool PipeData::checkDependencyValid()
 {
     if (m_currentProcessNodeIdx < 0 || m_currentProcessNodeIdx >= m_dependencies.size()) {
         VTF_LOGE("current process node index {0} is error. please check it.", m_currentProcessNodeIdx);
