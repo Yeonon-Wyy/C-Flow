@@ -4,19 +4,19 @@
  * @Author: yeonon
  * @Date: 2021-11-28 20:27:52
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-28 21:50:29
+ * @LastEditTime: 2021-12-03 21:16:52
  */
 #pragma once
 
 #include <opencv2/opencv.hpp>
-#include "../../src/core/pipeline/pipeRequest.hpp"
+#include "../../src/core/pipeline/pipeData.hpp"
 
 
 using namespace cv;
 using namespace vtf::pipeline;
 
 
-class FrameRequest : public PipeRequest {
+class FrameRequest : public PipeData {
 public:
 	FrameRequest(PipelineScenario scenario, Mat mat);
 
@@ -32,7 +32,7 @@ private:
 };
 
 FrameRequest::FrameRequest(PipelineScenario scenario, Mat mat)
-	:PipeRequest(scenario, true),
+	:PipeData(scenario, true),
 	 m_frame(std::make_shared<Mat>(mat))
 {
     
