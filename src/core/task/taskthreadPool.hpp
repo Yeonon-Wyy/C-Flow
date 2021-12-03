@@ -13,7 +13,7 @@
 #include "../log.hpp"
 
 namespace vtf {
-
+namespace task {
 class TaskThreadPool {
 public:
     //Task Compare, with task priority
@@ -125,4 +125,5 @@ TaskThreadPool::~TaskThreadPool()
     }
 }
 
+} //namespace task
 } //namespace vtf

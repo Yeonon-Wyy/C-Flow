@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-11-06 16:16:48
+ * @LastEditTime: 2021-12-03 22:59:25
  */
 #pragma once
 
@@ -24,7 +24,7 @@
 #define TASK_NAME_PREFIX "task_"
 
 namespace vtf {
-
+namespace task {
 
 enum TaskPriority {
     NOURGENCY,
@@ -138,5 +138,5 @@ auto Task::commit(Function&& f, Args&&... args)
 
     return pt;
 }
-
+} //namespace task
 } //namespace vtf

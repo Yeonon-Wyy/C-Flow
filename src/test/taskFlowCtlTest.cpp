@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 19:10:08
+ * @LastEditTime: 2021-12-03 23:01:27
  */
 #include "../core/task/taskflowctl.hpp"
 #include "../core/utils.hpp"
@@ -17,7 +17,7 @@ using BufferQ = vtf::BlockingQueue<Buffer>;
 
 int main()
 {
-    vtf::TaskFlowCtl flowCtl(true);
+    vtf::task::TaskFlowCtl flowCtl(true);
 
 
     std::shared_ptr<BufferQ> p1MasterbufferQ = std::make_shared<BufferQ>(8);
@@ -31,7 +31,7 @@ int main()
 
 
     auto P1NodeMaster = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"P1NodeMaster"}, 
+        {vtf::task::TaskPriority::NORMAL,"P1NodeMaster"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
             auto buffer = inbufferQ->pop();
             
@@ -46,7 +46,7 @@ int main()
     );
 
     auto P1NodeSlave = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"P1NodeSlave"}, 
+        {vtf::task::TaskPriority::NORMAL,"P1NodeSlave"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
             auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
@@ -60,7 +60,7 @@ int main()
     );
 
     auto P2SMasterNode = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"P2SMasterNode"}, 
+        {vtf::task::TaskPriority::NORMAL,"P2SMasterNode"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
             auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
@@ -74,7 +74,7 @@ int main()
     );
 
     auto P2SSlaveNode = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"P2SSlaveNode"}, 
+        {vtf::task::TaskPriority::NORMAL,"P2SSlaveNode"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
             auto buffer = inbufferQ->pop();
             for (int col = 0; col < 4; col++) {
@@ -88,7 +88,7 @@ int main()
     );
 
     auto mdpNode1 = flowCtl.addTaskWithTaskInfo(
-        {vtf::TaskPriority::NORMAL,"mdpNode1"}, 
+        {vtf::task::TaskPriority::NORMAL,"mdpNode1"}, 
         [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
             while (!inbufferQ->isEmpty()) {
                 auto buffer = inbufferQ->pop();

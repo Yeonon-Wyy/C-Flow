@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-10-30 19:04:13
+ * @LastEditTime: 2021-12-03 22:59:43
  */
 
 #pragma once
@@ -22,8 +22,8 @@
 
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
-namespace vtf
-{
+namespace vtf {
+namespace task {
 
 class TaskFlowCtl
 {
@@ -149,5 +149,5 @@ void TaskFlowCtl::start()
     }
 }
 
-
+} //namespace task
 } //namespace vtf
