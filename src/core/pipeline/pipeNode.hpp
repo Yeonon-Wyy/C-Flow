@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:13:06
+ * @LastEditTime: 2021-12-04 19:57:22
  */
 #pragma once
 #include "../dag.hpp"
@@ -211,6 +211,7 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
         auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
         if (pipeNodeDispatcherSp) {
             pipeNodeDispatcherSp->queueInDispacther(item);
+            pipeNodeDispatcherSp->notifyNotFinal(item);
         }
     }
     m_status = PipeNodeStatus::IDLE;

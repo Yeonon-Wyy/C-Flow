@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-01 20:49:29
+ * @LastEditTime: 2021-12-04 20:02:50
  */
 #pragma once
 
@@ -99,8 +99,20 @@ public:
         m_notifierMaps[notifier->type()].push_back(notifier);
     }
 
-private:
+    /**
+     * @name: notifyFinal
+     * @Descripttion: call final notifier
+     * @param {*}
+     * @return {*}
+     */    
     void notifyFinal(std::shared_ptr<Item>, NotifyStatus);
+
+    /**
+     * @name: notifyNotFinal
+     * @Descripttion: call not final notifier
+     * @param {*}
+     * @return {*}
+     */    
     void notifyNotFinal(std::shared_ptr<Item>);
 
 private:
@@ -122,8 +134,6 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
             notifyFinal(item, NotifyStatus::ERROR);
         }
         return true;
-    } else {
-        notifyNotFinal(item);
     }
 
     if (item->checkDependencyIsReady()) {
