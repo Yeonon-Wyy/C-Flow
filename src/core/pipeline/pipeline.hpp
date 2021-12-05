@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:27:14
+ * @LastEditTime: 2021-12-05 17:31:11
  */
 
 #pragma once
@@ -14,8 +14,12 @@
 #include "pipeNodeDispatcher.hpp"
 #include "../notifier.hpp"
 #include "../log.hpp"
+
 #include <memory>
 #include <mutex>
+#include <vector>
+#include <unordered_map>
+
 namespace vtf {
 namespace pipeline {
 
@@ -31,7 +35,14 @@ class PipeLine {
 public:
     using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
     using GraphType = std::unordered_map<long, std::vector<long>>;
-    
+
+    struct ConfigureTable {
+        std::vector<typename PipeNode<Item>::PipeNodeCreateInfo> pipeNodeCreateInfos;
+        std::vector<typename Notifier<Item>::NotifierCreateInfo> notifierCreateInfos;
+        std::unordered_map<long, long> nodeConnections;
+    };
+
+public:
     PipeLine()
         :m_dag(),
          m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
@@ -44,6 +55,8 @@ public:
         if (!m_isStop)
             stop();
     }
+
+    static std::shared_ptr<PipeLine<Item>> generatePipeLineByConfigureTable(const ConfigureTable&);
 
     /**
      * @name: addPipeNode
@@ -128,7 +141,6 @@ private:
      */    
     void dumpPipelines();
 
-private:
     /**
      * @name: checkValid
      * @Descripttion: check pipeline is valid
@@ -136,6 +148,8 @@ private:
      * @return {*}
      */
     bool checkValid();
+
+    void connectNode(long src, long dst);
 
 private:
     DAG m_dag;
@@ -155,6 +169,25 @@ private:
 };
 
 template<typename Item>
+std::shared_ptr<PipeLine<Item>> PipeLine<Item>::generatePipeLineByConfigureTable(const ConfigureTable& configTable)
+{
+    std::shared_ptr<PipeLine<Item>> ppl = std::make_shared<PipeLine<Item>>();
+    for (auto pipeNodeCreateInfo : configTable.pipeNodeCreateInfos) {
+        ppl->addPipeNode(pipeNodeCreateInfo);
+    }
+
+    for (auto notifierCreateInfo : configTable.notifierCreateInfos) {
+        ppl->addNotifier(notifierCreateInfo);
+    }
+
+    for (auto [srcNodeId, dstNodeId] : configTable.nodeConnections) {
+        ppl->connectNode(srcNodeId, dstNodeId);
+    }
+
+    return ppl;
+}
+
+template<typename Item>
 bool PipeLine<Item>::checkValid()
 {
     if (m_isStop) {
@@ -162,6 +195,18 @@ bool PipeLine<Item>::checkValid()
         return false;
     }
     return true;
+}
+
+template<typename Item>
+void PipeLine<Item>::connectNode(long src, long dst)
+{
+    VTF_LOGD("connectNode {0}", m_pipeNodeMaps.size());
+    if (m_pipeNodeMaps.count(src) == 0 || m_pipeNodeMaps.count(dst) == 0) {
+        VTF_LOGE("can't find src node {0} info or dst node {1} info, please check it.", src, dst);
+        return;
+    }
+
+    m_pipeNodeMaps[src]->connect(m_pipeNodeMaps[dst]);
 }
 
 template<typename Item>
@@ -260,6 +305,7 @@ bool PipeLine<Item>::constructPipelinesByScenario()
         }
     }
     auto pipelines = m_dag.multiTopologicalSort();
+    VTF_LOGD("pipeline.size() {0}", pipelines.size());
     for (auto it = m_pipelineScenarioSet.begin(); it != m_pipelineScenarioSet.end(); it++) {
         PipelineScenario scenario = *it;
         for (auto pipelineIter = pipelines.begin(); pipelineIter != pipelines.end(); pipelineIter++) {

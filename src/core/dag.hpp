@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:23:46
+ * @LastEditTime: 2021-12-05 17:28:51
  */
 #pragma once
 
@@ -254,7 +254,6 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
 std::set<std::vector<long>> DAG::multiTopologicalSort()
 {
     rebuildGraphIfNeed();
-
     std::vector<std::vector<long>> nodeOrder;
     std::vector<long> sameLevelNodes;
 
