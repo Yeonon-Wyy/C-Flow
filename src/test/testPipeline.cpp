@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 17:31:21
+ * @LastEditTime: 2021-12-05 19:02:14
  */
 #include "../core/pipeline/pipeData.hpp"
 #include "../core/pipeline/pipeNodeDispatcher.hpp"
@@ -15,7 +15,7 @@
 using namespace vtf::pipeline;
 
 enum MyScenario {
-    Scenario1,
+    Scenario1 = 100,
     Scenario2,
     Scenario3
 };
@@ -53,30 +53,30 @@ void testPipeline()
         .pipeNodeCreateInfos = 
         {
             {
-                1,
-                "P1Node",
-                {MyScenario::Scenario1, MyScenario::Scenario2},
-                [](std::shared_ptr<PipelineRequest> request) -> bool {
+                .id = 1,
+                .name = "P1Node",
+                .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2},
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P1 node", request->ID());
                     std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     return true;
                 }
             },
             {
-                2,
-                "P2Node",
-                {MyScenario::Scenario1},
-                [](std::shared_ptr<PipelineRequest> request) -> bool {
+                .id = 2,
+                .name = "P2Node",
+                .pipelineScenarios = {MyScenario::Scenario1},
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P2 node", request->ID());
                     std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     return true;
                 }
             },
             {
-                3,
-                "P3Node",
-                {MyScenario::Scenario2},
-                [](std::shared_ptr<PipelineRequest> request) -> bool {
+                .id = 3,
+                .name = "P3Node",
+                .pipelineScenarios = {MyScenario::Scenario2},
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P3 node", request->ID());
                     std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     return true;
@@ -146,7 +146,7 @@ void testPipeline()
         } else {
             std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
             if (!isSTop) {
-                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
+                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
                 ppl->submit(req);
             }
         }

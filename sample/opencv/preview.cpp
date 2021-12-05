@@ -4,134 +4,23 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:25:37
+ * @LastEditTime: 2021-12-05 19:22:07
  */
-// #include "../../src/core/pipeline/PipeData.hpp"
-#include "../../src/core/pipeline/pipeNodeDispatcher.hpp"
-#include "../../src/core/pipeline/pipeline.hpp"
-#include "../../src/core/notifier.hpp"
-
-
-#include "faceDected.hpp"
-#include "FrameRequest.hpp"
-
-#include <mutex>
-#include<iostream>
-
+#include "configTable.hpp"
 #include <opencv2/opencv.hpp>
- 
+
+#include <mutex> 
+
 using namespace cv;
 using namespace std;
 using namespace vtf::pipeline;
-
-enum CVTestScenario {
-	PREVIEW,
-	VIDEO,
-};
-
 std::mutex m_mutex;
-
-
-// bool faceDected(std::shared_ptr<FrameRequest> request) 
-// {
-
-// 	auto start = std::chrono::system_clock::now();
-// 	{
-// 		std::unique_lock<std::mutex> lk(m_mutex);
-// 		VTF_LOGD("faceDected process {0} start ", request->ID());
-// 		VTF_LOGD("faceDected process {0} end ", request->ID());
-// 	}
-// 	auto end = std::chrono::system_clock::now();
-// 	std::chrono::duration<double> runTime = end - start;
-// 	VTF_LOGD("faceDected id{0} need {1}ms ", request->ID(), vtf::util::TimeUtil::convertTime<std::chrono::milliseconds>(runTime).count());
-// 	return true;
-// }
-
-cv::VideoWriter w_cap;
 double rate;
 
-bool watermark(std::shared_ptr<FrameRequest> request)
-{
-	putText(*request->getFrame(), 
-			"Hello, World!", 
-			Point(200, 500),
-			FONT_HERSHEY_COMPLEX, 1,
-			Scalar(255, 255, 255),
-			1, LINE_AA);
-	
-	VTF_LOGD("watermark finish {0}", request->ID());
-	return true;
-}
-
-bool imageShowResultCallback(std::shared_ptr<FrameRequest> request)
-{
-	VTF_LOGD("result callback {0} ", request->ID());
-	if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
-		return true;
-	}
-	auto frame = request->getFrame();
-	if (request->scenario() == CVTestScenario::VIDEO) {
-		w_cap.write(*frame);
-	} else if (CVTestScenario::PREVIEW) {
-		imshow("window",*frame);  //在window窗口显示frame摄像头数据画面
-	}
-	return true;
-}
-
-std::shared_ptr<PipeLine<FrameRequest>> constructPipeline()
-{
-	std::shared_ptr<PipeLine<FrameRequest>> ppl = std::make_shared<PipeLine<FrameRequest>>();
-
-
-	//add some node
-	auto FDNode = ppl->addPipeNode(
-		{
-			.id = 1,
-			.name = "FDNode",
-			.pipelineScenarios = {CVTestScenario::PREVIEW},
-			.processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
-			.configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
-		}
-	);
-
-	auto FDFixNode = ppl->addPipeNode(
-		{
-			.id = 2,
-			.name = "FDNode",
-			.pipelineScenarios = {CVTestScenario::VIDEO},
-			.processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
-			.configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
-		}
-	);
-
-	auto WaterMarkNode = ppl->addPipeNode(
-		{
-			.id = 3,
-			.name = "watermarkNode",
-			.pipelineScenarios = {CVTestScenario::PREVIEW, CVTestScenario::VIDEO},
-			.processCallback = watermark
-		}
-	);
-
-	//connection
-	FDNode->connect(WaterMarkNode);
-	FDFixNode->connect(WaterMarkNode);
-
-    ppl->addNotifier(
-        {
-            "pipeline_result_notifier",
-            imageShowResultCallback,
-            vtf::NotifierType::FINAL,
-            8
-        }
-    );
-
-	return ppl;
-}
- 
 int main()
 {
-	auto ppl = constructPipeline();
+
+	auto ppl = PipeLine<FrameRequest>::generatePipeLineByConfigureTable(configTable);
 	ppl->start();
 	CVTestScenario curScenario = CVTestScenario::VIDEO;
 

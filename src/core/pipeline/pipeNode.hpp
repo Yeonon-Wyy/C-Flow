@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-04 19:57:22
+ * @LastEditTime: 2021-12-05 19:25:04
  */
 #pragma once
 #include "../dag.hpp"
@@ -52,7 +52,7 @@ public:
     struct PipeNodeCreateInfo {
         PipeNodeId id;
         std::string name;
-        std::initializer_list<PipelineScenario> pipelineScenarios;
+        std::vector<PipelineScenario> pipelineScenarios;
         ProcessCallback processCallback;
         ConfigProgress configProgress;
         StopProgress stopProgress;
@@ -73,7 +73,7 @@ public:
         PipeNodeBuilder* setThreadPoolSize(size_t threadPoolSize);
 
         PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
-        PipeNodeBuilder* addScenarios(std::initializer_list<PipelineScenario> scenarios);
+        PipeNodeBuilder* addScenarios(std::vector<PipelineScenario> scenarios);
 
         std::shared_ptr<PipeNode<Item>> build(std::shared_ptr<PipeNodeDispatcher<Item>>);
     private:
@@ -323,7 +323,7 @@ typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addSc
 }
 
 template<typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(std::initializer_list<PipelineScenario> scenarios)
+typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(std::vector<PipelineScenario> scenarios)
 {
     this->pipelineScenarios.insert(this->pipelineScenarios.end(), scenarios.begin(), scenarios.end());
     return this;

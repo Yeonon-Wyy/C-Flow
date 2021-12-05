@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 17:31:11
+ * @LastEditTime: 2021-12-05 19:25:21
  */
 
 #pragma once
@@ -39,7 +39,7 @@ public:
     struct ConfigureTable {
         std::vector<typename PipeNode<Item>::PipeNodeCreateInfo> pipeNodeCreateInfos;
         std::vector<typename Notifier<Item>::NotifierCreateInfo> notifierCreateInfos;
-        std::unordered_map<long, long> nodeConnections;
+        std::vector<std::pair<long, long>> nodeConnections;
     };
 
 public:
@@ -200,7 +200,7 @@ bool PipeLine<Item>::checkValid()
 template<typename Item>
 void PipeLine<Item>::connectNode(long src, long dst)
 {
-    VTF_LOGD("connectNode {0}", m_pipeNodeMaps.size());
+    VTF_LOGD("connectNode src {0} dst {1}", src, dst);
     if (m_pipeNodeMaps.count(src) == 0 || m_pipeNodeMaps.count(dst) == 0) {
         VTF_LOGE("can't find src node {0} info or dst node {1} info, please check it.", src, dst);
         return;
@@ -305,9 +305,10 @@ bool PipeLine<Item>::constructPipelinesByScenario()
         }
     }
     auto pipelines = m_dag.multiTopologicalSort();
-    VTF_LOGD("pipeline.size() {0}", pipelines.size());
+
     for (auto it = m_pipelineScenarioSet.begin(); it != m_pipelineScenarioSet.end(); it++) {
         PipelineScenario scenario = *it;
+        VTF_LOGD("scenario {0} ", scenario);
         for (auto pipelineIter = pipelines.begin(); pipelineIter != pipelines.end(); pipelineIter++) {
             auto pipeline = *pipelineIter;
             bool findFlag = true;
