@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:26:10
+ * @LastEditTime: 2021-12-06 22:35:52
  */
 #pragma once
 
@@ -13,7 +13,7 @@
 #include <mutex>
 
 #include "FrameRequest.hpp"
-#include "../../src/core/utils/timeUtil.hpp"
+#include "../../src/core/utils/time_util.hpp"
 
 using namespace std;
 using namespace cv;

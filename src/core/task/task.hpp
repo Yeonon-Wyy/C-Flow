@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:15:06
+ * @LastEditTime: 2021-12-06 22:32:28
  */
 #pragma once
 
@@ -17,8 +17,8 @@
 #include <future>
 
 #include "../dag.hpp"
-#include "../utils/IDGenerator.hpp"
-#include "../utils/stringConvetor.hpp"
+#include "../utils/id_generator.hpp"
+#include "../utils/str_convertor.hpp"
 #include "../log.hpp"
 
 

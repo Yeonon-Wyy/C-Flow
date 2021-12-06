@@ -4,14 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:27:34
+ * @LastEditTime: 2021-12-06 22:35:09
  */
 #pragma once
 #include "common_types.hpp"
 #include "../dag.hpp"
 #include "../log.hpp"
-#include "../utils/IDGenerator.hpp"
-#include "../utils/stringConvetor.hpp"
+#include "../utils/id_generator.hpp"
+#include "../utils/str_convertor.hpp"
 #include "../threadPool.hpp"
 
 #include <memory>
