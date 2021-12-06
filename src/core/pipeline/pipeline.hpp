@@ -4,14 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 19:25:21
+ * @LastEditTime: 2021-12-06 22:26:23
  */
 
 #pragma once
 
 #include "../dag.hpp"
-#include "pipeNode.hpp"
-#include "pipeNodeDispatcher.hpp"
+#include "pipenode.hpp"
+#include "pipenode_dispatcher.hpp"
 #include "../notifier.hpp"
 #include "../log.hpp"
 

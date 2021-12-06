@@ -4,10 +4,10 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 19:02:14
+ * @LastEditTime: 2021-12-06 22:26:25
  */
-#include "../core/pipeline/pipeData.hpp"
-#include "../core/pipeline/pipeNodeDispatcher.hpp"
+#include "../core/pipeline/pipedata.hpp"
+#include "../core/pipeline/pipenode_dispatcher.hpp"
 #include "../core/pipeline/pipeline.hpp"
 #include "../core/notifier.hpp"
 #include "../core/utils/timeUtil.hpp"
