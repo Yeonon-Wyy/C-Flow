@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:35:02
+ * @LastEditTime: 2021-12-10 23:04:20
  */
 #pragma once
 
@@ -114,6 +114,22 @@ public:
      */    
     virtual NotifyStatus getNotifyStatus() = 0;
 
+    /**
+     * @name: addNotifierForNode
+     * @Descripttion: add a notifier for node, when node done, the specified Notifier will be called when node process done
+     * @param {long} notifierId
+     * @param {long} nodeId
+     * @return {*}
+     */    
+    virtual void addNotifierForNode(long nodeId, long notifierId) = 0;
+
+    /**
+     * @name: getNotifiersByNodeId
+     * @Descripttion: get notifiers by node id
+     * @param {long} nodeId
+     * @return {*}
+     */    
+    virtual std::vector<long> getNotifiersByNodeId(long nodeId) = 0;
 private:
     static vtf::utils::IDGenerator m_idGenerator;
     long m_id;
@@ -167,12 +183,17 @@ public:
     void setNotifyStatus(NotifyStatus&& status) override { m_notifyStatus = std::move(status); };
 
     NotifyStatus getNotifyStatus() { return m_notifyStatus; }
+
+    void addNotifierForNode(long nodeId, long notifierId) override;
+
+    std::vector<long> getNotifiersByNodeId(long nodeId) override;
 private:
     bool checkDependencyValid();
     long findNextNode();
     bool notifyResult();
 private:
     std::vector<Dependency> m_dependencies;
+    std::unordered_map<long, std::vector<long>> m_nodeNotifiers;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
     long m_currentProcessNodeId;
@@ -310,6 +331,19 @@ void PipeData::markCurrentNodeReady()
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
+}
+
+void PipeData::addNotifierForNode(long nodeId, long notifierId)
+{
+    m_nodeNotifiers[nodeId].push_back(notifierId);
+}
+
+std::vector<long> PipeData::getNotifiersByNodeId(long nodeId)
+{
+    if (m_nodeNotifiers.count(nodeId) > 0) {
+        return m_nodeNotifiers[nodeId];
+    }
+    return {};
 }
 
 //private

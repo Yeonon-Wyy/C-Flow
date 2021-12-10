@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:26:23
+ * @LastEditTime: 2021-12-10 22:50:00
  */
 
 #pragma once
@@ -136,7 +136,7 @@ private:
     /**
      * @name: dumpPipelines
      * @Descripttion: just dump pipelines
-     * @param {*}
+     * @param {*}  
      * @return {*}
      */    
     void dumpPipelines();
@@ -272,6 +272,7 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
         ->setProcessCallback(std::move(createInfo.processCallback))
         ->setType(std::move(createInfo.type))
         ->setQueueSize(createInfo.readyQueueSize)
+        ->setID(createInfo.id)
         ->build();
 
     if (!notifier) {

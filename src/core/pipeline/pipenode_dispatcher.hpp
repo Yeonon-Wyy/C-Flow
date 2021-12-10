@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:25:07
+ * @LastEditTime: 2021-12-10 23:28:20
  */
 #pragma once
 
@@ -113,7 +113,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    void notifyNotFinal(std::shared_ptr<Item>);
+    void notifyNotFinal(std::shared_ptr<Item>, long callerNodeId);
 
 private:
     PipeNodeMap m_pipeNodeMaps;
@@ -222,17 +222,26 @@ void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> item, NotifySta
 }
 
 template<typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> item)
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> item, long callerNodeId)
 {
+    std::vector<long> notifierIdsForCurrentItem = item->getNotifiersByNodeId(callerNodeId);
     for (auto[notifierType, notifiers] : m_notifierMaps) {
+        //foreach all notifiers
         if (notifierType != NotifierType::FINAL) {
+            //if type notifier is not final
             for (auto notifier : notifiers) {
+                //foreach notifiers of someone type
                 auto notifierSp = notifier.lock();
                 if (m_threadPool.isStoped()) {
                     item->setNotifyStatus(NotifyStatus::ERROR);
                 }
                 if (notifierSp) {
-                    notifierSp->notify(item);
+                    long notifierId = notifierSp->ID();
+                    //find current item and node notifier
+                    auto it = std::find(notifierIdsForCurrentItem.begin(), notifierIdsForCurrentItem.end(), notifierId);
+                    if (it != notifierIdsForCurrentItem.end()) {
+                        notifierSp->notify(item);
+                    }
                 }
             }
         }

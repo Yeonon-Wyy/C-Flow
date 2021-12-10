@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:35:54
+ * @LastEditTime: 2021-12-10 23:37:31
  */
 #include "../core/pipeline/pipedata.hpp"
 #include "../core/pipeline/pipenode_dispatcher.hpp"
@@ -18,6 +18,14 @@ enum MyScenario {
     Scenario1 = 100,
     Scenario2,
     Scenario3
+};
+
+enum NodeId {
+    P1NODE = 0,
+    P2NODE,
+    P3NODE,
+    MDPNODE,
+    WPENODE,
 };
 
 void testDispatch()
@@ -53,7 +61,7 @@ void testPipeline()
         .pipeNodeCreateInfos = 
         {
             {
-                .id = 1,
+                .id = NodeId::P1NODE,
                 .name = "P1Node",
                 .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -63,7 +71,7 @@ void testPipeline()
                 }
             },
             {
-                .id = 2,
+                .id = NodeId::P2NODE,
                 .name = "P2Node",
                 .pipelineScenarios = {MyScenario::Scenario1},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -73,7 +81,7 @@ void testPipeline()
                 }
             },
             {
-                .id = 3,
+                .id = NodeId::P3NODE,
                 .name = "P3Node",
                 .pipelineScenarios = {MyScenario::Scenario2},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -83,7 +91,7 @@ void testPipeline()
                 }
             },
             {
-                4,
+                NodeId::MDPNODE,
                 "MDPNode",
                 {MyScenario::Scenario1, MyScenario::Scenario2},
                 [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -93,7 +101,7 @@ void testPipeline()
                 }
             },
             {
-                5,
+                NodeId::WPENODE,
                 "WPENode",
                 {MyScenario::Scenario1, MyScenario::Scenario2},
                 [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -106,8 +114,9 @@ void testPipeline()
         .notifierCreateInfos = 
         {
             {
-                "pipeline_node_done_notifier",
-                [](std::shared_ptr<PipelineRequest> request) {
+                .id = 1,
+                .name = "pipeline_node_done_notifier",
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) {
                         if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
                             VTF_LOGE("node done {0} notify ERROR", request->ID());
                         } else {
@@ -115,16 +124,30 @@ void testPipeline()
                         }
                         return true;
                 },
-                vtf::NotifierType::DATA_LISTEN,
-                8
+                .type = vtf::NotifierType::DATA_LISTEN,
+                .readyQueueSize = 8
+            },
+            {
+                .id = 2,
+                .name = "pipeline_result_notifier",
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) {
+                        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
+                            VTF_LOGE("result {0} notify ERROR", request->ID());
+                        } else {
+                            VTF_LOGE("result {0} notify OK", request->ID());
+                        }
+                        return true;
+                },
+                .type = vtf::NotifierType::FINAL,
+                .readyQueueSize = 8
             }
         },
         .nodeConnections = 
         {
-            {1, 2},
-            {1, 3},
-            {2, 4},
-            {3, 4}
+            {P1NODE, P2NODE},
+            {P1NODE, P3NODE},
+            {P2NODE, MDPNODE},
+            {P3NODE, MDPNODE}
         }
     };
 
@@ -147,6 +170,8 @@ void testPipeline()
             std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
             if (!isSTop) {
                 auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
+                req->addNotifierForNode(P1NODE, 1);
+                req->addNotifierForNode(P3NODE, 1);
                 ppl->submit(req);
             }
         }

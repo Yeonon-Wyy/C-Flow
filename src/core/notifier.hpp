@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:35:24
+ * @LastEditTime: 2021-12-10 22:54:54
  */
 #pragma once
 
@@ -50,6 +50,7 @@ public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
 
     struct NotifierCreateInfo {
+        long id = -1;
         std::string name;
         NotifierProcessCallback processCallback;
         NotifierType type;
@@ -59,26 +60,29 @@ public:
     class NotifierBuilder {
     public:
         NotifierBuilder()
-            :m_type(NotifierType::FINAL),
+            :m_id(-1),
+             m_type(NotifierType::FINAL),
              m_readyQueueSize(defaultNotifierQueueSize)
         {}
+        NotifierBuilder* setID(long id);
         NotifierBuilder* setName(const std::string& name);
         NotifierBuilder* setProcessCallback(NotifierProcessCallback&& cb);
         NotifierBuilder* setType(NotifierType&& type);
         NotifierBuilder* setQueueSize(int readyQueueSize);
+
         
         std::shared_ptr<Notifier<Item>> build();
     private:
+        long m_id;
         std::string m_name;
         NotifierProcessCallback m_processCallback;
         NotifierType m_type;
         int m_readyQueueSize;
     };
 public:
-
-    Notifier(int readyQueueSize = defaultNotifierQueueSize)
+    Notifier(long id, int readyQueueSize = defaultNotifierQueueSize)
         :ThreadLoop<std::shared_ptr<Item>>(readyQueueSize),
-         m_id(m_idGenerator.generate()),
+         m_id(id),
          m_expectItemId(initExpectItemId)
     {
     }
@@ -123,6 +127,14 @@ public:
     NotifierType type() { return m_type; }
 
     /**
+     * @name: ID
+     * @Descripttion: return notifier's ID
+     * @param {*}
+     * @return {*}
+     */    
+    long ID() const { return m_id; }
+
+    /**
      * @name: stop
      * @Descripttion: stop notifier. 
      * @param {*}
@@ -130,7 +142,6 @@ public:
      */    
     void stop();
 private:
-    static vtf::utils::IDGenerator m_idGenerator;
     long m_id;
     std::string m_name;
     NotifierProcessCallback m_processCallback;
@@ -144,8 +155,6 @@ private:
 * Implementation of class Notifier
 *
 */
-template<typename Item>
-vtf::utils::IDGenerator Notifier<Item>::m_idGenerator;
 
 template<typename Item>
 bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
@@ -211,6 +220,14 @@ void Notifier<Item>::stop()
 * Implementation of class Notifier::NotifierBuilder
 *
 */
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(long id)
+{
+    this->m_id = id;
+    return this;
+}
+
 template<typename Item>
 typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setName(const std::string& name)
 {
@@ -250,8 +267,13 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
         return nullptr;
     }
 
+    if (m_id == -1) {
+        VTF_LOGE("notifier id {0} can't less than 0. please check it.", m_id);
+        return nullptr;
+    }
+
     //set field
-    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_readyQueueSize);
+    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_id, m_readyQueueSize);
     if (m_name == "") {
         m_name = NOTIFIER_DEFAULT_PREFIX;
     }

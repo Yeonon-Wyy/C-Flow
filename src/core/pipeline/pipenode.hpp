@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:35:09
+ * @LastEditTime: 2021-12-10 23:22:17
  */
 #pragma once
 #include "common_types.hpp"
@@ -211,7 +211,7 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
         auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
         if (pipeNodeDispatcherSp) {
             pipeNodeDispatcherSp->queueInDispacther(item);
-            pipeNodeDispatcherSp->notifyNotFinal(item);
+            pipeNodeDispatcherSp->notifyNotFinal(item, m_id);
         }
     }
     m_status = PipeNodeStatus::IDLE;

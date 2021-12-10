@@ -4,12 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-11-28 20:27:52
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 21:16:52
+ * @LastEditTime: 2021-12-06 22:40:20
  */
 #pragma once
 
 #include <opencv2/opencv.hpp>
-#include "../../src/core/pipeline/pipeData.hpp"
+#include "../../src/core/pipeline/pipedata.hpp"
 
 
 using namespace cv;

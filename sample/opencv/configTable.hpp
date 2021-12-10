@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 19:21:44
+ * @LastEditTime: 2021-12-10 22:52:45
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -78,6 +78,7 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
     .notifierCreateInfos = 
     {
         {
+            1,
             "pipeline_result_notifier",
             imageShowResultCallback,
             vtf::NotifierType::FINAL,
