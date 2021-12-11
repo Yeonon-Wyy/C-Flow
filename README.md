@@ -58,66 +58,83 @@ flowCtl.start();
 #### 2.2 pipeline
 
 ```c++
-//创建一个pipeLine对象，模板类型即为处理的数据类型
-std::shared_ptr<PipeLine<FrameRequest>> ppl = std::make_shared<PipeLine<FrameRequest>>();
-//创建一些node
-auto FDNode = ppl->addPipeNode(
+//用户自定义类型，需要继承框架的PipeData类
+class FrameRequest : public PipeData {
+public:
+	FrameRequest(PipelineScenario scenario, Mat mat);
+
+	~FrameRequest()
+	{
+		VTF_LOGD("frame request destory");
+	}
+
+	std::shared_ptr<Mat> getFrame() { return m_frame; }
+	
+private:
+	std::shared_ptr<Mat> m_frame;
+};
+//填写配置表
+const static PipeLine<FrameRequest>::ConfigureTable configTable = 
+{
+    .queueSize = 8,
+    .threadPoolSize = 50,
+    .pipeNodeCreateInfos = 
     {
-        .id = 1,
-        .name = "FDNode",
-        //填写scenarios，这是选择不同的feature的条件，因为node对象是可被多个feature复用的
-        .pipelineScenarios = {CVTestScenario::PREVIEW},
-        .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
-        .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
-    }
-);
-
-auto FDFixNode = ppl->addPipeNode(
+        {
+            .id = 1,
+            .name = "FDNode",
+            .pipelineScenarios = {CVTestScenario::PREVIEW},
+            .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
+            .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
+        },
+        {
+            .id = 2,
+            .name = "FDVideoNode",
+            .pipelineScenarios = {CVTestScenario::VIDEO},
+            .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
+            .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
+        },
+        {
+            .id = 3,
+            .name = "watermarkNode",
+            .pipelineScenarios = {CVTestScenario::PREVIEW, CVTestScenario::VIDEO},
+            .processCallback = watermark
+        }
+    },
+    .notifierCreateInfos = 
     {
-        .id = 2,
-        .name = "FDFixNode",
-        .pipelineScenarios = {CVTestScenario::VIDEO},
-        .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
-        .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
-    }
-);
-
-auto WaterMarkNode = ppl->addPipeNode(
+        {
+            1,
+            "pipeline_result_notifier",
+            imageShowResultCallback,
+            vtf::NotifierType::FINAL,
+            8
+        }
+    },
+    .nodeConnections = 
     {
-        .id = 3,
-        .name = "watermarkNode",
-        .pipelineScenarios = {CVTestScenario::PREVIEW, CVTestScenario::VIDEO},
-        .processCallback = watermark
+        //src->dst
+        {1, 3},
+        {2, 3}
     }
-);
+};
 
-//connection
-FDNode->connect(WaterMarkNode);
-FDFixNode->connect(WaterMarkNode);
-
-//上述代码连接完成之后会构成同一个DAG图，但会有两条pipeline
-//分别是[FDNode->watermarkNode]和[FDFixNode->waitermarkNode]，他们共同使用一个DAG，同时WaterMarkNode也是共用的
-
-//添加一个notifier，这里添加的类型是FINAL，即所有node完成之后才会执行
-ppl->addNotifier(
-    {
-        "pipeline_result_notifier",
-        imageShowResultCallback,
-        vtf::NotifierType::FINAL,
-        8
-    }
-);
-
+auto ppl = PipeLine<PipelineRequest>::generatePipeLineByConfigureTable(table);
+//启动pipeline
 ppl->start();
 
 //构造一个request，这里FrameRequest也是用户自定义的，但必须继承vtf::pipeline::Data
 //VYF提供了一个vtf::pipeline::Data的默认实现vtf::pipeline::PipeData，实现了构建依赖等必须的接口，用户可选择继承vtf::pipeline::Data之后加上自己的逻辑即可，也可以直接继承vtf::pipeline::Data，但必须实现vtf::pipeline::Data的接口
 std::shared_ptr<FrameRequest> request = std::make_shared<FrameRequest>(curScenario, frame);
 
+//PipeData还提供了addNotifierForNode接口可为当前data path中的某个node指定notifier
+//参数为nodeId和notifierID
+req->addNotifierForNode(1, 1);
+
 //将数据submit到pipiline即可
 ppl->submit(request);
 
-//停止pipeline，调用之后会停止接受任何数据，并等待所有已submit的数据执行完当前的node，如果整个流程没有完成，则会notifi error
+//停止pipeline，调用之后会停止接受任何数据，并等待所有已submit的数据执行完当前的node，如果整个流程没有完成，则会notifi error，如果某个node block，整个程序将也会被block
 ppl->stop();
 ```
 
