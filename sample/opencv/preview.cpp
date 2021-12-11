@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 19:22:07
+ * @LastEditTime: 2021-12-11 21:08:30
  */
 #include "configTable.hpp"
 #include <opencv2/opencv.hpp>
@@ -22,10 +22,15 @@ int main()
 
 	auto ppl = PipeLine<FrameRequest>::generatePipeLineByConfigureTable(configTable);
 	ppl->start();
-	CVTestScenario curScenario = CVTestScenario::VIDEO;
+	CVTestScenario curScenario = CVTestScenario::PREVIEW;
 
 	if (curScenario == CVTestScenario::PREVIEW) {
+		auto outFile = "/home/weiyanyu/learn/cpp/vtf/sample/bin/test.avi";
 		VideoCapture capture(0);//读取视摄像头实时画面数据，0默认是笔记本的摄像头；如果是外接摄像头，这里改为1
+
+		int w = static_cast<int>(capture.get(CAP_PROP_FRAME_WIDTH));
+		int h = static_cast<int>(capture.get(CAP_PROP_FRAME_HEIGHT));
+		w_cap = cv::VideoWriter("test.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), 1000 / 66, cv::Size(w, h));
 		while (true)
 		{
 			Mat frame;
@@ -39,6 +44,7 @@ int main()
 			break;
 		}
 		capture.release();     //释放摄像头资源
+		w_cap.release();
 		destroyAllWindows();   //释放全部窗口
 	} else if (curScenario == CVTestScenario::VIDEO) {
 		Point pt1, pt2;
@@ -70,6 +76,7 @@ int main()
 			
 			waitKey(int(1000 / rate));
 		}
+		w_cap.release();
 	}
 
 	ppl->stop();

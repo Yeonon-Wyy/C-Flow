@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 23:22:17
+ * @LastEditTime: 2021-12-11 20:45:51
  */
 #pragma once
 #include "common_types.hpp"
@@ -12,7 +12,6 @@
 #include "../log.hpp"
 #include "../utils/id_generator.hpp"
 #include "../utils/str_convertor.hpp"
-#include "../threadPool.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -56,22 +55,18 @@ public:
         ProcessCallback processCallback;
         ConfigProgress configProgress;
         StopProgress stopProgress;
-        size_t threadPoolSize;
     };
 
     class PipeNodeBuilder {
     public:
         PipeNodeBuilder()
-             :id(-1),
-              threadPoolSize(defaultPipeNodeThreadPoolSize)
+             :id(-1)
         {}
         PipeNodeBuilder* setID(PipeNodeId&& id);
         PipeNodeBuilder* setName(const std::string& name);
         PipeNodeBuilder* setProcessCallback(ProcessCallback&&);
         PipeNodeBuilder* setConfigProgress(ConfigProgress&&);
         PipeNodeBuilder* setStopProgress(StopProgress&& cb);
-        PipeNodeBuilder* setThreadPoolSize(size_t threadPoolSize);
-
         PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
         PipeNodeBuilder* addScenarios(std::vector<PipelineScenario> scenarios);
 
@@ -83,15 +78,13 @@ public:
         ProcessCallback processCallback;
         ConfigProgress configProgress;
         StopProgress stopProgress;
-        size_t threadPoolSize;
     };
 
 public:
-    PipeNode(PipeNodeId id, size_t threadPoolSize)
+    PipeNode(PipeNodeId id)
          :DAGNode(id),
          m_id(id),
-         m_status(PipeNodeStatus::IDLE),
-         m_threadPool(threadPoolSize)
+         m_status(PipeNodeStatus::IDLE)
     {
         m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(m_id);
     }
@@ -99,6 +92,14 @@ public:
     ~PipeNode() {
         VTF_LOGD("node {0} destory", m_name);
     }
+
+    /**
+     * @name: process 
+     * @Descripttion: execute user define process function, and after complete, mark done
+     * @param {*}
+     * @return {*}
+     */    
+    bool process(std::shared_ptr<Item>);
 
     static PipeNodeBuilder builder() { return PipeNodeBuilder(); }
 
@@ -164,25 +165,9 @@ public:
      */    
     PipeNodeStatus status() { return m_status; }
 
-
-    /**
-     * @name: submit
-     * @Descripttion: submit a item to thread pool
-     * @param {shared_ptr<Item>} item
-     * @return {*}
-     */    
-    void submit(std::shared_ptr<Item> item);
-
     bool isStop() { return m_isStop; }
-
 private:
-    /**
-     * @name: process 
-     * @Descripttion: execute user define process function, and after complete, mark done
-     * @param {*}
-     * @return {*}
-     */    
-    bool process(std::shared_ptr<Item>);
+
 private:
     PipeNodeId m_id;
     std::string m_name;
@@ -192,7 +177,6 @@ private:
     ConfigProgress m_configProgress;
     StopProgress m_stopProgress;
     std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
-    ThreadPool m_threadPool;
     std::atomic_bool m_isStop = false;
 };
 
@@ -216,11 +200,6 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> item)
     }
     m_status = PipeNodeStatus::IDLE;
     return ret;
-}
-
-template<typename Item>
-void PipeNode<Item>::submit(std::shared_ptr<Item> item) {
-    m_threadPool.emplace(&PipeNode::process, this, item);
 }
 
 template<typename Item>
@@ -261,7 +240,6 @@ void PipeNode<Item>::stop()
     if (m_stopProgress) {
         m_stopProgress();
     }
-    m_threadPool.stop();
     VTF_LOGD("PipeNode [{0}] stop end", m_name);
 }
 
@@ -307,15 +285,6 @@ typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setCo
 }
 
 template<typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setThreadPoolSize(size_t threadPoolSize)
-{
-    this->threadPoolSize = threadPoolSize;
-    return this;
-}
-
-
-
-template<typename Item>
 typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(PipelineScenario&& scenario)
 {
     this->pipelineScenarios.push_back(std::move(scenario));
@@ -337,16 +306,11 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
         return nullptr;
     }
 
-    if (threadPoolSize == 0) {
-        VTF_LOGE("threadPool size can't not set to 0, we will set a default value {0}", defaultPipeNodeThreadPoolSize);
-        threadPoolSize = defaultPipeNodeThreadPoolSize;
-    }
-
     if (name == "") {
         name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(id);
     }
 
-    std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id, threadPoolSize);
+    std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id);
     pipeNode->m_name = name;
     pipeNode->m_pipelineScenarios = pipelineScenarios;
     pipeNode->m_pipeNodeDispatcher = dispatcher;

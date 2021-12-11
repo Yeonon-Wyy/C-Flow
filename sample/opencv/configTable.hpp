@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 22:52:45
+ * @LastEditTime: 2021-12-11 20:59:35
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -43,15 +43,17 @@ bool imageShowResultCallback(std::shared_ptr<FrameRequest> request)
 	}
 	auto frame = request->getFrame();
 	if (request->scenario() == CVTestScenario::VIDEO) {
-		w_cap.write(*frame);
 	} else if (CVTestScenario::PREVIEW) {
 		imshow("window",*frame);  //在window窗口显示frame摄像头数据画面
 	}
+	w_cap.write(*frame);
 	return true;
 }
 
 const static PipeLine<FrameRequest>::ConfigureTable configTable = 
 {
+    .queueSize = 8,
+    .threadPoolSize = 50,
     .pipeNodeCreateInfos = 
     {
         {

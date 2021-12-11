@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 23:28:20
+ * @LastEditTime: 2021-12-11 20:46:24
  */
 #pragma once
 
@@ -19,9 +19,6 @@
 
 namespace vtf {
 namespace pipeline {
-
-constexpr int defaultThreadPoolSize = 8;
-
 /**
  * @name: class PipeNodeDispatcher
  * @Descripttion: a dispatcher, will auto dispatch data in pipeline by data dependency.
@@ -30,9 +27,9 @@ template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {
 public:    
     using PipeNodeMap = std::unordered_map<long, std::weak_ptr<PipeNode<Item>>>;
-    PipeNodeDispatcher(int dispatchQueueSize = defaultDsiapctherQueueSize)
+    PipeNodeDispatcher(int dispatchQueueSize, int threadPoolSize)
         :Dispatcher<Item>(dispatchQueueSize),
-         m_threadPool(defaultThreadPoolSize)
+         m_threadPool(threadPoolSize)
     {}
 
     ~PipeNodeDispatcher()
@@ -150,7 +147,8 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
         auto currentNodeSp = m_pipeNodeMaps[currentProcessNodeId].lock();
         //submit to thread pool
         if (currentNodeSp && !m_threadPool.isStoped() && !currentNodeSp->isStop()) {
-            currentNodeSp->submit(item);
+            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, item);
+            // currentNodeSp->submit(item);
         } else {
             //if node already stop or destory, should notify error
             notifyFinal(item, NotifyStatus::ERROR);

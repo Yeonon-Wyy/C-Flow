@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 22:50:00
+ * @LastEditTime: 2021-12-11 20:51:13
  */
 
 #pragma once
@@ -37,15 +37,17 @@ public:
     using GraphType = std::unordered_map<long, std::vector<long>>;
 
     struct ConfigureTable {
+        int queueSize = 8;
+        int threadPoolSize = 8;
         std::vector<typename PipeNode<Item>::PipeNodeCreateInfo> pipeNodeCreateInfos;
         std::vector<typename Notifier<Item>::NotifierCreateInfo> notifierCreateInfos;
         std::vector<std::pair<long, long>> nodeConnections;
     };
 
 public:
-    PipeLine()
+    PipeLine(long queueSize, int threadPoolSize)
         :m_dag(),
-         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>())
+         m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>(queueSize, threadPoolSize))
     {}
 
     ~PipeLine()
@@ -171,19 +173,19 @@ private:
 template<typename Item>
 std::shared_ptr<PipeLine<Item>> PipeLine<Item>::generatePipeLineByConfigureTable(const ConfigureTable& configTable)
 {
-    std::shared_ptr<PipeLine<Item>> ppl = std::make_shared<PipeLine<Item>>();
+    std::shared_ptr<PipeLine<Item>> ppl = std::make_shared<PipeLine<Item>>(configTable.queueSize, configTable.threadPoolSize);
     for (auto pipeNodeCreateInfo : configTable.pipeNodeCreateInfos) {
         ppl->addPipeNode(pipeNodeCreateInfo);
     }
-
+    VTF_LOGD("pipeline add pipe node finish");
     for (auto notifierCreateInfo : configTable.notifierCreateInfos) {
         ppl->addNotifier(notifierCreateInfo);
     }
-
+    VTF_LOGD("pipeline add notifier finish");
     for (auto [srcNodeId, dstNodeId] : configTable.nodeConnections) {
         ppl->connectNode(srcNodeId, dstNodeId);
     }
-
+    VTF_LOGD("pipeline connect node finish");
     return ppl;
 }
 
@@ -223,7 +225,6 @@ std::shared_ptr<PipeNode<Item>> PipeLine<Item>::addPipeNode(typename PipeNode<It
                 ->setConfigProgress(std::move(createInfo.configProgress))
                 ->setStopProgress(std::move(createInfo.stopProgress))
                 ->addScenarios(createInfo.pipelineScenarios)
-                ->setThreadPoolSize(createInfo.threadPoolSize)
                 ->build(m_pipeNodeDispatcher);
 
     node->config();
