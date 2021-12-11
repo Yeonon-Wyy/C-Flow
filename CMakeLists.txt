@@ -6,6 +6,9 @@ set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DVTF_DEBUG_MODE")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
 
+# user-define log file path
+add_definitions( -DLOGFILENAME="/tmp/vtf_log/vtf_log.txt")
+
 include_directories("../src/core/")
 include_directories("../src/core/pipeline")
 include_directories("/usr/include/")
