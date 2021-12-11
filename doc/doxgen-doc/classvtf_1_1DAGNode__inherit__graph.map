@@ -1,5 +1,0 @@
-<map id="vtf::DAGNode" name="vtf::DAGNode">
-<area shape="rect" id="node1" title=" " alt="" coords="125,5,253,200"/>
-<area shape="rect" id="node2" href="$classvtf_1_1pipeline_1_1PipeNode.html" title=" " alt="" coords="5,248,191,853"/>
-<area shape="rect" id="node3" href="$classvtf_1_1task_1_1Task.html" title=" " alt="" coords="215,336,346,765"/>
-</map>
