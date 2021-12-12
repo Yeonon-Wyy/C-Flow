@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 20:45:51
+ * @LastEditTime: 2021-12-12 19:49:10
  */
 #pragma once
 #include "common_types.hpp"
@@ -185,17 +185,17 @@ private:
 * Implementation of class PipeNode
 */
 template<typename Item>
-bool PipeNode<Item>::process(std::shared_ptr<Item> item)
+bool PipeNode<Item>::process(std::shared_ptr<Item> data)
 {
     bool ret = true;
     m_status = PipeNodeStatus::PROCESSING;
-    ret = m_processCallback(item);
+    ret = m_processCallback(data);
     if (ret) {
-        item->markCurrentNodeReady();
+        data->markCurrentNodeReady();
         auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
         if (pipeNodeDispatcherSp) {
-            pipeNodeDispatcherSp->queueInDispacther(item);
-            pipeNodeDispatcherSp->notifyNotFinal(item, m_id);
+            pipeNodeDispatcherSp->queueInDispacther(data);
+            pipeNodeDispatcherSp->notifyNotFinal(data, m_id);
         }
     }
     m_status = PipeNodeStatus::IDLE;

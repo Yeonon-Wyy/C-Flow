@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 20:51:13
+ * @LastEditTime: 2021-12-12 19:48:18
  */
 
 #pragma once
@@ -102,12 +102,12 @@ public:
 
 
     /**
-     * @name: submit a item to pipeline
+     * @name: submit a data to pipeline
      * @Descripttion: 
-     * @param {shared_ptr<Item>} item
+     * @param {shared_ptr<Item>} data
      * @return {*}
      */    
-    bool submit(std::shared_ptr<Item> item);
+    bool submit(std::shared_ptr<Item> data);
 
     /**
      * @name: start
@@ -163,10 +163,8 @@ private:
 
     //<notifierType, notfiers>
     std::unordered_map<NotifierType,std::vector<std::shared_ptr<Notifier<Item>>> > m_notifierMaps;
-
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
-
     std::mutex m_mutex;
 };
 
@@ -193,7 +191,7 @@ template<typename Item>
 bool PipeLine<Item>::checkValid()
 {
     if (m_isStop) {
-        VTF_LOGD("pipeline already stoped, can't submit any item, please construct another pipeline obejct!!!!");
+        VTF_LOGD("pipeline already stoped, can't submit any data, please construct another pipeline obejct!!!!");
         return false;
     }
     return true;
@@ -243,7 +241,7 @@ bool PipeLine<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> node)
         VTF_LOGE("node [{0}:{1}] already be added to pipeline. don't need add again.", node->getNodeId(), node->name());
         return false;
     }
-
+    node->config();
     m_pipeNodeMaps[node->getNodeId()] = node;
     m_dag.addNode(node);
     m_pipeNodeDispatcher->addPipeNode(node);
@@ -257,6 +255,7 @@ void PipeLine<Item>::addNotifier(std::shared_ptr<Notifier<Item>> notifier)
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return;
     m_notifierMaps[notifier->type()].push_back(notifier);
+    m_pipeNodeDispatcher->addNotifier(notifier);
     if (notifier->type() == NotifierType::FINAL) {
         notifier->start();
     }
@@ -281,6 +280,7 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
         return;
     }
     VTF_LOGD("add notifier type is {0}", notifier->type());
+    m_pipeNodeDispatcher->addNotifier(notifier);
     m_notifierMaps[notifier->type()].push_back(notifier);
     if (notifier->type() == NotifierType::FINAL) {
         notifier->start();
@@ -293,12 +293,6 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
     if (!m_pipelineModified) return true;
-
-    for (auto[notifierType, notifiers] : m_notifierMaps) {
-        for (auto notifier : notifiers) {
-            m_pipeNodeDispatcher->addNotifier(notifier);
-        }
-    }
 
     //get all scenario
     for (auto&[nodeId, node] : m_pipeNodeMaps) {
@@ -356,13 +350,13 @@ std::vector<long> PipeLine<Item>::getPipelineWithScenario(PipelineScenario scena
 }
 
 template<typename Item>
-bool PipeLine<Item>::submit(std::shared_ptr<Item> item)
+bool PipeLine<Item>::submit(std::shared_ptr<Item> data)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
-    item->constructDependency(getPipelineWithScenario(item->scenario()));
-    m_pipeNodeDispatcher->queueInDispacther(item);
-    VTF_LOGD("submit a item {0}", item->ID());
+    data->constructDependency(getPipelineWithScenario(data->scenario()));
+    m_pipeNodeDispatcher->queueInDispacther(data);
+    VTF_LOGD("submit a data {0}", data->ID());
     return true;
 }
 

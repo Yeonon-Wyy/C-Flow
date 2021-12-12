@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-21 23:07:13
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 21:40:37
+ * @LastEditTime: 2021-12-12 19:51:14
  */
 #pragma once
 
@@ -15,7 +15,7 @@
 
 namespace vtf {
 
-#ifndef LOGFILENAME
+#ifdef LOGFILENAME
 #define VTF_LOG_FILENAME LOGFILENAME
 #else
 #define VTF_LOG_FILENAME "/tmp/vtf_log/vtf_log.txt"

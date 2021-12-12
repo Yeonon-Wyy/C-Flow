@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 23:04:20
+ * @LastEditTime: 2021-12-12 19:49:43
  */
 #pragma once
 
@@ -21,7 +21,7 @@ using GraphType = std::unordered_map<long, std::vector<long>>;
 
 
 /**
- * @name: class Request
+ * @name: class Data
  * @Descripttion: it is a pipeline data object. 
  *                but this class just a pure virtual class. provider some interface, users must implement these interfaces.
  *                
@@ -76,7 +76,7 @@ public:
 
     /**
      * @name: checkDependencyIsReady
-     * @Descripttion: check current request state, if is ready will return true, or else will return false
+     * @Descripttion: check current data state, if is ready will return true, or else will return false
      * @param {*}
      * @return {*}
      */    
@@ -92,7 +92,7 @@ public:
 
     /**
      * @name: scenario
-     * @Descripttion: get scenario of this request
+     * @Descripttion: get scenario of this data
      * @param {*}
      * @return {*}
      */    
@@ -139,7 +139,7 @@ vtf::utils::IDGenerator Data::m_idGenerator;
 
 /**
  * @name: class PipeData
- * @Descripttion: it is a sample code for user. just default implementation for Request class.
+ * @Descripttion: it is a sample code for user. just default implementation for Data class.
  *                users can use it directly, and if the user wants to do some customization, can inherit it and override some interfaces.
  *                WARNING: user can't change this class.
  * @param {*}
@@ -166,7 +166,6 @@ public:
 
     ~PipeData()
     {
-        VTF_LOGD("pipe request {0} destory", ID());
     }
 
     bool constructDependency(const std::vector<long>& pipeline) override;
@@ -248,7 +247,7 @@ bool PipeData::constructDependency(const std::vector<long>& pipeline)
     }
     
     if (m_dependencies.empty() || m_dependencies.size() <= 1) {
-        VTF_LOGE("dependency size of pipe request can't be less than 2");
+        VTF_LOGE("dependency size of pipe data can't be less than 2");
         return false;
     }
 
@@ -307,12 +306,12 @@ void PipeData::markCurrentNodeReady()
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
-        VTF_LOGD("request {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
+        VTF_LOGD("data {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
         m_nextNodeIdx = -1;
-        VTF_LOGD("request {0} all node already process done.", ID());
+        VTF_LOGD("data {0} all node already process done.", ID());
         return;
     }
 
@@ -326,7 +325,7 @@ void PipeData::markCurrentNodeReady()
 
     //mark next node denpendency's pre is done
     m_dependencies[m_nextNodeIdx].precursors.second = DependencyStatus::READY;
-    VTF_LOGD("request {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
+    VTF_LOGD("data {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
 
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;

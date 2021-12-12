@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 20:46:24
+ * @LastEditTime: 2021-12-12 19:49:02
  */
 #pragma once
 
@@ -39,27 +39,27 @@ public:
 
     /**
      * @name: dispatch
-     * @Descripttion: dispatch item
-     * @param {shared_ptr<Item>} item
+     * @Descripttion: dispatch data
+     * @param {shared_ptr<Item>} data
      * @return {*}
      */    
-    bool dispatch(std::shared_ptr<Item> item) override;
+    bool dispatch(std::shared_ptr<Item> data) override;
 
     /**
      * @name: queueInDispacther
-     * @Descripttion: queue a item to dispatcher
-     * @param {shared_ptr<Item>} item
+     * @Descripttion: queue a data to dispatcher
+     * @param {shared_ptr<Item>} data
      * @return {*}
      */    
-    void queueInDispacther(std::shared_ptr<Item> item) override;
+    void queueInDispacther(std::shared_ptr<Item> data) override;
 
     /**
      * @name: threadLoop
      * @Descripttion: thread loop will loop run process function until receive stop flag
-     * @param {shared_ptr<Item>} item
+     * @param {shared_ptr<Item>} data
      * @return {*}
      */    
-    bool threadLoop(std::shared_ptr<Item> item) override;
+    bool threadLoop(std::shared_ptr<Item> data) override;
 
     /**
      * @name: addPipeNode
@@ -119,22 +119,22 @@ private:
 };
 
 template<typename Item>
-bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
+bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 {    
-    VTF_LOGD("dispatch item id({0}) nextNodeId {1}", item->ID(), item->getCurrentNode());
+    VTF_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(), data->getCurrentNode());
     //final or pipeline is stoped, will call notifier
-    if (item->getCurrentNode() == -1 || m_threadPool.isStoped()) {
+    if (data->getCurrentNode() == -1 || m_threadPool.isStoped()) {
         //just call final notifier
-        if (item->getCurrentNode() == -1) {
-            notifyFinal(item, NotifyStatus::OK);
+        if (data->getCurrentNode() == -1) {
+            notifyFinal(data, NotifyStatus::OK);
         } else {
-            notifyFinal(item, NotifyStatus::ERROR);
+            notifyFinal(data, NotifyStatus::ERROR);
         }
         return true;
     }
 
-    if (item->checkDependencyIsReady()) {
-        long currentProcessNodeId = item->getCurrentNode();
+    if (data->checkDependencyIsReady()) {
+        long currentProcessNodeId = data->getCurrentNode();
         if (currentProcessNodeId < 0) {
             //finish
             return true;
@@ -147,28 +147,28 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> item)
         auto currentNodeSp = m_pipeNodeMaps[currentProcessNodeId].lock();
         //submit to thread pool
         if (currentNodeSp && !m_threadPool.isStoped() && !currentNodeSp->isStop()) {
-            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, item);
-            // currentNodeSp->submit(item);
+            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, data);
+            // currentNodeSp->submit(data);
         } else {
             //if node already stop or destory, should notify error
-            notifyFinal(item, NotifyStatus::ERROR);
+            notifyFinal(data, NotifyStatus::ERROR);
         }
     }
     return true;
 }
 template<typename Item>
-void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> item)
+void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> data)
 {
-    ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
-    VTF_LOGD("queue item id({0})", item->ID());
+    ThreadLoop<std::shared_ptr<Item>>::queueItem(data);
+    VTF_LOGD("queue data id({0})", data->ID());
     return;
 }
 
 template<typename Item>
-bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> item)
+bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> data)
 {
     bool ret = true;
-    ret = dispatch(item);
+    ret = dispatch(data);
     return ret;
 }
 
@@ -205,24 +205,24 @@ void PipeNodeDispatcher<Item>::stop()
 }
 
 template<typename Item>
-void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> item, NotifyStatus status)
+void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data, NotifyStatus status)
 {
     if (m_notifierMaps.count(NotifierType::FINAL)) {
         auto notfiers = m_notifierMaps[NotifierType::FINAL];
         for (auto notifier : notfiers) {
             auto notifierSp = notifier.lock();
-            item->setNotifyStatus(std::move(status));
+            data->setNotifyStatus(std::move(status));
             if (notifierSp) {
-                notifierSp->notify(item);
+                notifierSp->notify(data);
             }
         }
     }
 }
 
 template<typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> item, long callerNodeId)
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, long callerNodeId)
 {
-    std::vector<long> notifierIdsForCurrentItem = item->getNotifiersByNodeId(callerNodeId);
+    std::vector<long> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
     for (auto[notifierType, notifiers] : m_notifierMaps) {
         //foreach all notifiers
         if (notifierType != NotifierType::FINAL) {
@@ -231,14 +231,14 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> item, long c
                 //foreach notifiers of someone type
                 auto notifierSp = notifier.lock();
                 if (m_threadPool.isStoped()) {
-                    item->setNotifyStatus(NotifyStatus::ERROR);
+                    data->setNotifyStatus(NotifyStatus::ERROR);
                 }
                 if (notifierSp) {
                     long notifierId = notifierSp->ID();
-                    //find current item and node notifier
+                    //find current data and node notifier
                     auto it = std::find(notifierIdsForCurrentItem.begin(), notifierIdsForCurrentItem.end(), notifierId);
                     if (it != notifierIdsForCurrentItem.end()) {
-                        notifierSp->notify(item);
+                        notifierSp->notify(data);
                     }
                 }
             }
