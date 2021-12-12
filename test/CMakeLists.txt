@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(vtf)
+project(vtf_test)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
@@ -9,8 +9,6 @@ set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
 # user-define log file path
 add_definitions( -DLOGFILENAME="/tmp/vtf_log/vtf_log.txt")
 
-include_directories("../src/core/")
-include_directories("../src/core/pipeline")
 include_directories("/usr/include/")
 
 
@@ -19,28 +17,28 @@ find_package(Threads REQUIRED)
 find_package(OpenCV REQUIRED)
 
 
-SET(EXECUTABLE_OUTPUT_PATH "../bin/test/")
+SET(EXECUTABLE_OUTPUT_PATH "../bin/")
 
-add_executable(testBlockingQueue "../src/test/blockingQueueTest.cpp")
+add_executable(testBlockingQueue "../blockingQueueTest.cpp")
 target_link_libraries(testBlockingQueue PUBLIC Threads::Threads)
 
-add_executable(testDag "../src/test/dagTest.cpp")
+add_executable(testDag "../dagTest.cpp")
 target_link_libraries(testDag PUBLIC Threads::Threads)
 
-add_executable(testTaskFlowCtl "../src/test/taskFlowCtlTest.cpp")
+add_executable(testTaskFlowCtl "../taskFlowCtlTest.cpp")
 target_link_libraries(testTaskFlowCtl PUBLIC Threads::Threads)
 
-add_executable(testTask "../src/test/taskTest.cpp")
+add_executable(testTask "../taskTest.cpp")
 target_link_libraries(testTask PUBLIC Threads::Threads)
 
-add_executable(testTaskThreadPool "../src/test/taskThreadPoolTest.cpp")
+add_executable(testTaskThreadPool "../taskThreadPoolTest.cpp")
 target_link_libraries(testTaskThreadPool PUBLIC Threads::Threads)
 
-add_executable(testThreadPool "../src/test/threadPoolTest.cpp")
+add_executable(testThreadPool "../threadPoolTest.cpp")
 target_link_libraries(testThreadPool PUBLIC Threads::Threads)
 
-add_executable(testThreadLoop "../src/test/threadLoopTest.cpp")
+add_executable(testThreadLoop "../threadLoopTest.cpp")
 target_link_libraries(testThreadLoop PUBLIC Threads::Threads)
 
-add_executable(testPipeline "../src/test/testPipeline.cpp")
+add_executable(testPipeline "../testPipeline.cpp")
 target_link_libraries(testPipeline PUBLIC Threads::Threads)
