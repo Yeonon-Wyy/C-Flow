@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 20:59:35
+ * @LastEditTime: 2021-12-18 17:40:49
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -80,11 +80,11 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
     .notifierCreateInfos = 
     {
         {
-            1,
-            "pipeline_result_notifier",
-            imageShowResultCallback,
-            vtf::NotifierType::FINAL,
-            8
+            .id = 1,
+            .name = "pipeline_result_notifier",
+            .processCallback = imageShowResultCallback,
+            .type = vtf::NotifierType::FINAL,
+            .readyQueueSize = 8
         }
     },
     .nodeConnections = 

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:35:56
+ * @LastEditTime: 2021-12-18 17:45:43
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -123,6 +123,12 @@ void testPipeline()
                             VTF_LOGE("node done {0} notify OK", request->ID());
                         }
                         return true;
+                },
+                .configProgress = []() {
+                    VTF_LOGD("pipeline_node_done_notifier - user define config");  
+                },
+                .stopProgress = []() {
+                    VTF_LOGD("pipeline_node_done_notifier - user define stop");
                 },
                 .type = vtf::NotifierType::DATA_LISTEN,
                 .readyQueueSize = 8

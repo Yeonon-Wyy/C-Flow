@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-10 22:54:54
+ * @LastEditTime: 2021-12-18 17:43:49
  */
 #pragma once
 
@@ -48,11 +48,15 @@ template<typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
 public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
+    using ConfigProgress = std::function<void()>;
+    using StopProgress = std::function<void()>;
 
     struct NotifierCreateInfo {
         long id = -1;
         std::string name;
         NotifierProcessCallback processCallback;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
         NotifierType type;
         int readyQueueSize;
     };
@@ -67,6 +71,9 @@ public:
         NotifierBuilder* setID(long id);
         NotifierBuilder* setName(const std::string& name);
         NotifierBuilder* setProcessCallback(NotifierProcessCallback&& cb);
+        NotifierBuilder* setConfigProgress(ConfigProgress&& cp);
+        NotifierBuilder* setStopProgress(StopProgress&& sp);
+
         NotifierBuilder* setType(NotifierType&& type);
         NotifierBuilder* setQueueSize(int readyQueueSize);
 
@@ -76,6 +83,8 @@ public:
         long m_id;
         std::string m_name;
         NotifierProcessCallback m_processCallback;
+        ConfigProgress m_configProgress;
+        StopProgress m_stopProgress;
         NotifierType m_type;
         int m_readyQueueSize;
     };
@@ -135,6 +144,14 @@ public:
     long ID() const { return m_id; }
 
     /**
+     * @name: config
+     * @Descripttion: user-define config progress 
+     * @param {*}
+     * @return {*}
+     */    
+    void config();
+
+    /**
      * @name: stop
      * @Descripttion: stop notifier. 
      * @param {*}
@@ -145,6 +162,8 @@ private:
     long m_id;
     std::string m_name;
     NotifierProcessCallback m_processCallback;
+    ConfigProgress m_configProgress;
+    StopProgress m_stopProgress;
     std::map<long, std::shared_ptr<Item>> m_pendingItemMap;
     long m_expectItemId = initExpectItemId;
     NotifierType m_type;
@@ -206,9 +225,23 @@ void Notifier<Item>::notify(std::shared_ptr<Item> item)
 }
 
 template<typename Item>
+void Notifier<Item>::config()
+{
+    VTF_LOGD("notifier [{0}] config start", m_name);
+    if (m_configProgress) {
+        m_configProgress();
+    }
+    VTF_LOGD("notifier [{0}] config end", m_name);
+}
+
+
+template<typename Item>
 void Notifier<Item>::stop()
 {
     VTF_LOGD("notifier [{0}] stop start", m_name);
+    if (m_stopProgress) {
+        m_stopProgress();
+    }
     ThreadLoop<std::shared_ptr<Item>>::stop();
     m_pendingItemMap.clear();
     m_expectItemId = initExpectItemId;
@@ -238,6 +271,20 @@ template<typename Item>
 typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setProcessCallback(NotifierProcessCallback&& cb)
 {
     m_processCallback = std::move(cb);
+    return this;
+}
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setConfigProgress(ConfigProgress&& cp)
+{
+    m_configProgress = std::move(cp);
+    return this;
+}
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setStopProgress(StopProgress&& sp)
+{
+    m_stopProgress = std::move(sp);
     return this;
 }
 
@@ -279,11 +326,19 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     }
 
     notifier->m_name = m_name;
-    notifier->m_processCallback = m_processCallback;
     notifier->m_type = m_type;
 
+    if (m_processCallback) {
+        notifier->m_processCallback = m_processCallback;
+    }
+    if (m_configProgress) {
+        notifier->m_configProgress = m_configProgress;
+    }
+    if (m_stopProgress) {
+        notifier->m_stopProgress = m_stopProgress;
+    }
 
     return notifier;
 }
 
-}
+} //namespace vtf

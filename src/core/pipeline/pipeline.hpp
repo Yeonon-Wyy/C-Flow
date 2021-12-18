@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:48:18
+ * @LastEditTime: 2021-12-18 17:45:30
  */
 
 #pragma once
@@ -256,6 +256,7 @@ void PipeLine<Item>::addNotifier(std::shared_ptr<Notifier<Item>> notifier)
     if (!checkValid()) return;
     m_notifierMaps[notifier->type()].push_back(notifier);
     m_pipeNodeDispatcher->addNotifier(notifier);
+    notifier->config();
     if (notifier->type() == NotifierType::FINAL) {
         notifier->start();
     }
@@ -270,6 +271,8 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
     auto notifier = Notifier<Item>::builder()
         .setName(createInfo.name)
         ->setProcessCallback(std::move(createInfo.processCallback))
+        ->setConfigProgress(std::move(createInfo.configProgress))
+        ->setStopProgress(std::move(createInfo.stopProgress))
         ->setType(std::move(createInfo.type))
         ->setQueueSize(createInfo.readyQueueSize)
         ->setID(createInfo.id)
@@ -282,6 +285,7 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
     VTF_LOGD("add notifier type is {0}", notifier->type());
     m_pipeNodeDispatcher->addNotifier(notifier);
     m_notifierMaps[notifier->type()].push_back(notifier);
+    notifier->config();
     if (notifier->type() == NotifierType::FINAL) {
         notifier->start();
     }
