@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-18 17:45:30
+ * @LastEditTime: 2021-12-24 22:58:18
  */
 
 #pragma once
@@ -45,6 +45,13 @@ public:
     };
 
 public:
+    /**
+     * @name: PipeLine
+     * @Descripttion: PipeLine constructor
+     * @param {long} queueSize
+     * @param {int} threadPoolSize
+     * @return {*}
+     */    
     PipeLine(long queueSize, int threadPoolSize)
         :m_dag(),
          m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>(queueSize, threadPoolSize))
