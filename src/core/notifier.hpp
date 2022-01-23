@@ -4,14 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-18 17:43:49
+ * @LastEditTime: 2022-01-23 19:32:40
  */
 #pragma once
 
 #include "threadLoop.hpp"
 #include "utils/id_generator.hpp"
 #include "utils/str_convertor.hpp"
-
+#include "type.hpp"
 
 #include <mutex>
 #include <condition_variable>
@@ -20,18 +20,6 @@
 #include <map>
 
 namespace vtf {
-
-enum NotifierType {
-    NOTIFIER_TYPE_START,
-    DATA_LISTEN,
-    FINAL,
-    NOTIFIER_TYPE_END
-};
-
-enum NotifyStatus {
-    OK,
-    ERROR
-};
 
 #define NOTIFIER_DEFAULT_PREFIX "notfier_default";
 constexpr long initExpectItemId = 1;

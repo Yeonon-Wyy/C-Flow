@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:21:39
+ * @LastEditTime: 2022-01-22 21:54:10
  */
 #pragma once
 
@@ -13,9 +13,12 @@
 #include <thread>
 #include <condition_variable>
 #include <atomic>
+#include <vector>
 #include <queue>
+#include <map>
 
 #include "log.hpp"
+#include "scheduler.hpp"
 
 namespace vtf {
 

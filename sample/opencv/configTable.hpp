@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-18 17:40:49
+ * @LastEditTime: 2021-12-18 21:02:00
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -26,7 +26,7 @@ bool watermark(std::shared_ptr<FrameRequest> request)
 {
 	putText(*request->getFrame(), 
 			"Hello, World!", 
-			Point(200, 500),
+			Point(20, 50),
 			FONT_HERSHEY_COMPLEX, 1,
 			Scalar(255, 255, 255),
 			1, LINE_AA);

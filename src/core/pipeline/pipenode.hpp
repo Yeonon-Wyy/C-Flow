@@ -4,10 +4,10 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:49:10
+ * @LastEditTime: 2022-01-23 19:35:42
  */
 #pragma once
-#include "common_types.hpp"
+#include "type.hpp"
 #include "../dag.hpp"
 #include "../log.hpp"
 #include "../utils/id_generator.hpp"
