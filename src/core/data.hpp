@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-23 19:33:34
+ * @LastEditTime: 2022-01-29 14:42:50
  */
 
 #pragma once
@@ -31,7 +31,7 @@ public:
     }
 
 
-    long ID() { return m_id; };
+    vtf_id_t ID() { return m_id; };
 
     /**
      * @name: constructDependency
@@ -39,7 +39,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual bool constructDependency(const std::vector<long>&) = 0;
+    virtual bool constructDependency(const std::vector<vtf_id_t>&) = 0;
 
     /**
      * @name: findNextNodes
@@ -47,7 +47,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    // virtual std::vector<long> findNextNodes() = 0;
+    // virtual std::vector<vtf_id_t> findNextNodes() = 0;
 
     /**
      * @name: getCurrentNodes
@@ -55,7 +55,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual long getCurrentNode() = 0;
+    virtual vtf_id_t getCurrentNode() = 0;
 
     /**
      * @name: getNextNode
@@ -63,7 +63,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual long getNextNode() = 0;
+    virtual vtf_id_t getNextNode() = 0;
 
 
     /**
@@ -107,24 +107,57 @@ public:
     virtual NotifyStatus getNotifyStatus() = 0;
 
     /**
-     * @name: addNotifierForNode
-     * @Descripttion: add a notifier for node, when node done, the specified Notifier will be called when node process done
-     * @param {long} notifierId
-     * @param {long} nodeId
+     * @name: setDataType
+     * @Descripttion: set Data type for Data object
+     * @param {DataType&&} reference enum dataType
      * @return {*}
      */    
-    virtual void addNotifierForNode(long nodeId, long notifierId) = 0;
+    virtual void setDataType(DataType&& dataType) = 0;
+
+    /**
+     * @name: getDataType
+     * @Descripttion: get Data type of Data object
+     * @param 
+     * @return {*} reference enum dataType
+     */    
+    virtual DataType getDataType() = 0;
+
+    /**
+     * @name: setPriority
+     * @Descripttion: set priority for data
+     * @param {DataPriority&&} priority
+     * @return {*}
+     */    
+    virtual void setPriority(DataPriority&& priority) = 0;
+
+    /**
+     * @name: getPriority
+     * @Descripttion: get priority for data
+     * @param {*}
+     * @return {*} priority
+     */    
+    virtual DataPriority getPriority() = 0;
+
+    /**
+     * @name: addNotifierForNode
+     * @Descripttion: add a notifier for node, when node done, the specified Notifier will be called when node process done
+     * @param {vtf_id_t} notifierId
+     * @param {vtf_id_t} nodeId
+     * @return {*}
+     */    
+    virtual void addNotifierForNode(vtf_id_t nodeId, vtf_id_t notifierId) = 0;
 
     /**
      * @name: getNotifiersByNodeId
      * @Descripttion: get notifiers by node id
-     * @param {long} nodeId
+     * @param {vtf_id_t} nodeId
      * @return {*}
      */    
-    virtual std::vector<long> getNotifiersByNodeId(long nodeId) = 0;
+    virtual std::vector<vtf_id_t> getNotifiersByNodeId(vtf_id_t nodeId) = 0;
+    
 private:
     static vtf::utils::IDGenerator m_idGenerator;
-    long m_id;
+    vtf_id_t m_id;
 };
 
 vtf::utils::IDGenerator Data::m_idGenerator;

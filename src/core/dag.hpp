@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-05 17:28:51
+ * @LastEditTime: 2022-01-29 14:59:21
  */
 #pragma once
 
@@ -16,6 +16,7 @@
 #include <sstream>
 #include <unordered_set>
 #include <set>
+#include "type.hpp"
 
 #include "log.hpp"
 
@@ -32,7 +33,7 @@ public:
      * @param {int} id is node id
      * @return {*}
      */    
-    DAGNode(int id);
+    DAGNode(vtf_id_t id);
 
     /**
      * @name: connect
@@ -49,7 +50,7 @@ public:
      * @param {*}
      * @return {*} node-id
      */    
-    long getNodeId() { return m_nodeId; }
+    vtf_id_t getNodeId() { return m_nodeId; }
 
     /**
      * @name: getOutNodes
@@ -57,11 +58,11 @@ public:
      * @param {*}
      * @return {*}
      */    
-    std::vector<long> getOutNodes() { return m_outNodes; }
+    std::vector<vtf_id_t> getOutNodes() { return m_outNodes; }
 
 private:
-    long m_nodeId;                     //node-id
-    std::vector<long> m_outNodes;      //out-degree
+    vtf_id_t m_nodeId;                     //node-id
+    std::vector<vtf_id_t> m_outNodes;      //out-degree
 };
 
 class DAG {
@@ -102,7 +103,7 @@ public:
      * @param {*}
      * @return {*} topological order
      */    
-    std::vector<std::vector<long>> topologicalSort();
+    std::vector<std::vector<vtf_id_t>> topologicalSort();
 
     /**
      * @name: multiTopologicalSort
@@ -110,7 +111,7 @@ public:
      * @param {*}
      * @return {*} all topological order
      */    
-    std::set<std::vector<long>> multiTopologicalSort();
+    std::set<std::vector<vtf_id_t>> multiTopologicalSort();
 
 
     /**
@@ -119,7 +120,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    std::unordered_map<long, std::vector<long>> graph() { return m_graph; }
+    std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> graph() { return m_graph; }
     /**
      * @name: dumpGraph
      * @Descripttion: dump Graph info
@@ -144,33 +145,33 @@ private:
      * @return {*}
      */    
     void findAllTopologicalSort(
-        std::vector<std::vector<long>>& nodeOrder, 
-        std::set<std::vector<long>>& allTopoOrder, 
-        std::vector<long>& topoOrder,
+        std::vector<std::vector<vtf_id_t>>& nodeOrder, 
+        std::set<std::vector<vtf_id_t>>& allTopoOrder, 
+        std::vector<vtf_id_t>& topoOrder,
         int startIdx
     );
 
     /**
      * @name: checkDependency
      * @Descripttion: check Dependency with src node id and dst node id
-     * @param {long} srcNodeId
-     * @param {long} dstNodeId
+     * @param {vtf_id_t} srcNodeId
+     * @param {vtf_id_t} dstNodeId
      * @return {*}
      */    
-    bool checkDependency(long srcNodeId, long dstNodeId);
+    bool checkDependency(vtf_id_t srcNodeId, vtf_id_t dstNodeId);
 
 private:
-    std::unordered_map<long, std::vector<long>> m_graph;
-    std::unordered_map<long, std::weak_ptr<DAGNode>> m_nodeIdMap;
-    std::unordered_map<long, long> m_nodeIndegreeMap;
+    std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> m_graph;
+    std::unordered_map<vtf_id_t, std::weak_ptr<DAGNode>> m_nodeIdMap;
+    std::unordered_map<vtf_id_t, vtf_id_t> m_nodeIndegreeMap;
     bool m_graphModified = false;
-    std::vector<std::vector<long>> m_nodeOrderCache;
+    std::vector<std::vector<vtf_id_t>> m_nodeOrderCache;
 };
 
 /*
 * class DAGNode
 */
-DAGNode::DAGNode(int id)
+DAGNode::DAGNode(vtf_id_t id)
         :m_nodeId(id)
 {
 }
@@ -186,7 +187,7 @@ void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
 */
 void DAG::addNode(std::shared_ptr<DAGNode> node)
 {
-    long nodeId = node->getNodeId();
+    vtf_id_t nodeId = node->getNodeId();
     m_nodeIdMap[nodeId] = node;
     
     //set flag for grpah is modified
@@ -197,7 +198,7 @@ void DAG::buildGraph()
 {
     for (auto &[nodeId, node] : m_nodeIdMap) {
         auto nodeSp = node.lock();
-        for (long otherNOdeId : nodeSp->getOutNodes()) {
+        for (vtf_id_t otherNOdeId : nodeSp->getOutNodes()) {
             m_graph[nodeId].push_back(otherNOdeId);
             if (m_nodeIndegreeMap.count(nodeId) == 0) {
                 m_nodeIndegreeMap[nodeId] = 0;
@@ -208,15 +209,15 @@ void DAG::buildGraph()
 }
 
 
-std::vector<std::vector<long>> DAG::topologicalSort() {
+std::vector<std::vector<vtf_id_t>> DAG::topologicalSort() {
     if (!m_graphModified) return m_nodeOrderCache;
     rebuildGraphIfNeed();
 
-    std::vector<std::vector<long>> nodeOrder;
-    std::vector<long> sameLevelNodes;
+    std::vector<std::vector<vtf_id_t>> nodeOrder;
+    std::vector<vtf_id_t> sameLevelNodes;
 
-    std::unordered_map<long, std::vector<long>> graphCopy = m_graph;
-    std::unordered_map<long, long> nodeIndegreeMapCopy = m_nodeIndegreeMap;
+    std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> graphCopy = m_graph;
+    std::unordered_map<vtf_id_t, vtf_id_t> nodeIndegreeMapCopy = m_nodeIndegreeMap;
 
     while (true) {
         for (auto &[nodeId, degree] : nodeIndegreeMapCopy) {
@@ -228,7 +229,7 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
         if (!sameLevelNodes.empty()) {
             for (int nodeId : sameLevelNodes) {
             //erase node info from graph 
-                for (long otherNodeId : graphCopy[nodeId]) {
+                for (vtf_id_t otherNodeId : graphCopy[nodeId]) {
                     nodeIndegreeMapCopy[otherNodeId]--;
                 }
                 graphCopy.erase(nodeId);
@@ -251,14 +252,14 @@ std::vector<std::vector<long>> DAG::topologicalSort() {
 }
 
 
-std::set<std::vector<long>> DAG::multiTopologicalSort()
+std::set<std::vector<vtf_id_t>> DAG::multiTopologicalSort()
 {
     rebuildGraphIfNeed();
-    std::vector<std::vector<long>> nodeOrder;
-    std::vector<long> sameLevelNodes;
+    std::vector<std::vector<vtf_id_t>> nodeOrder;
+    std::vector<vtf_id_t> sameLevelNodes;
 
-    std::unordered_map<long, std::vector<long>> graphCopy = m_graph;
-    std::unordered_map<long, long> nodeIndegreeMapCopy = m_nodeIndegreeMap;
+    std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> graphCopy = m_graph;
+    std::unordered_map<vtf_id_t, vtf_id_t> nodeIndegreeMapCopy = m_nodeIndegreeMap;
     while (true) {
         for (auto &[nodeId, degree] : nodeIndegreeMapCopy) {
             if (degree == 0) {
@@ -269,7 +270,7 @@ std::set<std::vector<long>> DAG::multiTopologicalSort()
         if (!sameLevelNodes.empty()) {
             for (int nodeId : sameLevelNodes) {
             //erase node info from graph 
-                for (long otherNodeId : graphCopy[nodeId]) {
+                for (vtf_id_t otherNodeId : graphCopy[nodeId]) {
                     nodeIndegreeMapCopy[otherNodeId]--;
                 }
                 graphCopy.erase(nodeId);
@@ -287,21 +288,21 @@ std::set<std::vector<long>> DAG::multiTopologicalSort()
             break;
         }
     }
-    std::set<std::vector<long>> allTopoOrder;
-    std::vector<long> topoOrder;
+    std::set<std::vector<vtf_id_t>> allTopoOrder;
+    std::vector<vtf_id_t> topoOrder;
     findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, 0);
     return allTopoOrder;
 }
 
 void DAG::findAllTopologicalSort(
-    std::vector<std::vector<long>>& nodeOrder, 
-    std::set<std::vector<long>>& allTopoOrder, 
-    std::vector<long>& topoOrder,
+    std::vector<std::vector<vtf_id_t>>& nodeOrder, 
+    std::set<std::vector<vtf_id_t>>& allTopoOrder, 
+    std::vector<vtf_id_t>& topoOrder,
     int startIdx
 )
 {
     if (topoOrder.size() == nodeOrder.size()) {
-        std::vector<long> temp;
+        std::vector<vtf_id_t> temp;
         for (int i = 0; i < topoOrder.size(); i++) {
             if (i > 0 && !checkDependency(topoOrder[i-1], topoOrder[i])) {
                 break;
@@ -322,7 +323,7 @@ void DAG::findAllTopologicalSort(
     }
 }
 
-bool DAG::checkDependency(long srcNodeId, long dstNodeId)
+bool DAG::checkDependency(vtf_id_t srcNodeId, vtf_id_t dstNodeId)
 {
     if (m_graph.count(srcNodeId) == 0) {
         return false;
@@ -342,7 +343,7 @@ void DAG::dumpGraph()
     for (auto &[nodeId, outNodeIds] : m_graph) {
         std::stringstream ss;
         ss << nodeId << ": ";
-        for (long outNodeId : outNodeIds) {
+        for (vtf_id_t outNodeId : outNodeIds) {
             ss << outNodeId << " ";
         }
         VTF_LOGI(ss.str());

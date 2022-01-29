@@ -42,3 +42,6 @@ target_link_libraries(testThreadLoop PUBLIC Threads::Threads)
 
 add_executable(testPipeline "../testPipeline.cpp")
 target_link_libraries(testPipeline PUBLIC Threads::Threads)
+
+add_executable(testScheduler "../testScheduler.cpp")
+target_link_libraries(testScheduler PUBLIC Threads::Threads)

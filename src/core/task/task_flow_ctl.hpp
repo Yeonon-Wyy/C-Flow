@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:37:58
+ * @LastEditTime: 2022-01-29 14:51:17
  */
 
 #pragma once
@@ -19,6 +19,7 @@
 #include "task_threadPool.hpp"
 #include "../dag.hpp"
 #include "../log.hpp"
+#include "../type.hpp"
 
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
@@ -78,8 +79,8 @@ private:
      */    
     void commonSetting(std::shared_ptr<Task> task);
 private:
-    std::unordered_map<long, std::shared_ptr<Task>> m_taskIdMap;
-    std::vector<std::vector<long>> m_taskOrder;
+    std::unordered_map<vtf_id_t, std::shared_ptr<Task>> m_taskIdMap;
+    std::vector<std::vector<vtf_id_t>> m_taskOrder;
     TaskThreadPool m_threadPool;
     DAG m_dag;
 
@@ -114,7 +115,7 @@ void TaskFlowCtl::reorganizeTaskOrder()
         std::stringstream ss;
         for (auto& curLevelTask : m_taskOrder) {
             ss << "[";
-            for (long taskId : curLevelTask) {
+            for (vtf_id_t taskId : curLevelTask) {
                 ss << m_taskIdMap[taskId]->getName() << ",";
             }
             VTF_LOGI("{0}]", ss.str());
@@ -133,7 +134,7 @@ void TaskFlowCtl::start()
     reorganizeTaskOrder();
     for (auto& curLevelTaskIds : m_taskOrder) {
         std::vector<std::pair<std::string, std::future<void>>> taskfutureList;
-        for (long taskId : curLevelTaskIds) {
+        for (vtf_id_t taskId : curLevelTaskIds) {
             if (m_taskIdMap.count(taskId) == 0) {
                 std::cerr << "can't find the task id(" << taskId << ") in taskIdMap, please check it." << std::endl;
                 return;

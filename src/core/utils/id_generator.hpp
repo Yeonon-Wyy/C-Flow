@@ -4,11 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-12-03 23:04:22
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:06:25
+ * @LastEditTime: 2022-01-29 14:46:14
  */
 #pragma once
 
 #include <atomic>
+#include "../type.hpp"
 
 namespace vtf {
 namespace utils {
@@ -20,7 +21,7 @@ public:
      * @param {*}
      * @return {*} id
      */    
-    long generate()
+    vtf_id_t generate()
     {
         m_id++;
         return m_id;

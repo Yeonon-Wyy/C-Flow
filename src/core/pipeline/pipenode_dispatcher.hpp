@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:49:02
+ * @LastEditTime: 2022-01-29 14:44:57
  */
 #pragma once
 
@@ -26,9 +26,9 @@ namespace pipeline {
 template<typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item> {
 public:    
-    using PipeNodeMap = std::unordered_map<long, std::weak_ptr<PipeNode<Item>>>;
-    PipeNodeDispatcher(int dispatchQueueSize, int threadPoolSize)
-        :Dispatcher<Item>(dispatchQueueSize),
+    using PipeNodeMap = std::unordered_map<vtf_id_t, std::weak_ptr<PipeNode<Item>>>;
+    PipeNodeDispatcher(int threadPoolSize)
+        :Dispatcher<Item>(),
          m_threadPool(threadPoolSize)
     {}
 
@@ -72,10 +72,10 @@ public:
     /**
      * @name: getNodeNameByNodeId
      * @Descripttion: just a util function, return a name of given node id.
-     * @param {long} nodeId
+     * @param {vtf_id_t} nodeId
      * @return {*}
      */    
-    std::string getNodeNameByNodeId(long nodeId);
+    std::string getNodeNameByNodeId(vtf_id_t nodeId);
 
     /**
      * @name: stop
@@ -110,7 +110,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    void notifyNotFinal(std::shared_ptr<Item>, long callerNodeId);
+    void notifyNotFinal(std::shared_ptr<Item>, vtf_id_t callerNodeId);
 
 private:
     PipeNodeMap m_pipeNodeMaps;
@@ -134,7 +134,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
     }
 
     if (data->checkDependencyIsReady()) {
-        long currentProcessNodeId = data->getCurrentNode();
+        vtf_id_t currentProcessNodeId = data->getCurrentNode();
         if (currentProcessNodeId < 0) {
             //finish
             return true;
@@ -175,7 +175,7 @@ bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> data)
 template<typename Item>
 void PipeNodeDispatcher<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode)
 {
-    long nodeId = pipeNode->getNodeId();
+    vtf_id_t nodeId = pipeNode->getNodeId();
     if (m_pipeNodeMaps.count(nodeId) == 0) {
         m_pipeNodeMaps[nodeId] = pipeNode;
     }
@@ -183,7 +183,7 @@ void PipeNodeDispatcher<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> pipeN
 }
 
 template<typename Item>
-std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(long nodeId)
+std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(vtf_id_t nodeId)
 {
     if (m_pipeNodeMaps.count(nodeId) > 0) {
         auto nodeSp = m_pipeNodeMaps[nodeId].lock();
@@ -220,9 +220,9 @@ void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data, NotifySta
 }
 
 template<typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, long callerNodeId)
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, vtf_id_t callerNodeId)
 {
-    std::vector<long> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
+    std::vector<vtf_id_t> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
     for (auto[notifierType, notifiers] : m_notifierMaps) {
         //foreach all notifiers
         if (notifierType != NotifierType::FINAL) {
@@ -234,7 +234,7 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, long c
                     data->setNotifyStatus(NotifyStatus::ERROR);
                 }
                 if (notifierSp) {
-                    long notifierId = notifierSp->ID();
+                    vtf_id_t notifierId = notifierSp->ID();
                     //find current data and node notifier
                     auto it = std::find(notifierIdsForCurrentItem.begin(), notifierIdsForCurrentItem.end(), notifierId);
                     if (it != notifierIdsForCurrentItem.end()) {

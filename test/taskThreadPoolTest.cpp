@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-10 20:10:02
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:35:33
+ * @LastEditTime: 2022-01-29 15:02:22
  */
 #include "../src/core/dag.hpp"
 #include "../src/core/task/task.hpp"
@@ -107,7 +107,7 @@ void testTaskExecute()
 
 
     auto start = std::chrono::system_clock::now();
-    std::vector<std::vector<long>> topoOrder = dag.topologicalSort();
+    std::vector<std::vector<vtf::vtf_id_t>> topoOrder = dag.topologicalSort();
 
 
     for (auto& order : topoOrder) {

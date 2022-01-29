@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-23 19:32:40
+ * @LastEditTime: 2022-01-29 14:52:12
  */
 #pragma once
 
@@ -22,7 +22,7 @@
 namespace vtf {
 
 #define NOTIFIER_DEFAULT_PREFIX "notfier_default";
-constexpr long initExpectItemId = 1;
+constexpr vtf_id_t initExpectItemId = 1;
 constexpr int defaultNotifierQueueSize = 8;
 
 /**
@@ -38,9 +38,10 @@ public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress = std::function<void()>;
     using StopProgress = std::function<void()>;
+    using NotifyDoneCallback = std::function<void(vtf_id_t)>;
 
     struct NotifierCreateInfo {
-        long id = -1;
+        vtf_id_t id = -1;
         std::string name;
         NotifierProcessCallback processCallback;
         ConfigProgress configProgress;
@@ -56,9 +57,10 @@ public:
              m_type(NotifierType::FINAL),
              m_readyQueueSize(defaultNotifierQueueSize)
         {}
-        NotifierBuilder* setID(long id);
+        NotifierBuilder* setID(vtf_id_t id);
         NotifierBuilder* setName(const std::string& name);
         NotifierBuilder* setProcessCallback(NotifierProcessCallback&& cb);
+        NotifierBuilder* setNotifyDoneCallback(NotifyDoneCallback&& cb);
         NotifierBuilder* setConfigProgress(ConfigProgress&& cp);
         NotifierBuilder* setStopProgress(StopProgress&& sp);
 
@@ -68,17 +70,18 @@ public:
         
         std::shared_ptr<Notifier<Item>> build();
     private:
-        long m_id;
+        vtf_id_t m_id;
         std::string m_name;
         NotifierProcessCallback m_processCallback;
+        NotifyDoneCallback m_notifyDoneCallback;
         ConfigProgress m_configProgress;
         StopProgress m_stopProgress;
         NotifierType m_type;
         int m_readyQueueSize;
     };
 public:
-    Notifier(long id, int readyQueueSize = defaultNotifierQueueSize)
-        :ThreadLoop<std::shared_ptr<Item>>(readyQueueSize),
+    Notifier(vtf_id_t id)
+        :ThreadLoop<std::shared_ptr<Item>>(),
          m_id(id),
          m_expectItemId(initExpectItemId)
     {
@@ -129,7 +132,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    long ID() const { return m_id; }
+    vtf_id_t ID() const { return m_id; }
 
     /**
      * @name: config
@@ -147,13 +150,14 @@ public:
      */    
     void stop();
 private:
-    long m_id;
+    vtf_id_t m_id;
     std::string m_name;
     NotifierProcessCallback m_processCallback;
+    NotifyDoneCallback m_notifyDoneCallback;
     ConfigProgress m_configProgress;
     StopProgress m_stopProgress;
-    std::map<long, std::shared_ptr<Item>> m_pendingItemMap;
-    long m_expectItemId = initExpectItemId;
+    std::map<vtf_id_t, std::shared_ptr<Item>> m_pendingItemMap;
+    vtf_id_t m_expectItemId = initExpectItemId;
     NotifierType m_type;
 };
 
@@ -176,6 +180,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
 
         //process current item first
         ret = m_processCallback(item);
+        m_notifyDoneCallback(item->ID());
         //update m_expectItemId
         m_expectItemId = item->ID() + 1;
         VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
@@ -185,6 +190,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
             //need one-by-one process, so we need juge m_expectItemId and item id.
             if (it->first == m_expectItemId) {
                 m_processCallback(it->second);
+                m_notifyDoneCallback(it->first);
                 //update m_expectItemId
                 m_expectItemId = it->second->ID() + 1;
                 VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
@@ -243,7 +249,7 @@ void Notifier<Item>::stop()
 */
 
 template<typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(long id)
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(vtf_id_t id)
 {
     this->m_id = id;
     return this;
@@ -259,6 +265,15 @@ template<typename Item>
 typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setProcessCallback(NotifierProcessCallback&& cb)
 {
     m_processCallback = std::move(cb);
+    return this;
+}
+
+template<typename Item>
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setNotifyDoneCallback(NotifyDoneCallback&& cb)
+{
+    if (m_type == NotifierType::FINAL) {
+        m_notifyDoneCallback = std::move(cb);
+    }
     return this;
 }
 
@@ -308,7 +323,7 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     }
 
     //set field
-    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_id, m_readyQueueSize);
+    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_id);
     if (m_name == "") {
         m_name = NOTIFIER_DEFAULT_PREFIX;
     }
@@ -324,6 +339,9 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     }
     if (m_stopProgress) {
         notifier->m_stopProgress = m_stopProgress;
+    }
+    if (m_notifyDoneCallback) {
+        notifier->m_notifyDoneCallback = m_notifyDoneCallback;
     }
 
     return notifier;

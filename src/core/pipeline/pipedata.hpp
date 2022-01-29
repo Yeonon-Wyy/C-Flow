@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-23 19:35:35
+ * @LastEditTime: 2022-01-29 14:44:33
  */
 #pragma once
 
@@ -17,7 +17,7 @@
 namespace vtf {
 namespace pipeline {
 
-using GraphType = std::unordered_map<long, std::vector<long>>;
+using GraphType = std::unordered_map<vtf_id_t, std::vector<vtf_id_t>>;
 
 /**
  * @name: class PipeData
@@ -38,9 +38,9 @@ public:
     };
 
     struct Dependency {
-        long curNodeId = -1;
-        std::pair<long, DependencyStatus> precursors;
-        std::pair<long, DependencyStatus> successors;
+        vtf_id_t curNodeId = -1;
+        std::pair<vtf_id_t, DependencyStatus> precursors;
+        std::pair<vtf_id_t, DependencyStatus> successors;
     };
 
 
@@ -50,12 +50,12 @@ public:
     {
     }
 
-    bool constructDependency(const std::vector<long>& pipeline) override;
+    bool constructDependency(const std::vector<vtf_id_t>& pipeline) override;
 
     PipelineScenario scenario() override { return m_scenario; }
 
-    long getCurrentNode() override { return m_currentProcessNodeId; };
-    long getNextNode() override { return {m_nextNodeId}; };
+    vtf_id_t getCurrentNode() override { return m_currentProcessNodeId; };
+    vtf_id_t getNextNode() override { return {m_nextNodeId}; };
     
     bool checkDependencyIsReady() override;
 
@@ -65,21 +65,30 @@ public:
 
     NotifyStatus getNotifyStatus() { return m_notifyStatus; }
 
-    void addNotifierForNode(long nodeId, long notifierId) override;
+    void setDataType(DataType&& dataType) { m_dataType = std::move(dataType); }
+    
+    DataType getDataType() { return m_dataType; }
 
-    std::vector<long> getNotifiersByNodeId(long nodeId) override;
+    void setPriority(DataPriority&& priority) { m_priority = std::move(priority); }
+    DataPriority getPriority() { return m_priority; }
+
+    void addNotifierForNode(vtf_id_t nodeId, vtf_id_t notifierId) override;
+
+    std::vector<vtf_id_t> getNotifiersByNodeId(vtf_id_t nodeId) override;
 private:
     bool checkDependencyValid();
-    long findNextNode();
+    vtf_id_t findNextNode();
     bool notifyResult();
 private:
     std::vector<Dependency> m_dependencies;
-    std::unordered_map<long, std::vector<long>> m_nodeNotifiers;
+    std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> m_nodeNotifiers;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
-    long m_currentProcessNodeId;
+    DataType m_dataType;
+    DataPriority m_priority;
+    vtf_id_t m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
-    long m_nextNodeId;
+    vtf_id_t m_nextNodeId;
     int m_nextNodeIdx;
     bool m_enableDebug;
 
@@ -89,6 +98,8 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
     :Data(),
         m_scenario(scenario),
         m_notifyStatus(NotifyStatus::OK),
+        m_dataType(DataType::DATATYPE_NORMAL),
+        m_priority(DataPriority::DATAPRIORITY_NORMAL),
         m_currentProcessNodeId(-1),
         m_currentProcessNodeIdx(-1),
         m_nextNodeId(-1),
@@ -99,11 +110,11 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
 }
 
 
-bool PipeData::constructDependency(const std::vector<long>& pipeline)
+bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline)
 {
     m_dependencies.clear();
     for (int i = 0; i < pipeline.size(); i++) {
-        long curNodeId = pipeline[i];
+        vtf_id_t curNodeId = pipeline[i];
 
         //check dependency exist
         auto it = std::find_if(m_dependencies.begin(), m_dependencies.end(), [curNodeId](const Dependency& dependency) {
@@ -153,11 +164,11 @@ bool PipeData::constructDependency(const std::vector<long>& pipeline)
     return true;
 }
 
-long PipeData::findNextNode()
+vtf_id_t PipeData::findNextNode()
 {
     if (!checkDependencyValid()) return -1;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
-    long successorId = currentDependency.successors.first;   
+    vtf_id_t successorId = currentDependency.successors.first;   
     DependencyStatus successorStatus = currentDependency.successors.second;
     if (successorId != -1 && successorStatus == DependencyStatus::NOREADY) {
         return successorId;
@@ -169,7 +180,7 @@ bool PipeData::checkDependencyIsReady()
 {
     if (!checkDependencyValid()) return false;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
-    long precursorId = currentDependency.precursors.first;
+    vtf_id_t precursorId = currentDependency.precursors.first;
     DependencyStatus precursorStatus = currentDependency.precursors.second;
 
     if ((precursorId == -1 && precursorStatus == DependencyStatus::DONE)
@@ -184,7 +195,7 @@ bool PipeData::checkDependencyIsReady()
 
 void PipeData::markCurrentNodeReady()
 {
-    long nextNodeId = findNextNode();
+    vtf_id_t nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
     if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
@@ -214,12 +225,12 @@ void PipeData::markCurrentNodeReady()
     m_nextNodeId = findNextNode();
 }
 
-void PipeData::addNotifierForNode(long nodeId, long notifierId)
+void PipeData::addNotifierForNode(vtf_id_t nodeId, vtf_id_t notifierId)
 {
     m_nodeNotifiers[nodeId].push_back(notifierId);
 }
 
-std::vector<long> PipeData::getNotifiersByNodeId(long nodeId)
+std::vector<vtf_id_t> PipeData::getNotifiersByNodeId(vtf_id_t nodeId)
 {
     if (m_nodeNotifiers.count(nodeId) > 0) {
         return m_nodeNotifiers[nodeId];
