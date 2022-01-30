@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 15:18:48
+ * @LastEditTime: 2022-01-30 21:47:22
  */
 
 #pragma once
@@ -23,6 +23,11 @@
 namespace vtf {
 namespace pipeline {
 
+const static int pplDefaultMaxProcessingSize = 32;
+//some CPU architectures are 4 core 8 threads(like intel), _SC_NPROCESSORS_CONF can't get cpu thread number
+//for common, pplDefaultThreadPoolSize just use CPU core number + 1, not thread numbers
+const static int pplDefaultThreadPoolSize = sysconf(_SC_NPROCESSORS_CONF) + 1;
+
 /**
  * @name: class PipeLine
  * @Descripttion: unified entry as a business, manage all resource(include dispatcher, node, notifier, etc..) and their life cycles
@@ -37,8 +42,8 @@ public:
     using GraphType = std::unordered_map<vtf_id_t, std::vector<vtf_id_t>>;
 
     struct ConfigureTable {
-        int queueSize = 8;
-        int threadPoolSize = 8;
+        int maxProcessingSize = pplDefaultMaxProcessingSize;
+        int threadPoolSize = pplDefaultThreadPoolSize;
         std::vector<typename PipeNode<Item>::PipeNodeCreateInfo> pipeNodeCreateInfos;
         std::vector<typename Notifier<Item>::NotifierCreateInfo> notifierCreateInfos;
         std::vector<std::pair<vtf_id_t, vtf_id_t>> nodeConnections;
@@ -48,15 +53,15 @@ public:
     /**
      * @name: PipeLine
      * @Descripttion: PipeLine constructor
-     * @param {vtf_id_t} queueSize
+     * @param {int} maxProcessingSize
      * @param {int} threadPoolSize
      * @return {*}
      */    
-    PipeLine(int threadPoolSize)
+    PipeLine(int maxProcessingSize, int threadPoolSize)
         :m_dag(),
          m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>(threadPoolSize)),
          m_processingDataCount(0),
-         m_processingMaxDataCount(32)
+         m_processingMaxDataCount(maxProcessingSize)
     {}
 
     ~PipeLine()
@@ -193,7 +198,7 @@ private:
 template<typename Item>
 std::shared_ptr<PipeLine<Item>> PipeLine<Item>::generatePipeLineByConfigureTable(const ConfigureTable& configTable)
 {
-    std::shared_ptr<PipeLine<Item>> ppl = std::make_shared<PipeLine<Item>>(configTable.threadPoolSize);
+    std::shared_ptr<PipeLine<Item>> ppl = std::make_shared<PipeLine<Item>>(configTable.maxProcessingSize, configTable.threadPoolSize);
     for (auto pipeNodeCreateInfo : configTable.pipeNodeCreateInfos) {
         ppl->addPipeNode(pipeNodeCreateInfo);
     }
@@ -298,7 +303,6 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
         ->setNotifyDoneCallback(std::bind(&PipeLine<Item>::notifyDone, this, std::placeholders::_1))
         ->setConfigProgress(std::move(createInfo.configProgress))
         ->setStopProgress(std::move(createInfo.stopProgress))
-        ->setQueueSize(createInfo.readyQueueSize)
         ->setID(createInfo.id)
         ->build();
 

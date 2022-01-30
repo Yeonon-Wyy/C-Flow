@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:52:12
+ * @LastEditTime: 2022-01-30 21:48:40
  */
 #pragma once
 
@@ -23,7 +23,6 @@ namespace vtf {
 
 #define NOTIFIER_DEFAULT_PREFIX "notfier_default";
 constexpr vtf_id_t initExpectItemId = 1;
-constexpr int defaultNotifierQueueSize = 8;
 
 /**
  * @name: Notifier
@@ -54,8 +53,7 @@ public:
     public:
         NotifierBuilder()
             :m_id(-1),
-             m_type(NotifierType::FINAL),
-             m_readyQueueSize(defaultNotifierQueueSize)
+             m_type(NotifierType::FINAL)
         {}
         NotifierBuilder* setID(vtf_id_t id);
         NotifierBuilder* setName(const std::string& name);
@@ -63,10 +61,7 @@ public:
         NotifierBuilder* setNotifyDoneCallback(NotifyDoneCallback&& cb);
         NotifierBuilder* setConfigProgress(ConfigProgress&& cp);
         NotifierBuilder* setStopProgress(StopProgress&& sp);
-
         NotifierBuilder* setType(NotifierType&& type);
-        NotifierBuilder* setQueueSize(int readyQueueSize);
-
         
         std::shared_ptr<Notifier<Item>> build();
     private:
@@ -77,7 +72,6 @@ public:
         ConfigProgress m_configProgress;
         StopProgress m_stopProgress;
         NotifierType m_type;
-        int m_readyQueueSize;
     };
 public:
     Notifier(vtf_id_t id)
@@ -299,19 +293,8 @@ typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setTy
 }
 
 template<typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setQueueSize(int readyQueueSize)
-{
-    m_readyQueueSize = readyQueueSize;
-    return this;
-}
-
-template<typename Item>
 std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
 {
-    if (m_type == NotifierType::FINAL && m_readyQueueSize <= 0) {
-        VTF_LOGE("notifier queue size can't less than 1");
-        return nullptr;
-    }
     if (!m_processCallback) {
         VTF_LOGE("notifier process callback must be given!");
         return nullptr;

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 15:16:33
+ * @LastEditTime: 2022-01-30 21:50:39
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -67,7 +67,7 @@ void testPipeline()
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P1 node", request->ID());
                     if (request->getDataType() == vtf::DataType::DATATYPE_RT)
-                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(10000));
+                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     else
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     return true;
@@ -138,7 +138,6 @@ void testPipeline()
                     VTF_LOGD("pipeline_node_done_notifier - user define stop");
                 },
                 .type = vtf::NotifierType::DATA_LISTEN,
-                .readyQueueSize = 8
             },
             {
                 .id = 2,
@@ -152,7 +151,6 @@ void testPipeline()
                         return true;
                 },
                 .type = vtf::NotifierType::FINAL,
-                .readyQueueSize = 8
             }
         },
         .nodeConnections = 

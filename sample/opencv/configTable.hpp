@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: yeonon
- * @LastEditTime: 2021-12-18 21:02:00
+ * @LastEditTime: 2022-01-30 21:46:55
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -52,7 +52,7 @@ bool imageShowResultCallback(std::shared_ptr<FrameRequest> request)
 
 const static PipeLine<FrameRequest>::ConfigureTable configTable = 
 {
-    .queueSize = 8,
+    .maxProcessingSize = 8,
     .threadPoolSize = 50,
     .pipeNodeCreateInfos = 
     {
@@ -84,7 +84,6 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
             .name = "pipeline_result_notifier",
             .processCallback = imageShowResultCallback,
             .type = vtf::NotifierType::FINAL,
-            .readyQueueSize = 8
         }
     },
     .nodeConnections = 
