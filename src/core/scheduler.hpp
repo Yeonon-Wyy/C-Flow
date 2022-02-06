@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 20:06:27
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-27 00:00:19
+ * @LastEditTime: 2022-02-06 17:11:56
  */
 #pragma once
 
@@ -91,8 +91,6 @@ void Scheduler<T>::emplace(T item)
         std::abort();
     }
     m_dataTypeQueueMap[curItemDataType].push(item);
-    VTF_LOGD("[debug test] emplace item [{0}] dataType is [{1}] curSize is [{2}]", item->ID(), curItemDataType, m_dataTypeQueueMap[curItemDataType].size());
-
 }
 
 template<typename T>
@@ -103,7 +101,6 @@ T Scheduler<T>::schedule()
     for (auto&[dataType, dataQueue] : m_dataTypeQueueMap) {
         if (dataQueue.empty()) continue;
         item = dataQueue.top();
-        VTF_LOGD("[debug test] schedule item [{0}] dataType is [{1}]", item->ID(), dataType);
         dataQueue.pop();
         break;
     }

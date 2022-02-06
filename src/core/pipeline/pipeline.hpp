@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: yeonon
- * @LastEditTime: 2022-01-30 21:47:22
+ * @LastEditTime: 2022-02-06 17:12:07
  */
 
 #pragma once
@@ -372,7 +372,6 @@ bool PipeLine<Item>::constructPipelinesByScenario()
 template<typename Item>
 void PipeLine<Item>::notifyDone(vtf_id_t id)
 {
-    VTF_LOGD("[debug test] notifyDone [{0}] currentProcessing cnt [{1}]", id, m_processingDataCount);
     m_processingDataCount--;
     m_processingDataCV.notify_one();
 }
