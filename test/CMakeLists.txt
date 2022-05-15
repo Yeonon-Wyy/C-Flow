@@ -14,7 +14,7 @@ include_directories("/usr/include/")
 
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
-find_package(OpenCV REQUIRED)
+# find_package(OpenCV REQUIRED)
 
 
 SET(EXECUTABLE_OUTPUT_PATH "../bin/")

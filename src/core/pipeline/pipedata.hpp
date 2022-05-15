@@ -113,7 +113,7 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
 bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline)
 {
     m_dependencies.clear();
-    for (int i = 0; i < pipeline.size(); i++) {
+    for (size_t i = 0; i < pipeline.size(); i++) {
         vtf_id_t curNodeId = pipeline[i];
 
         //check dependency exist
@@ -126,7 +126,7 @@ bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline)
         }
 
         Dependency dependency = Dependency{.curNodeId = curNodeId};
-        if (i - 1 >= 0) {
+        if (i >= 1) {
             dependency.precursors = std::make_pair<>(pipeline[i-1], DependencyStatus::NOREADY);
         } else {
             dependency.precursors = std::make_pair<>(-1, DependencyStatus::DONE);
@@ -198,7 +198,7 @@ void PipeData::markCurrentNodeReady()
     vtf_id_t nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     //last node
-    if (nextNodeId == -1 || m_nextNodeIdx >= m_dependencies.size()) {
+    if (nextNodeId == -1 || m_nextNodeIdx >= (int)m_dependencies.size()) {
         VTF_LOGD("data {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
@@ -241,7 +241,7 @@ std::vector<vtf_id_t> PipeData::getNotifiersByNodeId(vtf_id_t nodeId)
 //private
 bool PipeData::checkDependencyValid()
 {
-    if (m_currentProcessNodeIdx < 0 || m_currentProcessNodeIdx >= m_dependencies.size()) {
+    if (m_currentProcessNodeIdx < 0 || m_currentProcessNodeIdx >= (int)m_dependencies.size()) {
         VTF_LOGE("current process node index {0} is error. please check it.", m_currentProcessNodeIdx);
         return false;
     }

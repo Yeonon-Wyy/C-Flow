@@ -303,7 +303,7 @@ void DAG::findAllTopologicalSort(
 {
     if (topoOrder.size() == nodeOrder.size()) {
         std::vector<vtf_id_t> temp;
-        for (int i = 0; i < topoOrder.size(); i++) {
+        for (size_t i = 0; i < topoOrder.size(); i++) {
             if (i > 0 && !checkDependency(topoOrder[i-1], topoOrder[i])) {
                 break;
             }
@@ -314,8 +314,8 @@ void DAG::findAllTopologicalSort(
         return;
     }
 
-    for (int i = startIdx; i < nodeOrder.size(); i++) {
-        for (int j = 0; j < nodeOrder[i].size(); j++) {
+    for (size_t i = startIdx; i < nodeOrder.size(); i++) {
+        for (size_t j = 0; j < nodeOrder[i].size(); j++) {
             topoOrder.push_back(nodeOrder[i][j]);
             findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, i + 1);
             topoOrder.pop_back();
