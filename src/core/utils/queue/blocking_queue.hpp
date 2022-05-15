@@ -12,7 +12,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "log.hpp"
+#include "../log/log.hpp"
 
 namespace vtf {
 template <typename T>

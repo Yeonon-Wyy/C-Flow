@@ -1,6 +1,6 @@
 #include "../src/core/dag.hpp"
 #include "../src/core/task/task.hpp"
-#include "../src/core/threadPool.hpp"
+#include "../src/core/utils/thread/threadPool.hpp"
 
 #include <chrono>
 

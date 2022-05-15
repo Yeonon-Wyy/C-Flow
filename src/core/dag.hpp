@@ -18,7 +18,7 @@
 #include <set>
 #include "type.hpp"
 
-#include "log.hpp"
+#include "utils/log/log.hpp"
 
 namespace vtf
 {

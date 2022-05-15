@@ -10,7 +10,7 @@
 #include <future>
 
 #include "task.hpp"
-#include "../log.hpp"
+#include "../utils/log/log.hpp"
 
 namespace vtf {
 namespace task {

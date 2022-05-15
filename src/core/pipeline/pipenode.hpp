@@ -9,7 +9,7 @@
 #pragma once
 #include "type.hpp"
 #include "../dag.hpp"
-#include "../log.hpp"
+#include "../utils/log/log.hpp"
 #include "../utils/id_generator.hpp"
 #include "../utils/str_convertor.hpp"
 

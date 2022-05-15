@@ -6,7 +6,7 @@
  * @LastEditors: yeonon
  * @LastEditTime: 2021-12-12 19:34:23
  */
-#include "../src/core/blocking_queue.hpp"
+#include "../src/core/utils/queue/blocking_queue.hpp"
 #include <random>
 #include <iostream>
 #include <thread>

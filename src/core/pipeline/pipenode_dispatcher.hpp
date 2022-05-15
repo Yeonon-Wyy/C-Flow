@@ -9,10 +9,10 @@
 #pragma once
 
 #include "../dispatcher.hpp"
-#include "../blocking_queue.hpp"
-#include "../threadPool.hpp"
+#include "../utils/thread/threadPool.hpp"
 #include "pipenode.hpp"
 #include "../notifier.hpp"
+#include "../scheduler.hpp"
 
 #include <type_traits>
 #include <atomic>
@@ -159,7 +159,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 template<typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> data)
 {
-    ThreadLoop<std::shared_ptr<Item>>::queueItem(data);
+    ThreadLoop<std::shared_ptr<Item>, Scheduler>::queueItem(data);
     VTF_LOGD("queue data id({0})", data->ID());
     return;
 }
@@ -198,7 +198,7 @@ void PipeNodeDispatcher<Item>::stop()
 {
     VTF_LOGD("pipeNodeDispatcher stop start");
     m_threadPool.stop();
-    ThreadLoop<std::shared_ptr<Item>>::stop();
+    ThreadLoop<std::shared_ptr<Item>, Scheduler>::stop();
     m_pipeNodeMaps.clear();
     m_notifierMaps.clear();
     VTF_LOGD("pipeNodeDispatcher stop end");

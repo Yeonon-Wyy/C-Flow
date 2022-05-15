@@ -8,7 +8,7 @@
  */
 #include "../src/core/task/task_flow_ctl.hpp"
 #include "../src/core/utils/time_util.hpp"
-#include "../src/core/blocking_queue.hpp"
+#include "../src/core/utils/queue/blocking_queue.hpp"
 #include <chrono>
 
 

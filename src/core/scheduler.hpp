@@ -12,13 +12,20 @@
 #include <unordered_map>
 #include <map>
 #include <cstdlib>
-#include "log.hpp"
+#include "utils/log/log.hpp"
 #include "type.hpp"
 
 namespace vtf {
 
 
-
+/**
+ * @name: class Scheduler 
+ * @Descripttion: Scheduler can schedule item according to priority(data type).
+ *                1. dataType is both data's type and priority
+ *                2. when call schedule, it will foreach queue from low to high according to priority.
+ * @param {*}
+ * @return {*}
+ */
 template<typename T>
 class Scheduler {
 public:
@@ -98,6 +105,7 @@ T Scheduler<T>::schedule()
 {
     T item;
 
+    //has priority
     for (auto&[dataType, dataQueue] : m_dataTypeQueueMap) {
         if (dataQueue.empty()) continue;
         item = dataQueue.top();

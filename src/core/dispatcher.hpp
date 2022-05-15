@@ -10,8 +10,9 @@
 #include <memory>
 #include "utils/id_generator.hpp"
 #include "utils/str_convertor.hpp"
-#include "threadLoop.hpp"
+#include "utils/thread/threadLoop.hpp"
 #include "notifier.hpp"
+#include "scheduler.hpp"
 
 namespace vtf {
 
@@ -19,17 +20,17 @@ namespace vtf {
 
 
 template<typename Item>
-class Dispatcher : public ThreadLoop<std::shared_ptr<Item>> {
+class Dispatcher : public ThreadLoop<std::shared_ptr<Item>, Scheduler> {
 public:
     Dispatcher()
-        :ThreadLoop<std::shared_ptr<Item>>(),
+        :ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
          m_id(m_idGenerator.generate()),
          m_name(DISPATCHER_DEFAULT_PREFIX + vtf::utils::StringConvetor::digit2String(m_id))
     {
     }
 
     Dispatcher(std::string&& name)
-        :ThreadLoop<std::shared_ptr<Item>>(),
+        :ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
          m_id(m_idGenerator.generate()),
          m_name(name)
     {

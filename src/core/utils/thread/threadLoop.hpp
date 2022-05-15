@@ -17,13 +17,27 @@
 #include <queue>
 #include <map>
 
-#include "log.hpp"
-#include "scheduler.hpp"
+#include "../log/log.hpp"
+// #include "scheduler.hpp"
 
 namespace vtf {
 
 constexpr int threadLoopDefaultQueueSize = 8;
-template<typename T>
+
+
+/**
+ * @name: class ThreadLoop
+ * @Descripttion: provide some function of thread alway loop utils condition is reach.
+ *                Note: a thread loop need some scheduler to control flow.and scheduler object need provide some function like:
+ *                1. default constructor
+ *                2. "schedule" function
+ *                3. "empty","size","emplace" function
+ *                4. etc.....
+ * @param {*}
+ * @return {*}
+ */
+template<typename T,
+    template<typename> typename Scheduler>
 class ThreadLoop {
 
 public:
@@ -84,8 +98,9 @@ private:
 };
 
 
-template<typename T>
-void ThreadLoop<T>::_threadLoop()
+template<typename T,
+    template<typename> typename Scheduler>
+void ThreadLoop<T, Scheduler>::_threadLoop()
 {
     VTF_LOGD("ThreadLoop start");
     while (true) {
@@ -112,8 +127,9 @@ void ThreadLoop<T>::_threadLoop()
     VTF_LOGD("ThreadLoop end");
 }
 
-template<typename T>
-void ThreadLoop<T>::queueItem(T item)
+template<typename T,
+    template<typename> typename Scheduler>
+void ThreadLoop<T, Scheduler>::queueItem(T item)
 {
     {
         std::unique_lock<std::mutex> lk(this->m_mutex);
@@ -125,15 +141,17 @@ void ThreadLoop<T>::queueItem(T item)
     m_condition.notify_one();
 }
 
-template<typename T>
-void ThreadLoop<T>::start()
+template<typename T,
+    template<typename> typename Scheduler>
+void ThreadLoop<T, Scheduler>::start()
 {
     m_isNeedLoop = true;
     m_thread = std::thread(&ThreadLoop::_threadLoop, this);
 }
 
-template<typename T>
-void ThreadLoop<T>::stop()
+template<typename T,
+    template<typename> typename Scheduler>
+void ThreadLoop<T, Scheduler>::stop()
 {
     {
         std::unique_lock<std::mutex> lk(this->m_mutex);
@@ -147,8 +165,9 @@ void ThreadLoop<T>::stop()
     }
 }
 
-template<typename T>
-ThreadLoop<T>::~ThreadLoop()
+template<typename T,
+    template<typename> typename Scheduler>
+ThreadLoop<T, Scheduler>::~ThreadLoop()
 {
     {
         std::unique_lock<std::mutex> lk(this->m_mutex);

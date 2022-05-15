@@ -13,7 +13,7 @@
 #include "pipenode.hpp"
 #include "pipenode_dispatcher.hpp"
 #include "../notifier.hpp"
-#include "../log.hpp"
+#include "../utils/log/log.hpp"
 
 #include <memory>
 #include <mutex>

@@ -8,10 +8,11 @@
  */
 #pragma once
 
-#include "threadLoop.hpp"
+#include "utils/thread/threadLoop.hpp"
 #include "utils/id_generator.hpp"
 #include "utils/str_convertor.hpp"
 #include "type.hpp"
+#include "scheduler.hpp"
 
 #include <mutex>
 #include <condition_variable>
@@ -32,7 +33,7 @@ constexpr vtf_id_t initExpectItemId = 1;
  *       And if notier type is DATA_LISTEN or is other "data-feedback-like" will not start a thread, because it's no need for thread, so you shouln only put some light logic in callback.
  */
 template<typename Item>
-class Notifier : public ThreadLoop<std::shared_ptr<Item>> {
+class Notifier : public ThreadLoop<std::shared_ptr<Item> , Scheduler> {
 public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress = std::function<void()>;
@@ -75,7 +76,7 @@ public:
     };
 public:
     Notifier(vtf_id_t id)
-        :ThreadLoop<std::shared_ptr<Item>>(),
+        :ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
          m_id(id),
          m_expectItemId(initExpectItemId)
     {
@@ -208,7 +209,7 @@ void Notifier<Item>::notify(std::shared_ptr<Item> item)
         //just call directly, please ensure the process callback don't need a lot of time, or else will effect performance
         m_processCallback(item);
     } else {
-        ThreadLoop<std::shared_ptr<Item>>::queueItem(item);
+        ThreadLoop<std::shared_ptr<Item>, Scheduler>::queueItem(item);
     }
 }
 
@@ -230,7 +231,7 @@ void Notifier<Item>::stop()
     if (m_stopProgress) {
         m_stopProgress();
     }
-    ThreadLoop<std::shared_ptr<Item>>::stop();
+    ThreadLoop<std::shared_ptr<Item>, Scheduler>::stop();
     m_pendingItemMap.clear();
     m_expectItemId = initExpectItemId;
     VTF_LOGD("notifier [{0}] stop end", m_name);

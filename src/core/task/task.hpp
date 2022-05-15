@@ -19,7 +19,7 @@
 #include "../dag.hpp"
 #include "../utils/id_generator.hpp"
 #include "../utils/str_convertor.hpp"
-#include "../log.hpp"
+#include "../utils/log/log.hpp"
 
 
 #define TASK_NAME_PREFIX "task_"
