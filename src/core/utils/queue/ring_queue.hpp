@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-21 17:00:57
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-21 20:52:15
+ * @LastEditTime: 2022-05-22 18:40:39
  * @FilePath: /src/core/utils/queue/ring_queue.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -34,10 +34,10 @@ public:
 
     /**
      * @description: push element to queue
-     * @param {E&&} e
+     * @param {const E&} e
      * @return {*}
      */    
-    bool push(E&& e)
+    bool push(const E& e)
     {
         if (full()) return false;
         m_elements[m_realIdx++] = e;
@@ -111,6 +111,12 @@ public:
      * @return {*}
      */
     std::size_t capcity() { return m_capcity; }
+
+    E at(int idx) {
+        //idx 
+        if (idx < 0 || idx >= m_capcity + 1) std::__throw_length_error("index larger than capcity or less than 0");
+        return m_elements[idx]; 
+    }
 private:
     int m_capcity;
     std::vector<E> m_elements;

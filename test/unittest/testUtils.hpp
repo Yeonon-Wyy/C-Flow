@@ -1,3 +1,13 @@
+/*
+ * @Author: Yeonon
+ * @Date: 2022-05-21 17:11:41
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-21 20:45:07
+ * @FilePath: /test/unittest/testUtils.hpp
+ * @Description: 
+ * Copyright 2022 Yeonon, All Rights Reserved. 
+ * 2022-05-21 17:11:41
+ */
 #pragma once
 #include <iostream>
 
@@ -9,6 +19,10 @@ static unsigned int g_failCnt = 0;
 #define PRINT_FAILED_RESULT(fnname, expect, actual) \
 std::cout << "("  << g_testCnt << ") " << fnname << " failed, expect: " << expect << ", actual: " << actual << std::endl
 
+#define PRINT_FAILED_RESULT_OF_POINTER(fnname, actual) \
+std::cout << "("  << g_testCnt << ") " << fnname << " failed, actual: " << actual << std::endl;
+
+
 template<typename T, typename Fn>
 bool _ASSERT(T expect, T actual, Fn&& f, const std::string& testName)
 {
@@ -19,6 +33,32 @@ bool _ASSERT(T expect, T actual, Fn&& f, const std::string& testName)
     }
     PRINT_FAILED_RESULT(testName, expect, actual);
     g_failCnt++;
+    return false;
+}
+
+template<typename T>
+bool ASSERT_NULL(T actual)
+{
+    g_testCnt++;
+    if (actual == nullptr) {
+        g_passCnt++;
+        return true;
+    }
+    g_failCnt++;
+    PRINT_FAILED_RESULT_OF_POINTER("ASSERT_NULL", actual);
+    return false;
+}
+
+template<typename T>
+bool ASSERT_NOT_NULL(T actual)
+{
+    g_testCnt++;
+    if (actual != nullptr) {
+        g_passCnt++;
+        return true;
+    }
+    g_failCnt++;
+    PRINT_FAILED_RESULT_OF_POINTER("ASSERT_NOT_NULL", actual);
     return false;
 }
 
@@ -69,6 +109,8 @@ bool ASSERT_GT_OR_EQ(T expect, T actual)
         return a >= e;
     }, "ASSERT_GT_OR_EQ");
 }
+
+
 
 
 void PRINT_RESULT()
