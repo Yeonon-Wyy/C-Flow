@@ -136,6 +136,7 @@ private:
     >
     void freeBufferQueue(Q<std::shared_ptr<BufferInfo>>& q)
     {
+        //because ring queue, so size = cap + 1
         int sz = q.capcity() + 1;
         for (int i = 0; i < sz; i++) {
             auto bf = q.at(i);

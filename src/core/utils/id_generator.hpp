@@ -3,12 +3,13 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-12-03 23:04:22
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:46:14
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-28 13:53:26
  */
 #pragma once
 
 #include <atomic>
+#include <mutex>
 #include "../type.hpp"
 
 namespace vtf {
@@ -23,11 +24,13 @@ public:
      */    
     vtf_id_t generate()
     {
+        std::unique_lock<std::mutex> lk(m_idLock);
         m_id++;
         return m_id;
     }
 private:
     std::atomic_long m_id;
+    std::mutex m_idLock;
 };
 }
 }
