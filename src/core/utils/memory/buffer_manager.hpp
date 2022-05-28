@@ -63,6 +63,7 @@ public:
         bool isValid;
         std::size_t owner;
         std::string name = "None";
+        unsigned int numOfUser;
     };
 public:
 
@@ -119,6 +120,18 @@ public:
             std::abort();
         }
         return totalCapcity - m_alloctBufferCount;
+    }
+
+    /**
+     * @description: add user of buffer
+     * @param {shared_ptr<BufferInfo>} bf bufferInfo
+     * @param {int} numOfUser number of user
+     * @return {*}
+     */    
+    void addUserOfBuffer(std::shared_ptr<BufferInfo> bf, int numOfUser) 
+    {
+        std::unique_lock<std::mutex> lk(m_bufferLock);
+        bf->numOfUser += numOfUser;
     }
 
     /**
@@ -231,11 +244,12 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::popBuff
 
          //FIXME: just for keep "unified queue process"
         m_tempBufferQueue.pop();
-
+        bf->numOfUser++;
         return bf;
     }
     //pop from buffer queue
     auto bf = m_bufferQueue.front();
+    bf->numOfUser++;
     m_bufferQueue.pop();
     return bf;
 }
@@ -249,15 +263,18 @@ void BufferManager<E>::pushBuffer(std::shared_ptr<BufferManager<E>::BufferInfo> 
             bf->owner,
             m_bfs.hash());
     }
-    if (bf->isTempAlloctBuffer) {
-        freeBuffer(bf);
-        m_tempBufferQueue.push(bf);
-         //FIXME: just for keep "unified queue process"
-        m_tempBufferQueue.pop();
-    } else {
-        m_bufferQueue.push(bf);
+    if (--bf->numOfUser == 0) {
+        if (bf->isTempAlloctBuffer) {
+            freeBuffer(bf);
+            m_tempBufferQueue.push(bf);
+            //FIXME: just for keep "unified queue process"
+            m_tempBufferQueue.pop();
+        } else {
+            m_bufferQueue.push(bf);
+        }
+        m_bufferReadyCV.notify_all();
     }
-    m_bufferReadyCV.notify_all();
+
 }
 
 template<typename E>
@@ -270,6 +287,7 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::alloctB
         .isValid = true,
         .owner = m_bfs.hash(),
         .name = m_bfs.name,
+        .numOfUser = 0,
     };
 
     //if constexpr statment can instead of std::enable_if
