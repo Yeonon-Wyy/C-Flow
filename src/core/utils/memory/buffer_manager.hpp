@@ -6,6 +6,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <condition_variable>
 
 namespace vtf {
 
@@ -111,7 +112,7 @@ public:
      */    
     unsigned int noAlloctCount() 
     {
-        std::unique_lock<std::mutex> lk(m_mutex);
+        std::unique_lock<std::mutex> lk(m_bufferLock);
         unsigned int totalCapcity = (unsigned int)m_bufferQueue.capcity() + (unsigned int)m_tempBufferQueue.capcity();
         if (totalCapcity < m_alloctBufferCount) {
             VTF_LOGE("fatal error!!! system panic!!!");
@@ -128,7 +129,11 @@ public:
      */    
     ~BufferManager() 
     {
-        std::unique_lock<std::mutex> lk(m_mutex);
+        std::unique_lock<std::mutex> lk(m_bufferLock);
+        //set m_exit flag and notify waiting thread(if have).
+        m_exit = true;
+        //just notify, don't need wait, because if bufferManager exit. no any methond to process buffer queue, so we can clear buffer queue safely.
+        m_bufferReadyCV.notify_all();
         freeBufferQueue(m_bufferQueue);
         freeBufferQueue(m_tempBufferQueue);
     }
@@ -187,27 +192,39 @@ private:
 private:
     const BufferSpecification m_bfs;
     vtf::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
+
+    //Note: Q: why need tempBufferQueue?
+    //      A: because I want manage all of the buffer from bufferManager. Such as When bufferManager exit(dctr), the buffer should free whatever the buffer push or not.
+    //         So, I need a container to save it.
     vtf::RingQueue<std::shared_ptr<BufferInfo>> m_tempBufferQueue;
+
     std::atomic<unsigned int> m_alloctBufferCount;
-    std::mutex m_mutex;
+    std::mutex m_bufferLock;
+    std::condition_variable m_bufferReadyCV;
+    bool m_exit = false;
 };
 
 
 template<typename E>
 std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::popBuffer()
 {
-    std::unique_lock<std::mutex> lk(m_mutex);
-    if (m_alloctBufferCount >= m_bfs.maxQueueSize) {
-        VTF_LOGE("no enough buffer in buffer queue, pop buffer failed");
+    std::unique_lock<std::mutex> lk(m_bufferLock);
+
+    m_bufferReadyCV.wait(lk, [this](){
+        bool hasCacheBuffer = !m_bufferQueue.empty();
+        bool hasNoAllocBuffer = noAlloctCountWithoutLock() > 0;
+        VTF_LOGD("hasCacheBuffer: {0}, hasNoAllocBuffer: {1}", hasCacheBuffer, hasNoAllocBuffer);
+        return hasCacheBuffer || hasNoAllocBuffer || m_exit;
+    });
+
+    if (m_exit) {
+        VTF_LOGD("buffer manager exit.. will free all buffer soon");
         return std::make_shared<BufferInfo>(BufferInfo{.isValid=false});
     }
+
     if (m_bufferQueue.empty()) {
-        //no available buffer now, try alloc new buffer
-        VTF_LOGW("no available buffer now, try alloc temp buffer");
-        if (!noAlloctCountWithoutLock()) {
-            VTF_LOGE("no no enough buffer in buffer queue, try alloc temp buffer failded");
-            return std::make_shared<BufferInfo>(BufferInfo{.isValid=false});
-        }
+        //no available buffer now, alloc new temp buffer
+        VTF_LOGW("no available cache buffer now, alloc temp buffer");
         //alloc temp buffer
         auto bf = alloctBuffer(true);
         m_tempBufferQueue.push(bf);
@@ -221,13 +238,12 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::popBuff
     auto bf = m_bufferQueue.front();
     m_bufferQueue.pop();
     return bf;
-
 }
 
 template<typename E>
 void BufferManager<E>::pushBuffer(std::shared_ptr<BufferManager<E>::BufferInfo> bf)
 {
-    std::unique_lock<std::mutex> lk(m_mutex);
+    std::unique_lock<std::mutex> lk(m_bufferLock);
     if (bf->owner != m_bfs.hash()) {
         VTF_LOGE("this buffer info is not own by this buffer manager. please check it. buffer owner is {0}, this buffer manager is {1}",
             bf->owner,
@@ -236,9 +252,12 @@ void BufferManager<E>::pushBuffer(std::shared_ptr<BufferManager<E>::BufferInfo> 
     if (bf->isTempAlloctBuffer) {
         freeBuffer(bf);
         m_tempBufferQueue.push(bf);
+         //FIXME: just for keep "unified queue process"
+        m_tempBufferQueue.pop();
     } else {
         m_bufferQueue.push(bf);
     }
+    m_bufferReadyCV.notify_all();
 }
 
 template<typename E>

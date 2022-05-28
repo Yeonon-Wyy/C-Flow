@@ -51,3 +51,6 @@ target_link_libraries(testRingQueue PUBLIC Threads::Threads)
 
 add_executable(testBufferManager "../unittest/testBufferManager.cpp")
 target_link_libraries(testBufferManager PUBLIC Threads::Threads)
+
+add_executable(testBuffeManagerFlow "../testBuffeManagerFlow.cpp")
+target_link_libraries(testBuffeManagerFlow PUBLIC Threads::Threads)
