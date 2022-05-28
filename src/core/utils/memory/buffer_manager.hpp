@@ -9,12 +9,35 @@
 
 namespace vtf {
 
+
+template<typename T>
+class is_default_constructible
+{
+    typedef char yes;
+    typedef struct { char arr[2]; } no;
+
+    template<typename U>
+    static decltype(U(), yes()) test(int);
+
+    template<typename U>
+    no test(...);
+
+public:
+    static const bool value = sizeof(test<T>(0)) == sizeof(yes);
+    
+};
+
 struct BufferSpecification 
 {
-    unsigned long sizeOfBytes;
-    unsigned int minQueueSize; //mean cache queue size
-    unsigned int maxQueueSize;
+    const unsigned long sizeOfBytes;
+    const unsigned int minQueueSize; //cache queue size
+    const unsigned int maxQueueSize; //max queue size
+    const std::string name;
 
+    /**
+     * @description:  calc hash value
+     * @return {*}
+     */
     std::size_t hash() const
     {
         static std::size_t hashVal = 
@@ -26,26 +49,27 @@ struct BufferSpecification
 };
 
 
-struct BufferInfo
-{
-    unsigned long sizeOfBytes;
-    bool isTempAlloctBuffer = false;
-    void* ptr;
-    bool isValid;
 
-    std::size_t owner;
-};
-
-
+template<typename E>
 class BufferManager
 {
+public:
+    struct BufferInfo
+    {
+        unsigned long sizeOfBytes;
+        bool isTempAlloctBuffer = false;
+        E* ptr;
+        bool isValid;
+        std::size_t owner;
+        std::string name = "None";
+    };
 public:
 
     /**
      * @description: constructor
      * @param {BufferSpecification&} bfs
      * @return {*}
-     */    
+     */
     BufferManager(const BufferSpecification& bfs)
         :m_bfs(bfs),
          m_bufferQueue(bfs.minQueueSize),
@@ -68,7 +92,7 @@ public:
 
     /**
      * @description: push buffer to buffer queue, alias "return buffer to buffer manager
-     * @param {shared_ptr<BufferInfo>} bf
+     * @param {shared_ptr<BufferInfo<E>>} bf
      * @return {*}
      */    
     void pushBuffer(std::shared_ptr<BufferInfo> bf);
@@ -169,7 +193,8 @@ private:
 };
 
 
-std::shared_ptr<BufferInfo> BufferManager::popBuffer()
+template<typename E>
+std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::popBuffer()
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (m_alloctBufferCount >= m_bfs.maxQueueSize) {
@@ -199,7 +224,8 @@ std::shared_ptr<BufferInfo> BufferManager::popBuffer()
 
 }
 
-void BufferManager::pushBuffer(std::shared_ptr<BufferInfo> bf)
+template<typename E>
+void BufferManager<E>::pushBuffer(std::shared_ptr<BufferManager<E>::BufferInfo> bf)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (bf->owner != m_bfs.hash()) {
@@ -215,23 +241,37 @@ void BufferManager::pushBuffer(std::shared_ptr<BufferInfo> bf)
     }
 }
 
-std::shared_ptr<BufferInfo> BufferManager::alloctBuffer(bool isTempBuffer)
+template<typename E>
+std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::alloctBuffer(bool isTempBuffer)
 {
     if (m_bufferQueue.full()) return std::make_shared<BufferInfo>(BufferInfo{.isValid=false});
     BufferInfo bf = {
         .sizeOfBytes = m_bfs.sizeOfBytes,
         .isTempAlloctBuffer = isTempBuffer,
-        .ptr = malloc(m_bfs.sizeOfBytes),
         .isValid = true,
         .owner = m_bfs.hash(),
+        .name = m_bfs.name,
     };
+
+    //if constexpr statment can instead of std::enable_if
+    if constexpr (std::is_same_v<void, E>) {
+        bf.ptr = malloc(m_bfs.sizeOfBytes);
+    } else if constexpr (is_default_constructible<E>::value) {
+        //if user provide a default constructor
+        bf.ptr = new E();
+    } else {
+        //or else, just use malloc to alloct memory
+        bf.ptr = (E*)malloc(sizeof(E));
+    }
+
     m_alloctBufferCount++;
     VTF_LOGD("buffer was alloct, now alloct buffer count : {0}", m_alloctBufferCount);
 
     return std::make_shared<BufferInfo>(bf);
 }
 
-void BufferManager::freeBuffer(std::shared_ptr<BufferInfo>& bf)
+template<typename E>
+void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
 {
     if (bf->ptr != nullptr) {
         free(bf->ptr);

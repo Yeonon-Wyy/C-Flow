@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-21 20:08:02
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-22 18:31:22
+ * @LastEditTime: 2022-05-28 14:24:26
  * @FilePath: /test/unittest/testBufferManager.cpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -12,9 +12,9 @@
 #include "../../src/core/utils/memory/buffer_manager.hpp"
 #include <queue>
 
+void testBufferManagerBasic() {
+    printf("%s + \n", __func__);
 
-int main()
-{
     vtf::BufferSpecification bfs = 
     {
         .sizeOfBytes = 16,
@@ -22,8 +22,8 @@ int main()
         .maxQueueSize = 10,
     };
 
-    vtf::BufferManager bfm(bfs);
-    std::queue<std::shared_ptr<vtf::BufferInfo>> buffers;
+    vtf::BufferManager<int> bfm(bfs);
+    std::queue<std::shared_ptr<vtf::BufferManager<int>::BufferInfo>> buffers;
     
     ASSERT_EQ(8, (int)bfm.availableCount());
     ASSERT_EQ(2, (int)bfm.noAlloctCount());
@@ -73,15 +73,17 @@ int main()
     ASSERT_EQ(8, (int)bfm.availableCount());
     ASSERT_EQ(2, (int)bfm.noAlloctCount());
 
-
-    std::cout << "now next stag." << std::endl;
     buffers.push(bfm.popBuffer());
     ASSERT_EQ(7, (int)bfm.availableCount());
     ASSERT_EQ(2, (int)bfm.noAlloctCount());
     ASSERT_NOT_NULL(buffers.back()->ptr);
 
-
     PRINT_RESULT();
+    printf("%s - \n", __func__);
+}
 
+int main()
+{
+    testBufferManagerBasic();
     return 0;
 }
