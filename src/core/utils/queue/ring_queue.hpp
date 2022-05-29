@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-21 17:00:57
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-22 18:40:39
+ * @LastEditTime: 2022-05-29 15:28:06
  * @FilePath: /src/core/utils/queue/ring_queue.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -13,6 +13,8 @@
 #include <vector>
 
 namespace vtf {
+namespace utils {
+namespace queue {
 
 
 /**
@@ -124,4 +126,6 @@ private:
     int m_frontIdx;
 };
 
+} //namespace queue
+} //namespace utils
 } //namespace vtf

@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-16 22:00:26
- * @LastEditors: yeonon
- * @LastEditTime: 2021-11-17 21:55:47
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-29 15:27:19
  */
 #pragma once
 
@@ -15,6 +15,8 @@
 #include "../log/log.hpp"
 
 namespace vtf {
+namespace utils {
+namespace queue {
 template <typename T>
 class BlockingQueue
 {
@@ -137,4 +139,6 @@ void BlockingQueue<T>::clear()
     m_items.clear();
 }
 
+} //namespace queue
+} //namespace utils
 } //namespace vtf

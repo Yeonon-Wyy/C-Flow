@@ -9,7 +9,8 @@
 #include <condition_variable>
 
 namespace vtf {
-
+namespace utils {
+namespace memory {
 
 template<typename T>
 class is_default_constructible
@@ -204,12 +205,12 @@ private:
 
 private:
     const BufferSpecification m_bfs;
-    vtf::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
+    vtf::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
 
     //Note: Q: why need tempBufferQueue?
     //      A: because I want manage all of the buffer from bufferManager. Such as When bufferManager exit(dctr), the buffer should free whatever the buffer push or not.
     //         So, I need a container to save it.
-    vtf::RingQueue<std::shared_ptr<BufferInfo>> m_tempBufferQueue;
+    vtf::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_tempBufferQueue;
 
     std::atomic<unsigned int> m_alloctBufferCount;
     std::mutex m_bufferLock;
@@ -319,6 +320,7 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
     }
 }
 
-
+} //namespace memory
+} //namesapce utils
 } //namespace vtf
 

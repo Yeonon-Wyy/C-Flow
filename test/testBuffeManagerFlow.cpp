@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-28 15:48:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-28 16:14:26
+ * @LastEditTime: 2022-05-29 15:27:50
  * @FilePath: /test/testBuffeManagerFlow.cpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -17,10 +17,12 @@
 
 std::mutex g_lock;
 std::condition_variable g_cv;
+using namespace vtf::utils::memory;
+using namespace vtf::utils::queue;
 
-using BufferInfo = std::shared_ptr<vtf::BufferManager<int>::BufferInfo>;
+using BufferInfo = std::shared_ptr<BufferManager<int>::BufferInfo>;
 
-void getBuffer(vtf::BufferManager<int>& bmgr, vtf::BlockingQueue<BufferInfo>& curBufQ)
+void getBuffer(BufferManager<int>& bmgr, BlockingQueue<BufferInfo>& curBufQ)
 {
     for (int i = 0; i < 100; i++) {
         BufferInfo bf = bmgr.popBuffer();
@@ -29,7 +31,7 @@ void getBuffer(vtf::BufferManager<int>& bmgr, vtf::BlockingQueue<BufferInfo>& cu
     }
 }
 
-void returnBuffer(vtf::BufferManager<int>& bmgr, vtf::BlockingQueue<BufferInfo>& curBufQ)
+void returnBuffer(BufferManager<int>& bmgr, BlockingQueue<BufferInfo>& curBufQ)
 {
     for (int i = 0; i < 100; i++) {
         auto bf = curBufQ.pop();
@@ -40,15 +42,15 @@ void returnBuffer(vtf::BufferManager<int>& bmgr, vtf::BlockingQueue<BufferInfo>&
 
 int main()
 {
-    vtf::BufferSpecification bfs = 
+    BufferSpecification bfs = 
     {
         .sizeOfBytes = 0,
         .minQueueSize = 8,
         .maxQueueSize = 10,
     };
     
-    vtf::BlockingQueue<BufferInfo> curBufQ(10);
-    vtf::BufferManager<int> bmgr(bfs);
+    BlockingQueue<BufferInfo> curBufQ(10);
+    BufferManager<int> bmgr(bfs);
     std::thread t1(getBuffer, std::ref(bmgr), std::ref(curBufQ));
     std::thread t2(returnBuffer, std::ref(bmgr), std::ref(curBufQ));
 
