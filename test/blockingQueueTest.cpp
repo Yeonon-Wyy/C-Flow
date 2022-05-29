@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-20 21:12:25
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:34:23
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-29 16:12:25
  */
 #include "../src/core/utils/queue/blocking_queue.hpp"
 #include <random>
@@ -12,14 +12,14 @@
 #include <thread>
 
 
-void produce(vtf::BlockingQueue<int>& bq)
+void produce(vtf::utils::queue::BlockingQueue<int>& bq)
 {
     for (int i = 0; i < 100; i++) {
         bq.push(i);
     }
 }
 
-void consume(vtf::BlockingQueue<int>& bq, int i)
+void consume(vtf::utils::queue::BlockingQueue<int>& bq, int i)
 {
     while (true) {
         std::random_device rd;
@@ -32,7 +32,7 @@ void consume(vtf::BlockingQueue<int>& bq, int i)
 int main(int agrc, char** agrv)
 {
 
-    vtf::BlockingQueue<int> bq(8);
+    vtf::utils::queue::BlockingQueue<int> bq(8);
     std::thread t1(consume, std::ref(bq), 1);
     std::thread t2(consume, std::ref(bq), 2);
     std::thread t3(consume, std::ref(bq), 3);

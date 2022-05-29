@@ -54,3 +54,6 @@ target_link_libraries(testBufferManager PUBLIC Threads::Threads)
 
 add_executable(testBuffeManagerFlow "../testBuffeManagerFlow.cpp")
 target_link_libraries(testBuffeManagerFlow PUBLIC Threads::Threads)
+
+add_executable(testBufferManagerFactory "../unittest/testBufferManagerFactory.cpp")
+target_link_libraries(testBufferManagerFactory PUBLIC Threads::Threads)

@@ -1,3 +1,13 @@
+/*
+ * @Author: Yeonon
+ * @Date: 2022-05-21 17:27:07
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-29 16:15:04
+ * @FilePath: /test/unittest/testRingQueue.cpp
+ * @Description: 
+ * Copyright 2022 Yeonon, All Rights Reserved. 
+ * 2022-05-21 17:27:07
+ */
 #include "../../src/core/utils/queue/ring_queue.hpp"
 #include "testUtils.hpp"
 
@@ -5,7 +15,7 @@
 
 int main()
 {
-    vtf::RingQueue<int> rq(4);
+    vtf::utils::queue::RingQueue<int> rq(4);
     rq.push(1);
     rq.push(2);
     rq.push(3);

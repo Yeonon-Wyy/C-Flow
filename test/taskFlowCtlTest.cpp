@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:35:11
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-05-29 16:13:40
  */
 #include "../src/core/task/task_flow_ctl.hpp"
 #include "../src/core/utils/time_util.hpp"
@@ -13,7 +13,7 @@
 
 
 using Buffer = std::vector<std::vector<int>>;
-using BufferQ = vtf::BlockingQueue<Buffer>;
+using BufferQ = vtf::utils::queue::BlockingQueue<Buffer>;
 
 int main()
 {

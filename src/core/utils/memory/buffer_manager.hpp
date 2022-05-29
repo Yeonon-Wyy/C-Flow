@@ -45,12 +45,25 @@ struct BufferSpecification
         static std::size_t hashVal = 
             std::hash<unsigned long>{}(sizeOfBytes) ^
             std::hash<unsigned int>{}(minQueueSize) ^
-            std::hash<unsigned int>{}(maxQueueSize);
+            std::hash<unsigned int>{}(maxQueueSize) ^
+            std::hash<std::string>{}(name);
         return hashVal;
+    }
+
+    bool operator==(const BufferSpecification& other) const {
+        return  sizeOfBytes == other.sizeOfBytes
+            && minQueueSize == other.minQueueSize
+            && maxQueueSize == other.maxQueueSize
+            && name == other.name;
     }
 };
 
-
+struct hash_of_bufferSpecification
+{
+    std::size_t operator()(const BufferSpecification& bfs) const {
+        return bfs.hash();
+    }
+};
 
 template<typename E>
 class BufferManager
@@ -77,7 +90,8 @@ public:
         :m_bfs(bfs),
          m_bufferQueue(bfs.minQueueSize),
          m_tempBufferQueue(bfs.maxQueueSize - bfs.minQueueSize),
-         m_alloctBufferCount(0)
+         m_alloctBufferCount(0),
+         m_name(bfs.name)
     {
         //pre alloc buffer
         for (size_t i = 0; i < bfs.minQueueSize; i++) {
@@ -134,6 +148,12 @@ public:
         std::unique_lock<std::mutex> lk(m_bufferLock);
         bf->numOfUser += numOfUser;
     }
+
+    /**
+     * @description: return buffer manager's name
+     * @return {*}
+     */    
+    std::string name() const { return m_name; }
 
     /**
      * @description: if ~BufferManager was called. all buffer(owned by this buffer manager) will be free.
@@ -216,6 +236,8 @@ private:
     std::mutex m_bufferLock;
     std::condition_variable m_bufferReadyCV;
     bool m_exit = false;
+
+    std::string m_name;
 };
 
 
@@ -311,6 +333,7 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::alloctB
 template<typename E>
 void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
 {
+    if (!bf) return;
     if (bf->ptr != nullptr) {
         free(bf->ptr);
         bf->ptr = nullptr;

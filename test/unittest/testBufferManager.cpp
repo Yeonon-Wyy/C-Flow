@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-21 20:08:02
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-28 14:24:26
+ * @LastEditTime: 2022-05-29 15:55:44
  * @FilePath: /test/unittest/testBufferManager.cpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -15,15 +15,15 @@
 void testBufferManagerBasic() {
     printf("%s + \n", __func__);
 
-    vtf::BufferSpecification bfs = 
+    vtf::utils::memory::BufferSpecification bfs = 
     {
         .sizeOfBytes = 16,
         .minQueueSize = 8,
         .maxQueueSize = 10,
     };
 
-    vtf::BufferManager<int> bfm(bfs);
-    std::queue<std::shared_ptr<vtf::BufferManager<int>::BufferInfo>> buffers;
+    vtf::utils::memory::BufferManager<int> bfm(bfs);
+    std::queue<std::shared_ptr<vtf::utils::memory::BufferManager<int>::BufferInfo>> buffers;
     
     ASSERT_EQ(8, (int)bfm.availableCount());
     ASSERT_EQ(2, (int)bfm.noAlloctCount());
