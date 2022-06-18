@@ -1,6 +1,7 @@
 #pragma once
 #include "../queue/ring_queue.hpp"
 #include "../log/log.hpp"
+#include "../../../core/type.hpp"
 
 #include <atomic>
 #include <functional>
@@ -12,22 +13,6 @@ namespace vtf {
 namespace utils {
 namespace memory {
 
-template<typename T>
-class is_default_constructible
-{
-    typedef char yes;
-    typedef struct { char arr[2]; } no;
-
-    template<typename U>
-    static decltype(U(), yes()) test(int);
-
-    template<typename U>
-    no test(...);
-
-public:
-    static const bool value = sizeof(test<T>(0)) == sizeof(yes);
-    
-};
 
 struct BufferSpecification 
 {
@@ -335,6 +320,11 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
 {
     if (!bf) return;
     if (bf->ptr != nullptr) {
+        if constexpr (is_default_constructible<E>::value) {
+            delete bf->ptr;
+        } else {
+            free(bf->ptr);
+        }
         free(bf->ptr);
         bf->ptr = nullptr;
         bf->isValid = false;

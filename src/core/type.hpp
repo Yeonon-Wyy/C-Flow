@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 15:01:06
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-06-04 16:16:32
  */
 #pragma once
 #include <type_traits>
@@ -51,6 +51,23 @@ struct is_shared_ptr {
 template <typename T>
 struct is_shared_ptr<std::shared_ptr<T>> {
     static const bool value = true;
+};
+
+template<typename T>
+class is_default_constructible
+{
+    typedef char yes;
+    typedef struct { char arr[2]; } no;
+
+    template<typename U>
+    static decltype(U(), yes()) test(int);
+
+    template<typename U>
+    no test(...);
+
+public:
+    static const bool value = sizeof(test<T>(0)) == sizeof(yes);
+    
 };
 
 } //namespace vtf
