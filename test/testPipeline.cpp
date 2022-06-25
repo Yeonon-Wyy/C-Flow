@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-30 21:50:39
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-06-25 19:39:37
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -39,6 +39,8 @@ void testDispatch()
     // }
 }
 
+using namespace vtf::utils::memory;
+
 class MypipeData : public vtf::pipeline::PipeData {
 
 public:
@@ -46,6 +48,43 @@ public:
         :vtf::pipeline::PipeData(scenario, true),
         data(d) 
     {}
+
+    bool constructIO(BufferManagerFactory<int>& bufferMgrFactory) override 
+    {
+        if (scenario() == MyScenario::Scenario2) {
+            addOutputForNode(0, BufferSpecification{
+                .sizeOfBytes = 16,
+                .minQueueSize = 8,
+                .maxQueueSize = 10,
+                .name = "node0-ouput"
+            }, bufferMgrFactory);
+            addInputForNode(2, BufferSpecification{
+                .sizeOfBytes = 16,
+                .minQueueSize = 8,
+                .maxQueueSize = 10,
+                .name = "node0-ouput"
+            }, bufferMgrFactory);
+            addOutputForNode(2, BufferSpecification{
+                .sizeOfBytes = 16,
+                .minQueueSize = 8,
+                .maxQueueSize = 10,
+                .name = "node2-ouput"
+            }, bufferMgrFactory);
+            addInputForNode(3, BufferSpecification{
+                .sizeOfBytes = 16,
+                .minQueueSize = 8,
+                .maxQueueSize = 10,
+                .name = "node2-ouput"
+            }, bufferMgrFactory);
+            addOutputForNode(3, BufferSpecification{
+                .sizeOfBytes = 16,
+                .minQueueSize = 8,
+                .maxQueueSize = 10,
+                .name = "node3-ouput"
+            }, bufferMgrFactory);
+        }
+        return true;
+    }    
 
     int outputD() { return data; }
 private:

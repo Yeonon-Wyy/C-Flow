@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-29 15:54:57
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-29 16:23:55
+ * @LastEditTime: 2022-06-25 19:24:11
  * @FilePath: /test/unittest/testBufferManagerFactory.cpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -75,7 +75,20 @@ void testBufferMnaagerInterface()
     PRINT_RESULT();
 }
 
+void testEmptyBufferManager()
+{
+    BufferManagerFactory<int> bmf;
+    BufferSpecification bfs1 = {
+        .sizeOfBytes = 0,
+        .minQueueSize = 8,
+        .maxQueueSize = 10,
+        .name = "bfs1"
+    };
+    auto bm1 = bmf.createBufferManager(bfs1);
+}
+
 int main()
 {
     testBufferMnaagerInterface();
+    testEmptyBufferManager();
 }

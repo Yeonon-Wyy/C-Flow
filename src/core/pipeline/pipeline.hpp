@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
- * @LastEditors: yeonon
- * @LastEditTime: 2022-02-06 17:12:07
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-06-25 19:26:39
  */
 
 #pragma once
@@ -14,6 +14,8 @@
 #include "pipenode_dispatcher.hpp"
 #include "../notifier.hpp"
 #include "../utils/log/log.hpp"
+#include "../utils/memory/buffer_manager.hpp"
+#include "../utils/memory/buffer_manager_factory.hpp"
 
 #include <memory>
 #include <mutex>
@@ -22,6 +24,8 @@
 
 namespace vtf {
 namespace pipeline {
+
+using namespace vtf::utils::memory;
 
 const static int pplDefaultMaxProcessingSize = 32;
 //some CPU architectures are 4 core 8 threads(like intel), _SC_NPROCESSORS_CONF can't get cpu thread number
@@ -39,7 +43,6 @@ template<typename Item>
 class PipeLine {
 public:
     using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
-    using GraphType = std::unordered_map<vtf_id_t, std::vector<vtf_id_t>>;
 
     struct ConfigureTable {
         int maxProcessingSize = pplDefaultMaxProcessingSize;
@@ -181,7 +184,7 @@ private:
     std::vector<std::vector<vtf_id_t>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<vtf_id_t>> m_scenario2PipelineMaps;
     std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
-
+    BufferManagerFactory<int> bufferMgrFactory;
     //<notifierType, notfiers>
     std::unordered_map<NotifierType,std::vector<std::shared_ptr<Notifier<Item>>> > m_notifierMaps;
     std::atomic_bool m_isStop = false;
@@ -395,7 +398,7 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> data)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
-    data->constructDependency(getPipelineWithScenario(data->scenario()));
+    data->constructDependency(getPipelineWithScenario(data->scenario()), bufferMgrFactory);
     m_pipeNodeDispatcher->queueInDispacther(data);
     VTF_LOGD("submit a data {0}", data->ID());
     if (m_processingDataCount >= m_processingMaxDataCount) {

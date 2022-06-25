@@ -325,7 +325,6 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
         } else {
             free(bf->ptr);
         }
-        free(bf->ptr);
         bf->ptr = nullptr;
         bf->isValid = false;
         m_alloctBufferCount--;

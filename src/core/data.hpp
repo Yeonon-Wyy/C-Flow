@@ -3,13 +3,14 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:42:50
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-06-25 19:37:48
  */
 
 #pragma once
 #include <vector>
 #include "./utils/id_generator.hpp"
+#include "./utils/memory/buffer_manager_factory.hpp"
 #include "type.hpp"
 
 namespace vtf {
@@ -39,7 +40,14 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual bool constructDependency(const std::vector<vtf_id_t>&) = 0;
+    virtual bool constructDependency(const std::vector<vtf_id_t>&, utils::memory::BufferManagerFactory<int>&) = 0;
+
+    /**
+     * @name: constructIO
+     * @description: construct input and output for nodes in pipeline
+     * @return {*}
+     */    
+    virtual bool constructIO(utils::memory::BufferManagerFactory<int>&) = 0;
 
     /**
      * @name: findNextNodes
