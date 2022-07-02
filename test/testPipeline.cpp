@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-06-25 19:39:37
+ * @LastEditTime: 2022-07-02 17:01:18
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -49,7 +49,7 @@ public:
         data(d) 
     {}
 
-    bool constructIO(BufferManagerFactory<int>& bufferMgrFactory) override 
+    bool constructIO() override 
     {
         if (scenario() == MyScenario::Scenario2) {
             addOutputForNode(0, BufferSpecification{
@@ -57,31 +57,31 @@ public:
                 .minQueueSize = 8,
                 .maxQueueSize = 10,
                 .name = "node0-ouput"
-            }, bufferMgrFactory);
+            });
             addInputForNode(2, BufferSpecification{
                 .sizeOfBytes = 16,
                 .minQueueSize = 8,
                 .maxQueueSize = 10,
                 .name = "node0-ouput"
-            }, bufferMgrFactory);
+            });
             addOutputForNode(2, BufferSpecification{
                 .sizeOfBytes = 16,
                 .minQueueSize = 8,
                 .maxQueueSize = 10,
                 .name = "node2-ouput"
-            }, bufferMgrFactory);
+            });
             addInputForNode(3, BufferSpecification{
                 .sizeOfBytes = 16,
                 .minQueueSize = 8,
                 .maxQueueSize = 10,
                 .name = "node2-ouput"
-            }, bufferMgrFactory);
+            });
             addOutputForNode(3, BufferSpecification{
                 .sizeOfBytes = 16,
                 .minQueueSize = 8,
                 .maxQueueSize = 10,
                 .name = "node3-ouput"
-            }, bufferMgrFactory);
+            });
         }
         return true;
     }    

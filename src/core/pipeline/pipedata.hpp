@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-06-25 19:38:06
+ * @LastEditTime: 2022-07-02 19:07:35
  */
 #pragma once
 
@@ -43,6 +43,7 @@ public:
         std::vector<BufferSpecification> input;
         std::vector<BufferSpecification> output;
     };
+
     using DependencyNodeInfoSP = std::shared_ptr<DependencyNodeInfo>;
     struct Dependency {
         vtf_id_t curNodeId = -1;
@@ -50,6 +51,15 @@ public:
         std::pair<vtf_id_t, DependencyNodeInfoSP> successors;
     };
 
+    using PipeDataBufferInfoSP = std::shared_ptr<BufferManager<int>::BufferInfo>;
+    struct NodeBufferInfo {
+        vtf_id_t nodeId;
+        std::vector<PipeDataBufferInfoSP> input;
+        std::vector<PipeDataBufferInfoSP> output;
+    };
+    using NodeBufferInfoSP = std::shared_ptr<NodeBufferInfo>;
+
+public:
 
     PipeData(PipelineScenario scenario, bool enableDebug = false);
 
@@ -57,9 +67,9 @@ public:
     {
     }
 
-    bool constructDependency(const std::vector<vtf_id_t>& pipeline, BufferManagerFactory<int>& bufferMgrFactory) override;
+    bool constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<int>> bufferMgrFactory) override;
 
-    virtual bool constructIO(BufferManagerFactory<int>&) override; 
+    virtual bool constructIO() override; 
 
     PipelineScenario scenario() override { return m_scenario; }
 
@@ -87,17 +97,26 @@ public:
 
     std::vector<vtf_id_t> getNotifiersByNodeId(vtf_id_t nodeId) override;
 
-    void addInputForNode(vtf_id_t nodeId, const BufferSpecification&, BufferManagerFactory<int>& bufferMgrFactory);
-    void addOutputForNode(vtf_id_t nodeId, const BufferSpecification&, BufferManagerFactory<int>& bufferMgrFactory);
+    void addInputForNode(vtf_id_t nodeId, const BufferSpecification&);
+    
+    void addOutputForNode(vtf_id_t nodeId, const BufferSpecification&);
+
+    bool setCurrentNodeIO();
 private:
     bool checkDependencyValid();
 
     vtf_id_t findNextNode();
 
     bool notifyResult();
+
+    void dumpDataInfo();
+
+    void releaseCurrentNodeBuffer(bool isInput);
 private:
     std::vector<Dependency> m_dependencies;
     std::unordered_map<int, DependencyNodeInfoSP> m_dependenciesNodeInfo;
+    std::unordered_map<int, NodeBufferInfo> m_nodeBufferInfoMap;
+    std::shared_ptr<BufferManagerFactory<int>> m_buffeManagerFactory;
     std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> m_nodeNotifiers;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
@@ -108,6 +127,7 @@ private:
     vtf_id_t m_nextNodeId;
     int m_nextNodeIdx;
     bool m_enableDebug;
+    
 };
 
 PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
@@ -126,7 +146,7 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
 }
 
 
-bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, BufferManagerFactory<int>& bufferMgrFactory)
+bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<int>> bufferMgrFactory)
 {
     m_dependencies.clear();
 
@@ -137,7 +157,7 @@ bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, Buffer
         return nodeInfoSp;
     };
 
-    auto constructNodeInfo = [&,this]() {
+    auto constructNodeInfo = [&pipeline,&constructDependencyNodeInfo,this]() {
         for (size_t i = 0; i < pipeline.size(); i++) {
             auto nodeInfo = constructDependencyNodeInfo(pipeline[i], DependencyStatus::NOREADY);
             this->m_dependenciesNodeInfo[nodeInfo->nodeId] = nodeInfo;
@@ -146,9 +166,21 @@ bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, Buffer
         auto dummyNode = constructDependencyNodeInfo(-1, DependencyStatus::DONE);
         this->m_dependenciesNodeInfo[-1] = dummyNode;
     };
+
+    auto constructNodeBufferInfo = [&pipeline, this](){
+        for (size_t i = 0; i < pipeline.size(); i++) {
+            auto nodeBufferInfo = NodeBufferInfo{.nodeId = pipeline[i]};
+            m_nodeBufferInfoMap[nodeBufferInfo.nodeId] = nodeBufferInfo;
+        }
+    };
+    
+
     
     //construct all node info bt pipeline
     constructNodeInfo();
+
+    //construct all node buffer map
+    constructNodeBufferInfo();
 
     for (size_t i = 0; i < pipeline.size(); i++) {
         vtf_id_t curNodeId = pipeline[i];
@@ -187,40 +219,16 @@ bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, Buffer
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     m_nextNodeId = findNextNode();
 
+    m_buffeManagerFactory = bufferMgrFactory;
     //construct input and output
-    constructIO(bufferMgrFactory);
+    constructIO();
 
-    //dump
-    if (m_enableDebug) {
-        for (auto& dependency : m_dependencies) {
-            VTF_LOGD("node : [{0}]", dependency.curNodeId);
-
-            VTF_LOGD("pre : [{0}]", dependency.precursors.first);
-            VTF_LOGD("\tinput : ");
-            for (auto&& bfs : dependency.precursors.second->input) {
-                VTF_LOGD("{0} ", bfs.name);
-            }
-            VTF_LOGD("\toutput : ");
-            for (auto&& bfs : dependency.precursors.second->output) {
-                VTF_LOGD("{0} ", bfs.name);
-            }
-            VTF_LOGD("suc : [{0}]", dependency.successors.first);
-            VTF_LOGD("\tinput : ");
-            for (auto&& bfs : dependency.successors.second->input) {
-                VTF_LOGD("{0} ", bfs.name);
-            }
-            VTF_LOGD("\toutput : ");
-            for (auto&& bfs : dependency.successors.second->output) {
-                VTF_LOGD("{0} ", bfs.name);
-            }
-            VTF_LOGD("--------------------------------------");  
-        }
-    }
+    dumpDataInfo();
 
     return true;
 }
 
-bool PipeData::constructIO(BufferManagerFactory<int>&)
+bool PipeData::constructIO()
 {
     //noting need to do by default
     return true;
@@ -262,6 +270,8 @@ void PipeData::markCurrentNodeReady()
     //last node
     if (nextNodeId == -1 || m_nextNodeIdx >= (int)m_dependencies.size()) {
         VTF_LOGD("data {0} node [{1}] have done.", ID(), m_currentProcessNodeId);
+        releaseCurrentNodeBuffer(true);
+        releaseCurrentNodeBuffer(false);
         m_currentProcessNodeId = -1;
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
@@ -281,7 +291,7 @@ void PipeData::markCurrentNodeReady()
     //mark next node denpendency's pre is done
     m_dependencies[m_nextNodeIdx].precursors.second->status = DependencyStatus::READY;
     VTF_LOGD("data {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
-
+    releaseCurrentNodeBuffer(true);
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
@@ -318,26 +328,153 @@ bool PipeData::checkDependencyValid()
     return true;
 }
 
-void PipeData::addInputForNode(vtf_id_t nodeId, const BufferSpecification& bfs, BufferManagerFactory<int>& bufferMgrFactory)
+void PipeData::addInputForNode(vtf_id_t nodeId, const BufferSpecification& bfs)
 {
     if (m_dependenciesNodeInfo.count(nodeId) == 0) {
         VTF_LOGE("can't find node{0} in data path", nodeId);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
-    bufferMgrFactory.createBufferManager(bfs);
+    m_buffeManagerFactory->createBufferManager(bfs);
     nodeInfo->input.push_back(bfs);
     VTF_LOGD("node{0} add input buffer{1} success!", nodeId, bfs.name);
 }
 
-void PipeData::addOutputForNode(vtf_id_t nodeId, const BufferSpecification& bfs, BufferManagerFactory<int>& bufferMgrFactory)
+void PipeData::addOutputForNode(vtf_id_t nodeId, const BufferSpecification& bfs)
 {
     if (m_dependenciesNodeInfo.count(nodeId) == 0) {
-        VTF_LOGE("can't find node{0} in data path", nodeId);
+        VTF_LOGE("can't find node{0} in data path", nodeId, bfs.name);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
-    bufferMgrFactory.createBufferManager(bfs);
+    m_buffeManagerFactory->createBufferManager(bfs);
     nodeInfo->output.push_back(bfs);
-    VTF_LOGD("node{0} add output buffer{1} success!");
+    VTF_LOGD("node{0} add output buffer{1} success!", nodeId, bfs.name);
+}
+
+bool PipeData::setCurrentNodeIO()
+{
+    bool ret = true;
+    
+    auto currentNodeBufferInfo = m_nodeBufferInfoMap.find(m_currentProcessNodeId);
+    auto currentDependency = m_dependenciesNodeInfo[m_currentProcessNodeId];
+    
+    //get output buffer
+    for (auto&& outputBFS : currentDependency->output)
+    {
+        auto bufMgr = m_buffeManagerFactory->getBufferManager(outputBFS);
+        if (!bufMgr) {
+            bufMgr = m_buffeManagerFactory->createBufferManager(outputBFS);
+        }
+        if (currentNodeBufferInfo == m_nodeBufferInfoMap.end()) {
+            VTF_LOGD("[weiyanyu] fuck");
+        }
+        auto bufInfo = bufMgr->popBuffer();
+        currentNodeBufferInfo->second.output.push_back(bufInfo);
+        VTF_LOGD("set data {0} output buffer {1} for current node {2}", ID(), bufInfo->name, m_currentProcessNodeId);
+        //not last
+        if (m_nextNodeId > 0) {
+            m_nodeBufferInfoMap[m_nextNodeId].input.push_back(bufInfo);
+            VTF_LOGD("set data {0} input buffer {1} for next node {2}", ID(), bufInfo->name, m_nextNodeId);
+
+        }
+    }
+    
+    return ret;
+}
+
+void PipeData::releaseCurrentNodeBuffer(bool isInput)
+{   
+    auto currentDependency = m_dependenciesNodeInfo[m_currentProcessNodeId];
+    auto currentNodeBufferInfo = m_nodeBufferInfoMap[m_currentProcessNodeId];
+    if (isInput) {
+        //input
+        for (auto&& inputBFS : currentDependency->input)
+        {
+            auto bufMgr = m_buffeManagerFactory->getBufferManager(inputBFS);
+            if (!bufMgr) {
+                VTF_LOGE("error!! can't find buffer manager {0}. can't release buffer", inputBFS.name);
+                continue;
+            }
+            
+            auto it = std::find_if(currentNodeBufferInfo.input.begin(), currentNodeBufferInfo.input.end(), [&inputBFS](PipeDataBufferInfoSP& bufInfo){
+                return bufInfo->name == inputBFS.name;
+            });
+            VTF_LOGD("[weiyanyu] currentNodeBufferInfo input size() = {0}", currentNodeBufferInfo.input.size());
+            if (it == currentNodeBufferInfo.input.end()) {
+                VTF_LOGE("error!! can't find buffer info {0}", inputBFS.name);
+                continue;
+            }
+            bufMgr->pushBuffer(*it);
+            VTF_LOGD("release {0} input buffer {1} of node {2}", ID(), inputBFS.name, m_currentProcessNodeId);
+        }
+    } else {
+        //output
+        for (auto&& outputBFS : currentDependency->output)
+        {
+            auto bufMgr = m_buffeManagerFactory->getBufferManager(outputBFS);
+            if (!bufMgr) {
+                VTF_LOGE("error!! can't find buffer manager {0}. can't release buffer", outputBFS.name);
+                continue;
+            }
+            
+            auto it = std::find_if(currentNodeBufferInfo.output.begin(), currentNodeBufferInfo.output.end(), [&outputBFS](PipeDataBufferInfoSP& bufInfo){
+                return bufInfo->name == outputBFS.name;
+            });
+            if (it == currentNodeBufferInfo.output.end()) {
+                VTF_LOGE("error!! can't find buffer info {0}", outputBFS.name);
+                continue;
+            }
+            bufMgr->pushBuffer(*it);
+            VTF_LOGD("release {0} output buffer {1} of node {2}", ID(), outputBFS.name, m_currentProcessNodeId);
+        }
+    }
+
+}
+
+void PipeData::dumpDataInfo()
+{
+    //dump
+    std::string str = "";
+    
+    if (m_enableDebug) {
+        for (auto& dependency : m_dependencies) {
+            VTF_LOGD("node : [{0}]", dependency.curNodeId);
+
+            VTF_LOGD("pre : [{0}]", dependency.precursors.first);
+            str.clear();
+            str += "\tinput : ";
+            for (auto&& bfs : dependency.precursors.second->input) {
+                str += "[" + bfs.name + "],";
+            }
+            str.pop_back();
+            VTF_LOGD(str);
+            str.clear();
+            str += "\toutput : ";
+            for (auto&& bfs : dependency.precursors.second->output) {
+                str += "[" + bfs.name + "],";
+            }
+            str.pop_back();
+            VTF_LOGD(str);
+            VTF_LOGD("suc : [{0}]", dependency.successors.first);
+
+            str.clear();
+            str += "\tinput : ";
+            for (auto&& bfs : dependency.successors.second->input) {
+                str += "[" + bfs.name + "],";
+            }
+            str.pop_back();
+            VTF_LOGD(str);
+            str.clear();
+            str += "\toutput : ";
+            for (auto&& bfs : dependency.successors.second->output) {
+                str += "[" + bfs.name + "],";
+            }
+            str.pop_back();
+            VTF_LOGD(str);
+            str.clear();
+            VTF_LOGD("--------------------------------------");  
+        }
+    }
+
 }
 
 } //namespace pipeline

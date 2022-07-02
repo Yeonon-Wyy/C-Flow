@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-23 19:35:42
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-02 18:15:21
  */
 #pragma once
 #include "type.hpp"
@@ -189,6 +189,7 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> data)
 {
     bool ret = true;
     m_status = PipeNodeStatus::PROCESSING;
+    data->setCurrentNodeIO();
     ret = m_processCallback(data);
     if (ret) {
         data->markCurrentNodeReady();

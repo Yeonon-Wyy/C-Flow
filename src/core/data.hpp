@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-06-25 19:37:48
+ * @LastEditTime: 2022-07-02 16:57:52
  */
 
 #pragma once
@@ -40,14 +40,14 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual bool constructDependency(const std::vector<vtf_id_t>&, utils::memory::BufferManagerFactory<int>&) = 0;
+    virtual bool constructDependency(const std::vector<vtf_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<int>>) = 0;
 
     /**
      * @name: constructIO
      * @description: construct input and output for nodes in pipeline
      * @return {*}
      */    
-    virtual bool constructIO(utils::memory::BufferManagerFactory<int>&) = 0;
+    virtual bool constructIO() = 0;
 
     /**
      * @name: findNextNodes
