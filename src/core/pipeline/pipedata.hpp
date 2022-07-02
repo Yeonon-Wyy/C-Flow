@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 19:07:35
+ * @LastEditTime: 2022-07-02 19:23:43
  */
 #pragma once
 
@@ -364,14 +364,12 @@ bool PipeData::setCurrentNodeIO()
         if (!bufMgr) {
             bufMgr = m_buffeManagerFactory->createBufferManager(outputBFS);
         }
-        if (currentNodeBufferInfo == m_nodeBufferInfoMap.end()) {
-            VTF_LOGD("[weiyanyu] fuck");
-        }
         auto bufInfo = bufMgr->popBuffer();
         currentNodeBufferInfo->second.output.push_back(bufInfo);
         VTF_LOGD("set data {0} output buffer {1} for current node {2}", ID(), bufInfo->name, m_currentProcessNodeId);
         //not last
         if (m_nextNodeId > 0) {
+            //input of current node is same as output of next node.
             m_nodeBufferInfoMap[m_nextNodeId].input.push_back(bufInfo);
             VTF_LOGD("set data {0} input buffer {1} for next node {2}", ID(), bufInfo->name, m_nextNodeId);
 
