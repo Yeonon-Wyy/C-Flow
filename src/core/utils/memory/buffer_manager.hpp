@@ -320,7 +320,10 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
 {
     if (!bf) return;
     if (bf->ptr != nullptr) {
-        if constexpr (is_default_constructible<E>::value) {
+        if constexpr (std::is_same_v<void, E>) {
+            free(bf->ptr);
+        }
+        else if constexpr (is_default_constructible<E>::value) {
             delete bf->ptr;
         } else {
             free(bf->ptr);

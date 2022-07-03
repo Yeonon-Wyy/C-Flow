@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 17:02:16
+ * @LastEditTime: 2022-07-03 15:01:37
  */
 
 #pragma once
@@ -63,9 +63,9 @@ public:
     PipeLine(int maxProcessingSize, int threadPoolSize)
         :m_dag(),
          m_pipeNodeDispatcher(std::make_shared<PipeNodeDispatcher<Item>>(threadPoolSize)),
+         m_bufferMgrFactory(std::make_shared<BufferManagerFactory<void>>()),
          m_processingDataCount(0),
-         m_processingMaxDataCount(maxProcessingSize),
-         m_bufferMgrFactory(std::make_shared<BufferManagerFactory<int>>())
+         m_processingMaxDataCount(maxProcessingSize)
     {}
 
     ~PipeLine()
@@ -189,7 +189,7 @@ private:
     std::unordered_map<NotifierType,std::vector<std::shared_ptr<Notifier<Item>>> > m_notifierMaps;
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
-    std::shared_ptr<BufferManagerFactory<int>> m_bufferMgrFactory;
+    std::shared_ptr<BufferManagerFactory<void>> m_bufferMgrFactory;
     std::atomic_uint32_t  m_processingDataCount;
     std::atomic_uint32_t  m_processingMaxDataCount;
     std::condition_variable m_processingDataCV;

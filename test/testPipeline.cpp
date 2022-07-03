@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 17:01:18
+ * @LastEditTime: 2022-07-03 15:04:00
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -109,6 +109,10 @@ void testPipeline()
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     else
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    for (auto&& out : request->output())
+                    {
+                        *((int*)out->ptr) = 0;
+                    }
                     return true;
                 }
             },
@@ -129,6 +133,12 @@ void testPipeline()
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P3 node", request->ID());
                     std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    int sz = request->input().size();
+                    for (int i = 0; i < sz; i++) {
+                        auto in = request->input()[i];
+                        auto out = request->output()[i];
+                        *((int*)out->ptr) = (*((int*)in->ptr)) + 1;
+                    }
                     return true;
                 }
             },
@@ -142,7 +152,16 @@ void testPipeline()
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
                     else
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    int sz = request->input().size();
+                    for (int i = 0; i < sz; i++) {
+                        auto in = request->input()[i];
+                        auto out = request->output()[i];
+                        *((int*)out->ptr) = (*((int*)in->ptr)) + 1;
+                    }
 
+                    for (auto&& out : request->output()) {
+                        VTF_LOGD("last output val : {0}", *((int*)out->ptr));
+                    }
                     return true;
                 }
             },

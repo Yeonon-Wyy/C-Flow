@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 19:23:43
+ * @LastEditTime: 2022-07-03 15:01:24
  */
 #pragma once
 
@@ -51,7 +51,7 @@ public:
         std::pair<vtf_id_t, DependencyNodeInfoSP> successors;
     };
 
-    using PipeDataBufferInfoSP = std::shared_ptr<BufferManager<int>::BufferInfo>;
+    using PipeDataBufferInfoSP = std::shared_ptr<BufferManager<void>::BufferInfo>;
     struct NodeBufferInfo {
         vtf_id_t nodeId;
         std::vector<PipeDataBufferInfoSP> input;
@@ -67,7 +67,7 @@ public:
     {
     }
 
-    bool constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<int>> bufferMgrFactory) override;
+    bool constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory) override;
 
     virtual bool constructIO() override; 
 
@@ -102,6 +102,10 @@ public:
     void addOutputForNode(vtf_id_t nodeId, const BufferSpecification&);
 
     bool setCurrentNodeIO();
+
+    std::vector<PipeDataBufferInfoSP> input() override  { return m_nodeBufferInfoMap[m_currentProcessNodeId].input; }
+    std::vector<PipeDataBufferInfoSP> output() override  { return m_nodeBufferInfoMap[m_currentProcessNodeId].output; }
+
 private:
     bool checkDependencyValid();
 
@@ -116,7 +120,7 @@ private:
     std::vector<Dependency> m_dependencies;
     std::unordered_map<int, DependencyNodeInfoSP> m_dependenciesNodeInfo;
     std::unordered_map<int, NodeBufferInfo> m_nodeBufferInfoMap;
-    std::shared_ptr<BufferManagerFactory<int>> m_buffeManagerFactory;
+    std::shared_ptr<BufferManagerFactory<void>> m_buffeManagerFactory;
     std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> m_nodeNotifiers;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
@@ -146,7 +150,7 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
 }
 
 
-bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<int>> bufferMgrFactory)
+bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
 {
     m_dependencies.clear();
 

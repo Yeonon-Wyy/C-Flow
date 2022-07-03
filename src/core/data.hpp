@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 16:57:52
+ * @LastEditTime: 2022-07-03 15:01:20
  */
 
 #pragma once
@@ -40,7 +40,7 @@ public:
      * @param {*}
      * @return {*}
      */    
-    virtual bool constructDependency(const std::vector<vtf_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<int>>) = 0;
+    virtual bool constructDependency(const std::vector<vtf_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
 
     /**
      * @name: constructIO
@@ -50,12 +50,19 @@ public:
     virtual bool constructIO() = 0;
 
     /**
-     * @name: findNextNodes
-     * @Descripttion: find next node list, the list size can only include one nodes or multi nodes, it decide by impl class
-     * @param {*}
-     * @return {*}
+     * @name: getInput
+     * @description: get input buffer by current node
+     * @return {*} input buffer list
      */    
-    // virtual std::vector<vtf_id_t> findNextNodes() = 0;
+    virtual std::vector<std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>> input() = 0;
+
+    /**
+     * @name: getOuput
+     * @description: get output buffer by current node
+     * @return {*} output buffer list
+     */    
+    virtual std::vector<std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>> output() = 0;
+
 
     /**
      * @name: getCurrentNodes
