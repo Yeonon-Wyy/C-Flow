@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-16 22:00:26
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-29 15:27:19
+ * @LastEditTime: 2022-07-17 17:24:45
  */
 #pragma once
 
@@ -28,7 +28,8 @@ public:
     :m_capacity(capacity),
      m_items(capacity+1),
      m_startIdx(0),
-     m_endIdx(0)
+     m_endIdx(0),
+     m_stop(false)
     {}
 
     BlockingQueue() = delete;
@@ -85,12 +86,15 @@ public:
     bool isFull() { return (m_startIdx + m_capacity - m_endIdx) % (m_capacity + 1) == 0; }
     void clear();
 
+    void stop();
+
 
 private:
     int m_capacity;
     std::vector<T> m_items;
     int m_startIdx;
     int m_endIdx;
+    bool m_stop;
 
     std::mutex m_mutex;
     std::condition_variable m_not_full;
@@ -104,8 +108,9 @@ void BlockingQueue<T>::push(T item)
         std::unique_lock<std::mutex> lock(m_mutex);
         if (isFull()) {
             m_not_full.wait(lock, [this]() {
-                return !this->isFull();
+                return !this->isFull() || m_stop;
             });
+            if (m_stop) return;
         }
 
         m_items[m_endIdx++] = item;
@@ -121,8 +126,9 @@ T BlockingQueue<T>::pop()
     std::unique_lock<std::mutex> lock(m_mutex);
     if (isEmpty()) {
         m_not_empty.wait(lock, [this]() {
-            return !this->isEmpty();
+            return !this->isEmpty() || m_stop;
         });
+        if (m_stop) return T();
     }
     T item = m_items[m_startIdx++];
     m_startIdx %= (m_capacity + 1);
@@ -137,8 +143,19 @@ void BlockingQueue<T>::clear()
     m_startIdx = 0;
     m_endIdx = 0;
     m_items.clear();
+
 }
 
+template<typename T>
+void BlockingQueue<T>::stop()
+{
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_stop = true;
+    }
+    m_not_full.notify_all();
+    m_not_empty.notify_all();
+}
 } //namespace queue
 } //namespace utils
 } //namespace vtf
