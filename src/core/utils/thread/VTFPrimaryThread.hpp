@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:43:14
+ * @LastEditTime: 2022-07-24 18:26:40
  * @FilePath: /src/core/utils/thread/VTFPrimaryThread.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -32,11 +32,35 @@ public:
 
     ~VTFPrimaryThread();
 
+    /**
+     * @description: reset thread state. need wait current process stop
+     * @return {*}
+     */    
     void reset();
 private:
+    /**
+     * @description: thread runable functiop
+     * @return {*}
+     */    
     void execute();
+
+    /**
+     * @description: get a task from task queue, then process it. if task is invalid, thead will yield
+     * @return {*}
+     */    
     void processTask();
+
+    /**
+     * @description: pop a task from task queue
+     * @return {*}
+     */    
     std::function<void()> popTask();
+
+    /**
+     * @description: push a task to task queue
+     * @param {&&} func
+     * @return {*}
+     */    
     void pushTask(std::function<void()>&& func);
 
 private:
@@ -81,6 +105,7 @@ void VTFPrimaryThread::processTask()
     if (task) {
         task();
     } else {
+        //task is invalid, thead yield. avoid cpu busy-loop
         std::this_thread::yield();
     }
 }

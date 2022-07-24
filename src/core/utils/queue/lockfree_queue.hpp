@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-24 16:13:47
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:36:21
+ * @LastEditTime: 2022-07-24 18:28:47
  * @FilePath: /src/core/utils/queue/lockfree_queue.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -21,10 +21,17 @@ namespace vtf {
 namespace utils {
 namespace queue {
 
+/**
+ * @description: Implementation of lock free queue.
+ */
 template<typename T>
 class LockFreeQueue
 {
 private:
+
+    /**
+     * @description: 
+     */    
     struct Node {
         T data;
         Node* next;
@@ -37,31 +44,60 @@ private:
     };
 
 public:
-    LockFreeQueue() 
-    {
-        Node* dummy = new Node(T());
-        m_head = dummy;
-        m_tail = dummy;
-    }
 
-    ~LockFreeQueue() 
-    {
-        while (m_head) {
-            Node* tempHead = m_head;
-            m_head = m_head->next;
-            delete tempHead;
-        }
-    }
+    /**
+     * @description: init head node and tail node.
+     * @return {*}
+     */
+    LockFreeQueue();
 
+    /**
+     * @description: free all node
+     * @return {*}
+     */
+    ~LockFreeQueue();
+
+    /**
+     * @description: push a data to queue
+     * @return {*}
+     */    
     void push(T data);
+
+    /**
+     * @description: pop a data from queue
+     * @param {T&} data, from queue
+     * @return {*}
+     */    
     bool pop(T& data);
 
-    bool empty() { return m_head->next == nullptr; }
+    /**
+     * @description: if queue is empty, it will return true
+     * @return {*}
+     */    
+    bool empty() const { return m_head->next == nullptr; }
 
 private:
     Node* m_head;
     Node* m_tail;
 };
+
+
+LockFreeQueue::LockFreeQueue()
+{
+    Node* dummy = new Node(T());
+    m_head = dummy;
+    m_tail = dummy;
+}
+
+LockFreeQueue::~LockFreeQueue()
+{
+    while (m_head) {
+        Node* tempHead = m_head;
+        m_head = m_head->next;
+        delete tempHead;
+    }
+}
+
 
 template<typename T>
 void LockFreeQueue<T>::push(T data)
@@ -71,6 +107,7 @@ void LockFreeQueue<T>::push(T data)
     Node* p = m_tail;
     Node* oldp = m_tail;
 
+    //use GCC/G++ Build-in CAS function
     do {
         while (p->next != nullptr) {
             p = p->next;
@@ -82,6 +119,7 @@ void LockFreeQueue<T>::push(T data)
 template<typename T>
 bool LockFreeQueue<T>::pop(T& data)
 {
+    //use GCC/G++ Build-in CAS function
     Node* p = nullptr;
     do {
         p = m_head;

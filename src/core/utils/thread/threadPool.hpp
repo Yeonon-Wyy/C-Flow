@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -73,6 +72,7 @@ auto ThreadPool::emplace(F&& f, Args&&... agrs)
 
     std::future<returnType> taskFuture = task->get_future();
 
+    //round robin selection
     auto dispatch = [this](){
         int selectIdx = m_curIdx++;
         if (m_curIdx >= m_workers.size()) {
