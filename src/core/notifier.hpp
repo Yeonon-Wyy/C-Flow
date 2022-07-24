@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-30 21:48:40
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-24 16:48:18
  */
 #pragma once
 
@@ -32,8 +32,10 @@ constexpr vtf_id_t initExpectItemId = 1;
  * Note: if notifier type is NotifierType::FINAL, it will start a thread for loop.
  *       And if notier type is DATA_LISTEN or is other "data-feedback-like" will not start a thread, because it's no need for thread, so you shouln only put some light logic in callback.
  */
+using namespace vtf::utils::thread;
+
 template<typename Item>
-class Notifier : public ThreadLoop<std::shared_ptr<Item> , Scheduler> {
+class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler> {
 public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress = std::function<void()>;

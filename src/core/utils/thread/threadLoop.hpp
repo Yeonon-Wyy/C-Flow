@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 13:22:38
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-24 16:43:32
  */
 #pragma once
 
@@ -21,6 +21,8 @@
 // #include "scheduler.hpp"
 
 namespace vtf {
+namespace utils {
+namespace thread {
 
 constexpr int threadLoopDefaultQueueSize = 8;
 
@@ -180,4 +182,6 @@ ThreadLoop<T, Scheduler>::~ThreadLoop()
 
 }
 
+} //namespace thread
+} //namespace utils
 } //namespace vtf

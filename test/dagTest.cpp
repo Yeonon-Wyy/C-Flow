@@ -207,7 +207,7 @@ void testTaskExecute()
 
     dag.buildGraph();
 
-    vtf::ThreadPool pool(4);
+    vtf::utils::thread::ThreadPool pool(4);
 
 
     auto start = std::chrono::system_clock::now();

@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:43:54
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-24 16:48:34
  */
 #pragma once
 #include <memory>
@@ -18,6 +18,7 @@ namespace vtf {
 
 #define DISPATCHER_DEFAULT_PREFIX "dispacther_"
 
+using namespace vtf::utils::thread;
 
 template<typename Item>
 class Dispatcher : public ThreadLoop<std::shared_ptr<Item>, Scheduler> {

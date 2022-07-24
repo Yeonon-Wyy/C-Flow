@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:44:57
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-24 16:44:07
  */
 #pragma once
 
@@ -115,7 +115,7 @@ public:
 private:
     PipeNodeMap m_pipeNodeMaps;
     std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>> > m_notifierMaps;
-    vtf::ThreadPool m_threadPool;
+    vtf::utils::thread::ThreadPool m_threadPool;
 };
 
 template<typename Item>

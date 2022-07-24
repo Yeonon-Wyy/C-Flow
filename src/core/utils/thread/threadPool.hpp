@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -10,11 +11,16 @@
 #include <future>
 
 #include "../log/log.hpp"
+#include "VTFPrimaryThread.hpp"
 
 namespace vtf {
+namespace utils {
+namespace thread {
 
 class ThreadPool {
 public:
+    using VTFPrimaryThreadPtr = std::unique_ptr<VTFPrimaryThread>;
+
     ThreadPool(size_t threadSize);
 
     /**
@@ -31,53 +37,27 @@ public:
 
     bool isStoped()
     {
-        std::unique_lock<std::mutex> lk(this->m_taskMutex);
         return isStop;
     }
 
     ~ThreadPool();
 private:
     //thread list, we need keep fixed number of threads
-    std::vector<std::thread> m_workers;
-
+    std::vector<VTFPrimaryThreadPtr> m_workers;
     //task queue
-    std::queue<std::function<void()>> m_tasks;
-
-    //for synchronization 
-    std::mutex m_taskMutex;
-    std::condition_variable m_taskCV;
-
+    // std::queue<std::function<void()>> m_tasks;
     //stop flag
     bool isStop;
+    size_t m_curIdx;
     
 };
 
 ThreadPool::ThreadPool(size_t threadSize)
-    :isStop(false) 
+    :isStop(false),
+     m_curIdx(0)
 {
     for (size_t i = 0; i < threadSize; i++) {
-        m_workers.emplace_back([this](){
-            while (true) {
-                
-                std::function<void()> task;
-                
-                {
-                    std::unique_lock<std::mutex> lk(this->m_taskMutex);
-                    this->m_taskCV.wait(lk, [this](){
-                        return this->isStop || !m_tasks.empty();
-                    });
-                    //if isStop flag is ture and task queue is empty, we just return
-                    //else we need execute task, even if isStop flag is true
-                    if (this->isStop && m_tasks.empty()) {
-                        return;
-                    }
-                    task = std::move(this->m_tasks.front());
-                    this->m_tasks.pop();
-                }
-                //execute task
-                task();
-            }
-        });
+        m_workers.emplace_back(new VTFPrimaryThread());
     }
 }
 
@@ -93,45 +73,41 @@ auto ThreadPool::emplace(F&& f, Args&&... agrs)
 
     std::future<returnType> taskFuture = task->get_future();
 
-    {
-        std::unique_lock<std::mutex> lk(this->m_taskMutex);
-        if (isStop) {
-            throw std::runtime_error("emplace on stopped ThreadPool");;
+    auto dispatch = [this](){
+        int selectIdx = m_curIdx++;
+        if (m_curIdx >= m_workers.size()) {
+            m_curIdx = 0;
         }
-        this->m_tasks.emplace([task](){
-            (*task)();
-        });
-    }
-
-    this->m_taskCV.notify_one();
+        return selectIdx;
+    };
+    int idx = dispatch();
+    
+    m_workers[idx]->pushTask([task](){
+        (*task)();
+    });
+    
     return taskFuture;
 }
 
+
 ThreadPool::~ThreadPool()
 {
-    {
-        std::unique_lock<std::mutex> lk(this->m_taskMutex);
-        if (isStop) {
-            return;
-        }
+    
+    if (isStop) {
+        return;
     }
+    
     stop();
 }
 
 void ThreadPool::stop()
 {
-    {
-        std::unique_lock<std::mutex> lk(this->m_taskMutex);
-        isStop = true;
-    }
-
-    //notify all wait thread, let remain thread can run
-    this->m_taskCV.notify_all();
-
+    
+    isStop = true;
     //wait all thread run complate
-    for (auto& worker : this->m_workers) {
-        worker.join();
-    }
+    m_workers.clear();
 }
 
+} //namespace thread
+} //namespace utils
 } //namespace vtf

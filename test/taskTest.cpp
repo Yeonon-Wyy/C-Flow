@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-09-22 21:53:09
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-12 19:35:25
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-07-24 16:44:41
  */
 #include "../src/core/task/task.hpp"
 #include "../src/core/utils/thread/threadPool.hpp"
@@ -25,7 +25,7 @@ int main()
     
     vtf::task::Task task2({2});
 
-    vtf::ThreadPool pool(4);
+    vtf::utils::thread::ThreadPool pool(4);
     auto future = pool.emplace([task]() {
         (*task)();
     });

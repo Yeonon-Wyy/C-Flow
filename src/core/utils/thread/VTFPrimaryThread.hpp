@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-17 17:29:52
+ * @LastEditTime: 2022-07-24 16:43:14
  * @FilePath: /src/core/utils/thread/VTFPrimaryThread.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -12,18 +12,19 @@
 
 #include <thread>
 #include <functional>
-#include "../queue/blocking_queue.hpp"
+#include "../queue/lockfree_queue.hpp"
 
 #define MAX_TASK_CAPCITY 100
 
 namespace vtf {
 namespace utils {
 namespace thread {
+
 class VTFPrimaryThread
 {
 public:
     VTFPrimaryThread()
-        :m_tasks(MAX_TASK_CAPCITY),
+        :m_tasks(),
          m_stop(false)
     {
         m_thread = std::move(std::thread(&VTFPrimaryThread::execute, this));
@@ -32,25 +33,24 @@ public:
     ~VTFPrimaryThread();
 
     void reset();
-
-    bool loadCondition() { return m_tasks.isFull(); }
 private:
     void execute();
     void processTask();
     std::function<void()> popTask();
+    void pushTask(std::function<void()>&& func);
 
 private:
-    BlockingQueue<std::function<void()>> m_tasks;
+    vtf::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
     std::thread m_thread;
     bool m_stop;
 
     friend class ThreadPool;
+
 };
 
 void VTFPrimaryThread::reset()
 {
     m_stop = true;
-    m_tasks.stop();
     if (m_thread.joinable()) {
         m_thread.join();
     }
@@ -64,23 +64,32 @@ void VTFPrimaryThread::execute()
     }
     if (m_stop) {
         //process
-        while (!m_tasks.isEmpty()) {
-            std::cout << "process leave" << std::endl;
+        while (!m_tasks.empty()) {
             processTask();
         }
     }
 }
 
+void VTFPrimaryThread::pushTask(std::function<void()>&& func)
+{
+    m_tasks.push(std::move(func));
+}
+
 void VTFPrimaryThread::processTask()
 {
     auto task = popTask();
-    if (task)
+    if (task) {
         task();
+    } else {
+        std::this_thread::yield();
+    }
 }
 
 std::function<void()> VTFPrimaryThread::popTask()
 {
-    return m_tasks.pop();
+    std::function<void()> task;
+    m_tasks.pop(task);
+    return task;
 }
 
 VTFPrimaryThread::~VTFPrimaryThread()
@@ -89,5 +98,5 @@ VTFPrimaryThread::~VTFPrimaryThread()
 }
 
 } //namespace thread
-} //namespace util
+} //namespace utils
 } //namespace vtf
