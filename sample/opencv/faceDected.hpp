@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:35:52
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-08-06 19:06:26
  */
 #pragma once
 
@@ -110,6 +110,7 @@ bool dnnfacedetect::initdnnNet()
 //人脸检测
 bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
 {
+  return true;
   std::unique_lock<std::mutex> lk(m_mutex);
 
   VTF_LOGD("faceDected inScaleFactor = {0} this {1}", inScaleFactor, fmt::ptr(this));

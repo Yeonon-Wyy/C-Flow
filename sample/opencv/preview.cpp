@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-11 21:08:30
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-08-06 18:51:10
  */
 #include "configTable.hpp"
 #include <opencv2/opencv.hpp>
@@ -14,7 +14,6 @@
 using namespace cv;
 using namespace std;
 using namespace vtf::pipeline;
-std::mutex m_mutex;
 double rate;
 
 int main()
@@ -22,7 +21,7 @@ int main()
 
 	auto ppl = PipeLine<FrameRequest>::generatePipeLineByConfigureTable(configTable);
 	ppl->start();
-	CVTestScenario curScenario = CVTestScenario::PREVIEW;
+	CVTestScenario curScenario = CVTestScenario::VIDEO;
 
 	if (curScenario == CVTestScenario::PREVIEW) {
 		auto outFile = "/home/weiyanyu/learn/cpp/vtf/sample/bin/test.avi";
@@ -49,7 +48,7 @@ int main()
 	} else if (curScenario == CVTestScenario::VIDEO) {
 		Point pt1, pt2;
 		Mat frame;
-		cv::VideoCapture capture("/home/weiyanyu/learn/cpp/vtf/sample/bin/testVideo.mp4"); //关联读入视频文件
+		cv::VideoCapture capture("/home/yeonon/learn/cpp/vtf/sample/bin/testVideo.mp4"); //关联读入视频文件
 		if (!capture.isOpened())
 		{
 			std::cout << "fail to load video";
