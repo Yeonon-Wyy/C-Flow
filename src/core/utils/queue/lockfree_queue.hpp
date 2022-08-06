@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-24 16:13:47
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 18:28:47
+ * @LastEditTime: 2022-08-06 17:22:37
  * @FilePath: /src/core/utils/queue/lockfree_queue.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -81,15 +81,16 @@ private:
     Node* m_tail;
 };
 
-
-LockFreeQueue::LockFreeQueue()
+template<typename T>
+LockFreeQueue<T>::LockFreeQueue()
 {
     Node* dummy = new Node(T());
     m_head = dummy;
     m_tail = dummy;
 }
 
-LockFreeQueue::~LockFreeQueue()
+template<typename T>
+LockFreeQueue<T>::~LockFreeQueue()
 {
     while (m_head) {
         Node* tempHead = m_head;

@@ -39,6 +39,8 @@ public:
         return isStop;
     }
 
+    int dispatch();
+
     ~ThreadPool();
 private:
     //thread list, we need keep fixed number of threads
@@ -73,13 +75,6 @@ auto ThreadPool::emplace(F&& f, Args&&... agrs)
     std::future<returnType> taskFuture = task->get_future();
 
     //round robin selection
-    auto dispatch = [this](){
-        int selectIdx = m_curIdx++;
-        if (m_curIdx >= m_workers.size()) {
-            m_curIdx = 0;
-        }
-        return selectIdx;
-    };
     int idx = dispatch();
     
     m_workers[idx]->pushTask([task](){
@@ -106,6 +101,33 @@ void ThreadPool::stop()
     isStop = true;
     //wait all thread run complate
     m_workers.clear();
+}
+
+int ThreadPool::dispatch()
+{
+    auto selectThread = [this]() {
+        int selectIdx = m_curIdx++;
+        if (m_curIdx >= m_workers.size()) {
+            m_curIdx = 0;
+        }
+        int curThreadLoad = m_workers[selectIdx]->totalTaskNum();
+        for (int i = 0; i < m_workers.size(); i++) {
+            if (i == selectIdx) continue;
+            int otherThreadLoad = m_workers[i]->totalTaskNum();
+            if (curThreadLoad - otherThreadLoad > 4) {
+                // std::cout << "cur select trhead : " << selectIdx << " load : " << curThreadLoad << std::endl;
+                return -1;
+            }
+        }
+        return selectIdx;
+    };
+
+    int selectThreadIdx = -1;
+    do {
+        selectThreadIdx = selectThread();
+    } while (selectThreadIdx < 0);
+
+    return selectThreadIdx;
 }
 
 } //namespace thread
