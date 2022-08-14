@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-03 15:04:00
+ * @LastEditTime: 2022-08-14 20:56:02
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -17,7 +17,8 @@ using namespace vtf::pipeline;
 enum MyScenario {
     Scenario1 = 100,
     Scenario2,
-    Scenario3
+    Scenario3,
+    Scenario4
 };
 
 enum NodeId {
@@ -102,7 +103,7 @@ void testPipeline()
             {
                 .id = NodeId::P1NODE,
                 .name = "P1Node",
-                .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2},
+                .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2, MyScenario::Scenario3, MyScenario::Scenario4},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P1 node", request->ID());
                     if (request->getDataType() == vtf::DataType::DATATYPE_RT)
@@ -119,7 +120,7 @@ void testPipeline()
             {
                 .id = NodeId::P2NODE,
                 .name = "P2Node",
-                .pipelineScenarios = {MyScenario::Scenario1},
+                .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario3},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P2 node", request->ID());
                     std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
@@ -238,7 +239,7 @@ void testPipeline()
         } else {
             std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
             if (!isSTop) {
-                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
+                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario4, cnt);
                 if (req->ID() % 2 == 0) {
                     req->setDataType(vtf::DataType::DATATYPE_RT);
                 }

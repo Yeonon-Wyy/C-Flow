@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-03 15:01:37
+ * @LastEditTime: 2022-08-14 20:56:56
  */
 
 #pragma once
@@ -184,7 +184,7 @@ private:
     std::unordered_map<vtf_id_t, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;
     std::vector<std::vector<vtf_id_t>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<vtf_id_t>> m_scenario2PipelineMaps;
-    std::unordered_set<PipelineScenario> m_pipelineScenarioSet;
+    std::unordered_map<PipelineScenario, int> m_pipelineScenarioMap;
     //<notifierType, notfiers>
     std::unordered_map<NotifierType,std::vector<std::shared_ptr<Notifier<Item>>> > m_notifierMaps;
     std::atomic_bool m_isStop = false;
@@ -329,38 +329,63 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     if (!checkValid()) return false;
     if (!m_pipelineModified) return true;
 
-    //get all scenario
-    for (auto&[nodeId, node] : m_pipeNodeMaps) {
-        for (PipelineScenario scenario : node->getScenarios()) {
-            m_pipelineScenarioSet.insert(scenario);
+    //0 -> 100, 101, 102
+    //1 -> 100, 102
+    //2 -> 101
+    //3 -> 100, 101
+
+    auto pipelines = m_dag.multiTopologicalSort();
+    //get all node in pipeline, maybe not equal all graph node.
+    std::unordered_set<vtf_id_t> pipelineNodeIds;
+    for (auto&& pipeline : pipelines)
+    {
+        for (auto&& nodeId : pipeline) {
+            pipelineNodeIds.insert(nodeId);
         }
     }
-    auto pipelines = m_dag.multiTopologicalSort();
 
-    for (auto it = m_pipelineScenarioSet.begin(); it != m_pipelineScenarioSet.end(); it++) {
-        PipelineScenario scenario = *it;
-        VTF_LOGD("scenario {0} ", scenario);
+    //get all scenario
+    for (auto nodeId : pipelineNodeIds) {
+        if (m_pipeNodeMaps.count(nodeId) == 0) continue;
+        for (PipelineScenario scenario : m_pipeNodeMaps[nodeId]->getScenarios()) {
+            m_pipelineScenarioMap[scenario]++;
+        }
+    }
+
+    //construct pipeline for all scenario
+    for (auto it = m_pipelineScenarioMap.begin(); it != m_pipelineScenarioMap.end(); it++) {
+        PipelineScenario scenario = it->first;
+        size_t scenarioNodeSize = it->second;
+        VTF_LOGD("current construct pipeline for scenario {0} ", scenario);
         for (auto pipelineIter = pipelines.begin(); pipelineIter != pipelines.end(); pipelineIter++) {
             auto pipeline = *pipelineIter;
-            bool findFlag = true;
+            std::vector<vtf_id_t> nodeConnections;
             for (vtf_id_t &nodeID : pipeline) {
                 if (m_pipeNodeMaps.count(nodeID) == 0) {
                     VTF_LOGE("can't find node {0} in m_pipeNodeMaps, please check it.", nodeID);
                     m_scenario2PipelineMaps.clear();
                     return false;
                 }
-                if (!m_pipeNodeMaps[nodeID]->hasScenario((PipelineScenario)scenario)) {
-                    findFlag = false;
-                    break;
+                if (m_pipeNodeMaps[nodeID]->hasScenario(scenario)) {
+                    nodeConnections.push_back(nodeID);
                 }
             }
-            if (findFlag) {
-                if (m_scenario2PipelineMaps.count((PipelineScenario)scenario)) {
-                    VTF_LOGE("There can only be one pipeline in a scenario {0}, please check Graph.", scenario);
-                    m_scenario2PipelineMaps.clear();
-                    return false;
+
+            if (nodeConnections.size() == scenarioNodeSize) {
+                //check node connection
+                bool isConnect = true;
+                for (size_t i = 1; i < nodeConnections.size(); i++) {
+                    if (!m_dag.checkDependency(nodeConnections[i-1], nodeConnections[i])) {
+                        isConnect = false;
+                        break;
+                    }
                 }
-                m_scenario2PipelineMaps[(PipelineScenario)scenario] = pipeline;
+                if (isConnect) {
+                    if (m_scenario2PipelineMaps.count(scenario)) {
+                        VTF_LOGW("already have a pieline of scenario {0}, new pipeline will cover old pipeline, something error???", scenario);
+                    }
+                    m_scenario2PipelineMaps[scenario] = nodeConnections;
+                }
             } 
         }
     }

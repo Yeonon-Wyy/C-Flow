@@ -45,8 +45,6 @@ public:
 private:
     //thread list, we need keep fixed number of threads
     std::vector<VTFPrimaryThreadPtr> m_workers;
-    //task queue
-    // std::queue<std::function<void()>> m_tasks;
     //stop flag
     bool isStop;
     size_t m_curIdx;
@@ -115,7 +113,6 @@ int ThreadPool::dispatch()
             if (i == selectIdx) continue;
             int otherThreadLoad = m_workers[i]->totalTaskNum();
             if (curThreadLoad - otherThreadLoad > 4) {
-                // std::cout << "cur select trhead : " << selectIdx << " load : " << curThreadLoad << std::endl;
                 return -1;
             }
         }

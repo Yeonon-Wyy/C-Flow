@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-03 15:01:24
+ * @LastEditTime: 2022-08-14 20:58:20
  */
 #pragma once
 
@@ -212,8 +212,8 @@ bool PipeData::constructDependency(const std::vector<vtf_id_t>& pipeline, std::s
         m_dependencies.push_back(dependency);
     }
     
-    if (m_dependencies.empty() || m_dependencies.size() <= 1) {
-        VTF_LOGE("dependency size of pipe data can't be less than 2");
+    if (m_dependencies.empty()) {
+        VTF_LOGE("dependency size of pipe data can't be less than 1");
         return false;
     }
 

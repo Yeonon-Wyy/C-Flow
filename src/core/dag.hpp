@@ -3,8 +3,8 @@
  * @version: 
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:59:21
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-08-14 20:09:31
  */
 #pragma once
 
@@ -137,6 +137,15 @@ public:
      */    
     void clear();
 
+    /**
+     * @name: checkDependency
+     * @Descripttion: check Dependency with src node id and dst node id
+     * @param {vtf_id_t} srcNodeId
+     * @param {vtf_id_t} dstNodeId
+     * @return {*}
+     */    
+    bool checkDependency(vtf_id_t srcNodeId, vtf_id_t dstNodeId);
+
 private:
     /**
      * @name: findAllTopologicalSort
@@ -150,15 +159,6 @@ private:
         std::vector<vtf_id_t>& topoOrder,
         int startIdx
     );
-
-    /**
-     * @name: checkDependency
-     * @Descripttion: check Dependency with src node id and dst node id
-     * @param {vtf_id_t} srcNodeId
-     * @param {vtf_id_t} dstNodeId
-     * @return {*}
-     */    
-    bool checkDependency(vtf_id_t srcNodeId, vtf_id_t dstNodeId);
 
 private:
     std::unordered_map<vtf_id_t, std::vector<vtf_id_t>> m_graph;

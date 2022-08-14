@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-06 20:27:22
+ * @LastEditTime: 2022-08-14 21:01:32
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
@@ -77,7 +77,7 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
         {
             .id = 2,
             .name = "FDVideoNode",
-            .pipelineScenarios = {CVTestScenario::VIDEO},
+            .pipelineScenarios = {},
             .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
             .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
         },
