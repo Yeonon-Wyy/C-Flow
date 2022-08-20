@@ -1,32 +1,35 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-06-04 16:16:32
  */
 #pragma once
-#include <type_traits>
 #include <memory>
+#include <type_traits>
 
-namespace vtf {
-
+namespace vtf
+{
 using vtf_id_t = long;
 
-enum class NotifierType {
+enum class NotifierType
+{
     NOTIFIER_TYPE_START,
     DATA_LISTEN,
     FINAL,
     NOTIFIER_TYPE_END
 };
 
-enum class NotifyStatus {
+enum class NotifyStatus
+{
     OK,
     ERROR
 };
 
-enum class DataType {
+enum class DataType
+{
     DATATYPE_START = 0,
     DATATYPE_RT,
     DATATYPE_NORMAL,
@@ -34,7 +37,8 @@ enum class DataType {
     DATATYPE_END
 };
 
-enum class DataPriority {
+enum class DataPriority
+{
     DATAPRIORITY_START = 0,
     DATAPRIORITY_URGENT,
     DATAPRIORITY_NORMAL,
@@ -42,32 +46,36 @@ enum class DataPriority {
     DATAPRIORITY_END
 };
 
-//utils
+// utils
 template <typename T>
-struct is_shared_ptr {
+struct is_shared_ptr
+{
     static const bool value = false;
 };
 
 template <typename T>
-struct is_shared_ptr<std::shared_ptr<T>> {
+struct is_shared_ptr<std::shared_ptr<T>>
+{
     static const bool value = true;
 };
 
-template<typename T>
+template <typename T>
 class is_default_constructible
 {
     typedef char yes;
-    typedef struct { char arr[2]; } no;
+    typedef struct
+    {
+        char arr[2];
+    } no;
 
-    template<typename U>
+    template <typename U>
     static decltype(U(), yes()) test(int);
 
-    template<typename U>
+    template <typename U>
     no test(...);
 
-public:
+   public:
     static const bool value = sizeof(test<T>(0)) == sizeof(yes);
-    
 };
 
-} //namespace vtf
+}  // namespace vtf

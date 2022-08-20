@@ -1,6 +1,6 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2021-12-03 23:04:22
  * @LastEditors: Yeonon
@@ -10,27 +10,32 @@
 
 #include <atomic>
 #include <mutex>
+
 #include "../type.hpp"
 
-namespace vtf {
-namespace utils {
-class IDGenerator {
-public:
+namespace vtf
+{
+namespace utils
+{
+class IDGenerator
+{
+   public:
     /**
      * @name: generate
      * @Descripttion: generate a id for user
      * @param {*}
      * @return {*} id
-     */    
+     */
     vtf_id_t generate()
     {
         std::unique_lock<std::mutex> lk(m_idLock);
         m_id++;
         return m_id;
     }
-private:
+
+   private:
     std::atomic_long m_id;
-    std::mutex m_idLock;
+    std::mutex       m_idLock;
 };
-}
-}
+}  // namespace utils
+}  // namespace vtf

@@ -1,6 +1,6 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2021-12-03 23:03:20
  * @LastEditors: yeonon
@@ -10,20 +10,21 @@
 
 #include <chrono>
 
-namespace vtf {
-namespace utils {
-
+namespace vtf
+{
+namespace utils
+{
 class TimeUtil
 {
-public:
-
+   public:
     /**
      * @name: awake_time
      * @Descripttion: return a chronon clock object with time in ms
      * @param {int} timeInMs
      * @return {*} chronon clock object
-     */    
-    static auto awake_time(int timeInMs) {
+     */
+    static auto awake_time(int timeInMs)
+    {
         // using std::chrono::operator""ms;
         std::chrono::milliseconds ms(timeInMs);
         return std::chrono::steady_clock::now() + ms;
@@ -34,14 +35,13 @@ public:
      * @Descripttion: convert a duration to another duration, like ms to ns
      * @param {*} originTime
      * @return {*} after convert time
-     */    
-    template<typename T>
+     */
+    template <typename T>
     static constexpr T convertTime(std::chrono::duration<double> originTime)
     {
         return std::chrono::duration_cast<T>(originTime);
     }
 };
 
-}
-}
-
+}  // namespace utils
+}  // namespace vtf

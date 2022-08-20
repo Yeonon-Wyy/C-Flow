@@ -1,6 +1,6 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2021-10-21 23:07:13
  * @LastEditors: yeonon
@@ -8,13 +8,14 @@
  */
 #pragma once
 
-#include <spdlog/spdlog.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+
 #include <memory>
 
-namespace vtf {
-
+namespace vtf
+{
 #ifdef LOGFILENAME
 #define VTF_LOG_FILENAME LOGFILENAME
 #else
@@ -24,24 +25,22 @@ namespace vtf {
 #define VTF_LOG_MAX_FILE_SIZE 4
 #define VTF_LOG_PATTERN "[%Y-%m-%d %H:%M:%S.%e][thread %t][%l]%v"
 
-#define __FILENAME__ (strrchr(__FILE__,'/')?(strrchr(__FILE__,'/')+1):__FILE__)
+#define __FILENAME__ (strrchr(__FILE__, '/') ? (strrchr(__FILE__, '/') + 1) : __FILE__)
 #ifndef PREFIX
-#define PREFIX(msg) std::string("").append("[")\
-	.append(__FILENAME__).append(":").append(std::to_string(__LINE__)).append("]")\
-    .append("[").append(__FUNCTION__).append("]")\
-	.append(msg).c_str()
-#endif //prefix
+#define PREFIX(msg) std::string("").append("[").append(__FILENAME__).append(":").append(std::to_string(__LINE__)).append("]").append("[").append(__FUNCTION__).append("]").append(msg).c_str()
+#endif  // prefix
 
-#define VTF_LOGT(msg,...)  vtf::Log::getInstance().getLogger()->trace(PREFIX(msg),## __VA_ARGS__)
-#define VTF_LOGD(msg,...)  vtf::Log::getInstance().getLogger()->debug(PREFIX(msg),## __VA_ARGS__)
-#define VTF_LOGI(msg,...)  vtf::Log::getInstance().getLogger()->info(PREFIX(msg),## __VA_ARGS__)
-#define VTF_LOGW(msg,...) vtf::Log::getInstance().getLogger()->warn(PREFIX(msg),## __VA_ARGS__)
-#define VTF_LOGE(msg,...)  vtf::Log::getInstance().getLogger()->error(PREFIX(msg),## __VA_ARGS__)
-#define VTF_LOGC(msg,...)  vtf::Log::getInstance().getLogger()->critical(PREFIX(msg),## __VA_ARGS__)
+#define VTF_LOGT(msg, ...) vtf::Log::getInstance().getLogger()->trace(PREFIX(msg), ##__VA_ARGS__)
+#define VTF_LOGD(msg, ...) vtf::Log::getInstance().getLogger()->debug(PREFIX(msg), ##__VA_ARGS__)
+#define VTF_LOGI(msg, ...) vtf::Log::getInstance().getLogger()->info(PREFIX(msg), ##__VA_ARGS__)
+#define VTF_LOGW(msg, ...) vtf::Log::getInstance().getLogger()->warn(PREFIX(msg), ##__VA_ARGS__)
+#define VTF_LOGE(msg, ...) vtf::Log::getInstance().getLogger()->error(PREFIX(msg), ##__VA_ARGS__)
+#define VTF_LOGC(msg, ...) vtf::Log::getInstance().getLogger()->critical(PREFIX(msg), ##__VA_ARGS__)
 
-class Log {
-public:
-    static Log& getInstance() 
+class Log
+{
+   public:
+    static Log& getInstance()
     {
         static Log log;
         return log;
@@ -49,32 +48,30 @@ public:
 
     std::shared_ptr<spdlog::logger> getLogger() { return m_spdlogger; }
 
-    ~Log() 
+    ~Log() {}
+
+   private:
+    Log()
     {
-    }
-private:
-    Log() 
-    {
-        #ifdef VTF_DEBUG_MODE
-        //console log
+#ifdef VTF_DEBUG_MODE
+        // console log
         spdlog::stdout_color_mt("console");
         m_spdlogger = spdlog::get("console");
 
         m_spdlogger->set_level(spdlog::level::debug);
         m_spdlogger->set_pattern(VTF_LOG_PATTERN);
         m_spdlogger->flush_on(spdlog::level::err);
-        #else
+#else
         m_spdlogger = spdlog::rotating_logger_mt("file", VTF_LOG_FILENAME, VTF_LOG_MAX_SIZE, VTF_LOG_MAX_FILE_SIZE);
-        
+
         m_spdlogger->set_level(spdlog::level::debug);
         m_spdlogger->set_pattern(VTF_LOG_PATTERN);
         m_spdlogger->flush_on(spdlog::level::err);
-        #endif
+#endif
     }
 
-
-private:
+   private:
     std::shared_ptr<spdlog::logger> m_spdlogger;
     std::shared_ptr<spdlog::logger> m_consolelogger;
 };
-} //namespace vtf
+}  // namespace vtf
