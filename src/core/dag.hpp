@@ -24,7 +24,7 @@ namespace vtf
 {
 class DAGNode
 {
-   public:
+public:
     /**
      * @name: DAGNode
      * @Descripttion: constructor of DAGNode
@@ -57,14 +57,14 @@ class DAGNode
      */
     std::vector<vtf_id_t> getOutNodes() { return m_outNodes; }
 
-   private:
+private:
     vtf_id_t              m_nodeId;    // node-id
     std::vector<vtf_id_t> m_outNodes;  // out-degree
 };
 
 class DAG
 {
-   public:
+public:
     ~DAG() { VTF_LOGD("dag destory"); }
 
     /**
@@ -139,7 +139,7 @@ class DAG
      */
     bool checkDependency(vtf_id_t srcNodeId, vtf_id_t dstNodeId);
 
-   private:
+private:
     /**
      * @name: findAllTopologicalSort
      * @Descripttion: find all topological order by node order
@@ -148,7 +148,7 @@ class DAG
      */
     void findAllTopologicalSort(std::vector<std::vector<vtf_id_t>>& nodeOrder, std::set<std::vector<vtf_id_t>>& allTopoOrder, std::vector<vtf_id_t>& topoOrder, int startIdx);
 
-   private:
+private:
     std::unordered_map<vtf_id_t, std::vector<vtf_id_t>>  m_graph;
     std::unordered_map<vtf_id_t, std::weak_ptr<DAGNode>> m_nodeIdMap;
     std::unordered_map<vtf_id_t, vtf_id_t>               m_nodeIndegreeMap;

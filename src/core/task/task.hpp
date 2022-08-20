@@ -43,7 +43,7 @@ struct TaskCreateInfo
 
 class Task : public DAGNode
 {
-   public:
+public:
     Task() : DAGNode(m_idGenerator.generate()), m_ID(getNodeId()), m_priority(TaskPriority::NORMAL) { m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID); }
 
     Task(TaskCreateInfo&& createInfo) : DAGNode(m_idGenerator.generate()), m_ID(getNodeId()), m_priority(createInfo.priority)
@@ -123,7 +123,7 @@ class Task : public DAGNode
         }
     }
 
-   private:
+private:
     static utils::IDGenerator m_idGenerator;
     std::string               m_name;      // task name
     long                      m_ID;        // task id

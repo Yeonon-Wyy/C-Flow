@@ -37,7 +37,7 @@ using namespace vtf::utils::thread;
 template <typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 {
-   public:
+public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress          = std::function<void()>;
     using StopProgress            = std::function<void()>;
@@ -56,7 +56,7 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 
     class NotifierBuilder
     {
-       public:
+    public:
         NotifierBuilder() : m_id(-1), m_type(NotifierType::FINAL) {}
         NotifierBuilder* setID(vtf_id_t id);
         NotifierBuilder* setName(const std::string& name);
@@ -68,7 +68,7 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 
         std::shared_ptr<Notifier<Item>> build();
 
-       private:
+    private:
         vtf_id_t                m_id;
         std::string             m_name;
         NotifierProcessCallback m_processCallback;
@@ -78,7 +78,7 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
         NotifierType            m_type;
     };
 
-   public:
+public:
     Notifier(vtf_id_t id) : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(id), m_expectItemId(initExpectItemId) {}
 
     ~Notifier() { VTF_LOGD("notifier {0} destory", m_name); }
@@ -141,7 +141,7 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
      */
     void stop();
 
-   private:
+private:
     vtf_id_t                                  m_id;
     std::string                               m_name;
     NotifierProcessCallback                   m_processCallback;

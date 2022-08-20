@@ -29,7 +29,7 @@ namespace memory
 template <typename E>
 class BufferManagerFactory
 {
-   public:
+public:
     using BufferManagerSp = std::shared_ptr<BufferManager<E>>;
 
     /**
@@ -53,7 +53,7 @@ class BufferManagerFactory
      */
     void releaseBufferManager(const BufferSpecification& bfs);
 
-   private:
+private:
     std::unordered_map<BufferSpecification, BufferManagerSp, hash_of_bufferSpecification> m_bufferManagerMap;
     std::mutex                                                                            m_bufferManagerMapLock;
 };

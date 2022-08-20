@@ -32,7 +32,7 @@ namespace pipeline
  */
 class PipeData : public Data
 {
-   public:
+public:
     enum DependencyStatus
     {
         NOREADY = 0,
@@ -65,7 +65,7 @@ class PipeData : public Data
     };
     using NodeBufferInfoSP = std::shared_ptr<NodeBufferInfo>;
 
-   public:
+public:
     PipeData(PipelineScenario scenario, bool enableDebug = false);
 
     ~PipeData() {}
@@ -109,7 +109,7 @@ class PipeData : public Data
     std::vector<PipeDataBufferInfoSP> input() override { return m_nodeBufferInfoMap[m_currentProcessNodeId].input; }
     std::vector<PipeDataBufferInfoSP> output() override { return m_nodeBufferInfoMap[m_currentProcessNodeId].output; }
 
-   private:
+private:
     bool checkDependencyValid();
 
     vtf_id_t findNextNode();
@@ -120,7 +120,7 @@ class PipeData : public Data
 
     void releaseCurrentNodeBuffer(bool isInput);
 
-   private:
+private:
     std::vector<Dependency>                             m_dependencies;
     std::unordered_map<int, DependencyNodeInfoSP>       m_dependenciesNodeInfo;
     std::unordered_map<int, NodeBufferInfo>             m_nodeBufferInfoMap;

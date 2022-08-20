@@ -20,7 +20,7 @@ namespace thread
 {
 class ThreadPool
 {
-   public:
+public:
     using VTFPrimaryThreadPtr = std::unique_ptr<VTFPrimaryThread>;
 
     ThreadPool(size_t threadSize);
@@ -42,7 +42,7 @@ class ThreadPool
 
     ~ThreadPool();
 
-   private:
+private:
     // thread list, we need keep fixed number of threads
     std::vector<VTFPrimaryThreadPtr> m_workers;
     // stop flag

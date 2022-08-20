@@ -28,7 +28,7 @@ namespace task
 {
 class TaskFlowCtl
 {
-   public:
+public:
     TaskFlowCtl(bool enableDebug = false) : m_threadPool(TASKFLOWCTL_THREADPOOL_MAX_THREAD), m_dag(), m_debugEnable(enableDebug) {}
 
     /**
@@ -57,7 +57,7 @@ class TaskFlowCtl
      */
     void start();
 
-   private:
+private:
     /**
      * @name: reorganizeTaskOrder
      * @Descripttion: reorganize task order, only after add or delete task
@@ -74,7 +74,7 @@ class TaskFlowCtl
      */
     void commonSetting(std::shared_ptr<Task> task);
 
-   private:
+private:
     std::unordered_map<vtf_id_t, std::shared_ptr<Task>> m_taskIdMap;
     std::vector<std::vector<vtf_id_t>>                  m_taskOrder;
     TaskThreadPool                                      m_threadPool;

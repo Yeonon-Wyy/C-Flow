@@ -16,7 +16,7 @@ namespace utils
 {
 class TimeUtil
 {
-   public:
+public:
     /**
      * @name: awake_time
      * @Descripttion: return a chronon clock object with time in ms

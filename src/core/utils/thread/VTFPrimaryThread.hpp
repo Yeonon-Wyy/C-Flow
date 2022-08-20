@@ -25,7 +25,7 @@ namespace thread
 {
 class VTFPrimaryThread
 {
-   public:
+public:
     VTFPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0) { m_thread = std::move(std::thread(&VTFPrimaryThread::execute, this)); }
 
     ~VTFPrimaryThread();
@@ -36,7 +36,7 @@ class VTFPrimaryThread
      */
     void reset();
 
-   private:
+private:
     /**
      * @description: thread runable functiop
      * @return {*}
@@ -68,7 +68,7 @@ class VTFPrimaryThread
      */
     int32_t totalTaskNum() const { return m_totalTaskNum; }
 
-   private:
+private:
     vtf::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
     std::thread                                                 m_thread;
     bool                                                        m_stop;

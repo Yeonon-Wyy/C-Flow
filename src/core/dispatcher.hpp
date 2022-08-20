@@ -24,7 +24,7 @@ using namespace vtf::utils::thread;
 template <typename Item>
 class Dispatcher : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 {
-   public:
+public:
     Dispatcher() : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(m_idGenerator.generate()), m_name(DISPATCHER_DEFAULT_PREFIX + vtf::utils::StringConvetor::digit2String(m_id)) {}
 
     Dispatcher(std::string&& name) : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(m_idGenerator.generate()), m_name(name) {}
@@ -54,7 +54,7 @@ class Dispatcher : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
      */
     virtual void stop() = 0;
 
-   private:
+private:
     static vtf::utils::IDGenerator m_idGenerator;
     vtf_id_t                       m_id;
     std::string                    m_name;

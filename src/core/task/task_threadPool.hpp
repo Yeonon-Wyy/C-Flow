@@ -18,7 +18,7 @@ namespace task
 {
 class TaskThreadPool
 {
-   public:
+public:
     // Task Compare, with task priority
     struct TaskComp
     {
@@ -37,7 +37,7 @@ class TaskThreadPool
 
     ~TaskThreadPool();
 
-   private:
+private:
     // thread list, we need keep fixed number of threads
     std::vector<std::thread> m_workers;
 

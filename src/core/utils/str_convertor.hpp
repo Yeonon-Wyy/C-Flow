@@ -17,7 +17,7 @@ namespace utils
 {
 class StringConvetor
 {
-   public:
+public:
     /**
      * @name: digit2String
      * @Descripttion: convert digit to str

@@ -28,7 +28,7 @@ namespace pipeline
 template <typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item>
 {
-   public:
+public:
     using PipeNodeMap = std::unordered_map<vtf_id_t, std::weak_ptr<PipeNode<Item>>>;
     PipeNodeDispatcher(int threadPoolSize) : Dispatcher<Item>(), m_threadPool(threadPoolSize) {}
 
@@ -106,7 +106,7 @@ class PipeNodeDispatcher : public Dispatcher<Item>
      */
     void notifyNotFinal(std::shared_ptr<Item>, vtf_id_t callerNodeId);
 
-   private:
+private:
     PipeNodeMap                                                                  m_pipeNodeMaps;
     std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>>> m_notifierMaps;
     vtf::utils::thread::ThreadPool                                               m_threadPool;

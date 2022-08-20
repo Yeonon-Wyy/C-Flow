@@ -46,7 +46,7 @@ struct hash_of_bufferSpecification
 template <typename E>
 class BufferManager
 {
-   public:
+public:
     struct BufferInfo
     {
         unsigned long sizeOfBytes;
@@ -58,7 +58,7 @@ class BufferManager
         unsigned int  numOfUser;
     };
 
-   public:
+public:
     /**
      * @description: constructor
      * @param {BufferSpecification&} bfs
@@ -146,7 +146,7 @@ class BufferManager
         freeBufferQueue(m_tempBufferQueue);
     }
 
-   private:
+private:
     /**
      * @description: alloc memory
      * @param {bool} isTempBuffer
@@ -192,7 +192,7 @@ class BufferManager
         return totalCapcity - m_alloctBufferCount;
     }
 
-   private:
+private:
     const BufferSpecification                                 m_bfs;
     vtf::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
 

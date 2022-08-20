@@ -42,7 +42,7 @@ class PipeNodeDispatcher;
 template <typename Item>
 class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNode<Item>>
 {
-   public:
+public:
     using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress  = std::function<void()>;
     using StopProgress    = std::function<void()>;
@@ -59,7 +59,7 @@ class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNo
 
     class PipeNodeBuilder
     {
-       public:
+    public:
         PipeNodeBuilder() : id(-1) {}
         PipeNodeBuilder* setID(PipeNodeId&& id);
         PipeNodeBuilder* setName(const std::string& name);
@@ -71,7 +71,7 @@ class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNo
 
         std::shared_ptr<PipeNode<Item>> build(std::shared_ptr<PipeNodeDispatcher<Item>>);
 
-       private:
+    private:
         PipeNodeId                    id;
         std::string                   name;
         std::vector<PipelineScenario> pipelineScenarios;
@@ -80,7 +80,7 @@ class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNo
         StopProgress                  stopProgress;
     };
 
-   public:
+public:
     PipeNode(PipeNodeId id) : DAGNode(id), m_id(id), m_status(PipeNodeStatus::IDLE) { m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(m_id); }
 
     ~PipeNode() { VTF_LOGD("node {0} destory", m_name); }
@@ -157,8 +157,8 @@ class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNo
 
     bool isStop() { return m_isStop; }
 
-   private:
-   private:
+private:
+private:
     PipeNodeId                              m_id;
     std::string                             m_name;
     PipeNodeStatus                          m_status;

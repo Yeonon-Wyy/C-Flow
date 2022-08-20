@@ -74,7 +74,7 @@ class is_default_constructible
     template <typename U>
     no test(...);
 
-   public:
+public:
     static const bool value = sizeof(test<T>(0)) == sizeof(yes);
 };
 

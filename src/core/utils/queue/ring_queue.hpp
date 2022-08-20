@@ -25,7 +25,7 @@ namespace queue
 template <typename E>
 class RingQueue
 {
-   public:
+public:
     RingQueue(int capcity) : m_capcity(capcity), m_elements(capcity + 1), m_realIdx(0), m_frontIdx(0) {}
 
     /**
@@ -106,7 +106,7 @@ class RingQueue
         return m_elements[idx];
     }
 
-   private:
+private:
     int            m_capcity;
     std::vector<E> m_elements;
     int            m_realIdx;

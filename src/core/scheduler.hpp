@@ -29,7 +29,7 @@ namespace vtf
 template <typename T>
 class Scheduler
 {
-   public:
+public:
     struct ItemPriorityComp
     {
         template <typename Q = T>
@@ -48,7 +48,7 @@ class Scheduler
 
     using SchedulerQueue = std::priority_queue<T, std::vector<T>, ItemPriorityComp>;
 
-   public:
+public:
     Scheduler();
 
     void emplace(T item);
@@ -58,7 +58,7 @@ class Scheduler
     size_t getQueueCapWithFromItem(T item);
     size_t getQueueSizeWithFromItem(T item);
 
-   private:
+private:
     template <typename Q = T>
     typename std::enable_if<std::is_pointer<Q>::value || vtf::is_shared_ptr<Q>::value, DataType>::type extractDataTypeFromItem(T item)
     {
@@ -71,7 +71,7 @@ class Scheduler
         return item.getDataType();
     }
 
-   private:
+private:
     std::map<DataType, SchedulerQueue>   m_dataTypeQueueMap;
     std::unordered_map<DataType, size_t> m_dataTypeQueueCapMap;
 };

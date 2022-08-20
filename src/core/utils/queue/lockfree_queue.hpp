@@ -29,7 +29,7 @@ namespace queue
 template <typename T>
 class LockFreeQueue
 {
-   private:
+private:
     /**
      * @description:
      */
@@ -40,7 +40,7 @@ class LockFreeQueue
         Node(const T& _data) : data(_data), next(nullptr) {}
     };
 
-   public:
+public:
     /**
      * @description: init head node and tail node.
      * @return {*}
@@ -72,7 +72,7 @@ class LockFreeQueue
      */
     bool empty() const { return m_head->next == nullptr; }
 
-   private:
+private:
     Node* m_head;
     Node* m_tail;
 };

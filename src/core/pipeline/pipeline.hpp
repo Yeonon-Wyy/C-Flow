@@ -43,7 +43,7 @@ const static int pplDefaultThreadPoolSize = sysconf(_SC_NPROCESSORS_CONF) + 1;
 template <typename Item>
 class PipeLine
 {
-   public:
+public:
     using ProcessFunction = std::function<bool(std::shared_ptr<Item>)>;
 
     struct ConfigureTable
@@ -55,7 +55,7 @@ class PipeLine
         std::vector<std::pair<vtf_id_t, vtf_id_t>>               nodeConnections;
     };
 
-   public:
+public:
     /**
      * @name: PipeLine
      * @Descripttion: PipeLine constructor
@@ -153,7 +153,7 @@ class PipeLine
      */
     void stop();
 
-   private:
+private:
     /**
      * @name: getPipelineWithScenario
      * @Descripttion: get a pipeline by given scenario
@@ -180,7 +180,7 @@ class PipeLine
 
     void connectNode(vtf_id_t src, vtf_id_t dst);
 
-   private:
+private:
     DAG                                                           m_dag;
     std::shared_ptr<PipeNodeDispatcher<Item>>                     m_pipeNodeDispatcher;
     std::unordered_map<vtf_id_t, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;

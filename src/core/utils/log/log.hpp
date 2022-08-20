@@ -39,7 +39,7 @@ namespace vtf
 
 class Log
 {
-   public:
+public:
     static Log& getInstance()
     {
         static Log log;
@@ -50,7 +50,7 @@ class Log
 
     ~Log() {}
 
-   private:
+private:
     Log()
     {
 #ifdef VTF_DEBUG_MODE
@@ -70,7 +70,7 @@ class Log
 #endif
     }
 
-   private:
+private:
     std::shared_ptr<spdlog::logger> m_spdlogger;
     std::shared_ptr<spdlog::logger> m_consolelogger;
 };

@@ -19,7 +19,7 @@ namespace utils
 {
 class IDGenerator
 {
-   public:
+public:
     /**
      * @name: generate
      * @Descripttion: generate a id for user
@@ -33,7 +33,7 @@ class IDGenerator
         return m_id;
     }
 
-   private:
+private:
     std::atomic_long m_id;
     std::mutex       m_idLock;
 };

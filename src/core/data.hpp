@@ -26,7 +26,7 @@ namespace vtf
  */
 class Data
 {
-   public:
+public:
     Data() : m_id(m_idGenerator.generate()) {}
 
     virtual ~Data() {}
@@ -167,7 +167,7 @@ class Data
      */
     virtual std::vector<vtf_id_t> getNotifiersByNodeId(vtf_id_t nodeId) = 0;
 
-   private:
+private:
     static vtf::utils::IDGenerator m_idGenerator;
     vtf_id_t                       m_id;
 };

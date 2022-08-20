@@ -23,7 +23,7 @@ namespace queue
 template <typename T>
 class BlockingQueue
 {
-   public:
+public:
     template <typename U>
     friend class BlockingQueue;
 
@@ -72,7 +72,7 @@ class BlockingQueue
 
     void stop();
 
-   private:
+private:
     int            m_capacity;
     std::vector<T> m_items;
     int            m_startIdx;

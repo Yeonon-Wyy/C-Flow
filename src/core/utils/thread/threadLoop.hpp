@@ -42,7 +42,7 @@ constexpr int threadLoopDefaultQueueSize = 8;
 template <typename T, template <typename> typename Scheduler>
 class ThreadLoop
 {
-   public:
+public:
     ThreadLoop() : m_isStop(false), m_isNeedLoop(false), m_scheduler() {}
 
     ~ThreadLoop();
@@ -79,10 +79,10 @@ class ThreadLoop
      */
     void queueItem(T item);
 
-   private:
+private:
     void _threadLoop();
 
-   private:
+private:
     std::atomic_bool        m_isStop;
     std::atomic_bool        m_isNeedLoop;
     std::thread             m_thread;
