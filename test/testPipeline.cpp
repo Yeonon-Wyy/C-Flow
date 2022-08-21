@@ -4,13 +4,14 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-14 20:56:02
+ * @LastEditTime: 2022-08-21 17:54:04
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
 #include "../src/core/pipeline/pipeline.hpp"
 #include "../src/core/notifier.hpp"
 #include "../src/core/utils/time_util.hpp"
+#include "../src/core/utils/log/trace_log.hpp"
 
 using namespace vtf::pipeline;
 
@@ -105,6 +106,7 @@ void testPipeline()
                 .name = "P1Node",
                 .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2, MyScenario::Scenario3, MyScenario::Scenario4},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
+                    TRACE_FUNC_ID_START("P1NodeProcess", request->ID());
                     VTF_LOGD("request {0} process P1 node", request->ID());
                     if (request->getDataType() == vtf::DataType::DATATYPE_RT)
                         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
