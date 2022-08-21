@@ -76,7 +76,7 @@ private:
 //填写配置表
 const static PipeLine<FrameRequest>::ConfigureTable configTable = 
 {
-    .queueSize = 8,
+    .maxProcessingSize = 8,
     .threadPoolSize = 50,
     .pipeNodeCreateInfos = 
     {
@@ -90,7 +90,7 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
         {
             .id = 2,
             .name = "FDVideoNode",
-            .pipelineScenarios = {CVTestScenario::VIDEO},
+            .pipelineScenarios = {},
             .processCallback = std::bind(&dnnfacedetect::detect, dnnfacedetect::getInstance(), std::placeholders::_1),
             .configProgress = std::bind(&dnnfacedetect::config, dnnfacedetect::getInstance())
         },
@@ -101,19 +101,43 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
             .processCallback = watermark
         }
     },
-    .notifierCreateInfos = 
-    {
+        .notifierCreateInfos = 
         {
-            1,
-            "pipeline_result_notifier",
-            imageShowResultCallback,
-            vtf::NotifierType::FINAL,
-            8
-        }
-    },
+            {
+                .id = 1,
+                .name = "pipeline_node_done_notifier",
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) {
+                        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
+                            VTF_LOGE("node done {0} notify ERROR", request->ID());
+                        } else {
+                            VTF_LOGE("node done {0} notify OK", request->ID());
+                        }
+                        return true;
+                },
+                .configProgress = []() {
+                    VTF_LOGD("pipeline_node_done_notifier - user define config");  
+                },
+                .stopProgress = []() {
+                    VTF_LOGD("pipeline_node_done_notifier - user define stop");
+                },
+                .type = vtf::NotifierType::DATA_LISTEN,
+            },
+            {
+                .id = 2,
+                .name = "pipeline_result_notifier",
+                .processCallback = [](std::shared_ptr<PipelineRequest> request) {
+                        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
+                            VTF_LOGE("result {0} notify ERROR", request->ID());
+                        } else {
+                            VTF_LOGE("result {0} notify OK", request->ID());
+                        }
+                        return true;
+                },
+                .type = vtf::NotifierType::FINAL,
+            }
+        },
     .nodeConnections = 
     {
-        //src->dst
         {1, 3},
         {2, 3}
     }
@@ -138,10 +162,35 @@ ppl->submit(request);
 ppl->stop();
 ```
 
-### 3. 整体架构设计
+其中,配置表的详细信息如下：
+
+1. maxProcessingSize代表每一个node的最大可处理数量，即node里的队列的大小
+
+2. threadPoolSize代表整个pipeline中线程池的大小
+
+3. pipeNodeCreateInfos包含各个node的详细信息
+   
+   - id表示node id，id不可重复，重复则会被覆盖
+   
+   - name表示node name，可根据业务自定义，方便日志中展示
+   
+   - pipelineScenarios，表示该node在哪些scenarios中使用，其中scenarios也是用户自定义的，对于框架来说，他只是一个类似id的东西用于表示某一具体的常见。这个参数非常重要，框架 会更具scenarios来串联node得到一个pipeline。
+   
+   - processCallback，即node的处理函数，函数的具体实现由用户提供。用户可实现复杂的逻辑，最后在这个函数里调用，随心所欲吧。
+   
+   - configProgress，提供一个node初始化的回调函数，用户可以在这个函数里初始化一些参数之类的。当然如果不需要的话，不提供也行，一切看用户的想法。
+
+4. notifierCreatInfo，后处理函数，例如人脸检测完毕后统计一些信息等后处理操作。支持两种类似，一种是node后处理（DATA_LISTEN），一种是data执行完所有node之后的后处理（FINAL）。DATA_LISTEN是在单个node处理完毕后执行一次，FINAL则是在data执行完所有node之后执行一次。
+
+5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
+
+### 3. support feature
+
+
+### 4. 整体架构设计
 
 //正在撰写中
 
-### 4. 下一个版本计划
+### 5. 后续计划
 
 //正在思考中
