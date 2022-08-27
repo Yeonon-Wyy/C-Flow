@@ -4,11 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-14 21:01:32
+ * @LastEditTime: 2022-08-27 20:35:47
  */
 
 #include "../../src/core/pipeline/pipeline.hpp"
 #include "../../src/core/notifier.hpp"
+#include "../../src/core/utils/log/trace_log.hpp"
 #include "FrameRequest.hpp"
 #include "faceDected.hpp"
 #include <mutex>
@@ -30,7 +31,8 @@ Mat logo = imread("/home/yeonon/learn/cpp/vtf/sample/bin/logo.png");
 
 bool watermark(std::shared_ptr<FrameRequest> request)
 {
-
+	VTF_LOGD("watermark start {0}", request->ID());
+    TRACE_FUNC_ID_START(__FUNCTION__, request->ID());
     auto frame = *request->getFrame();
 
     Rect roi(frame.cols*0.7, frame.rows*0.7, frame.cols/4, frame.rows/4);
@@ -39,7 +41,10 @@ bool watermark(std::shared_ptr<FrameRequest> request)
     resize(logo, logo, Size(frame.cols/4, frame.rows/4));
     addWeighted(frame_roi,0, logo,1,1, frame_roi);
 	VTF_LOGD("watermark finish {0}", request->ID());
-	return true;
+    std::chrono::milliseconds durationTime;
+	TRACE_END_WITH_TIME(durationTime);
+    // std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(24) - durationTime);
+    return true;
 }
 
 bool imageShowResultCallback(std::shared_ptr<FrameRequest> request)

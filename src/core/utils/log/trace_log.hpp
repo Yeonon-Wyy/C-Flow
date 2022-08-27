@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-08-21 16:55:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-21 17:49:58
+ * @LastEditTime: 2022-08-27 20:18:17
  * @FilePath: /src/core/utils/log/trace_log.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -26,6 +26,8 @@
     trace.start();
 
 #define TRACE_END() trace.stop();
+#define TRACE_END_WITH_TIME(duration) duration = trace.stop();
+
 
 namespace vtf
 {
@@ -42,7 +44,7 @@ public:
     ~TraceLog();
 
     void start();
-    void stop();
+    auto stop() -> std::chrono::milliseconds;
 
 private:
     std::string                                        m_functionName;
@@ -62,9 +64,10 @@ void TraceLog::start()
     m_isStop = false;
 }
 
-void TraceLog::stop()
+auto TraceLog::stop()
+    -> std::chrono::milliseconds
 {
-    if (m_isStop) return;
+    if (m_isStop) return std::chrono::milliseconds(0);
     m_isStop        = true;
     m_end           = std::chrono::steady_clock::now();
     auto elapsed_ms = vtf::utils::TimeUtil::convertTime<std::chrono::milliseconds>(m_end - m_start);
@@ -76,6 +79,7 @@ void TraceLog::stop()
     {
         VTF_LOGD("[func[{0}]] execute {1} ms", m_functionName, elapsed_ms.count());
     }
+    return elapsed_ms;
 }
 
 TraceLog::~TraceLog()

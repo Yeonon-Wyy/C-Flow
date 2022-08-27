@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-21 17:54:04
+ * @LastEditTime: 2022-08-27 21:35:30
  */
 #include "../src/core/pipeline/pipedata.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
@@ -99,6 +99,7 @@ void testPipeline()
 
     PipeLine<PipelineRequest>::ConfigureTable table = 
     {
+        .threadPoolSize = 8,
         .pipeNodeCreateInfos = 
         {
             {
@@ -109,9 +110,9 @@ void testPipeline()
                     TRACE_FUNC_ID_START("P1NodeProcess", request->ID());
                     VTF_LOGD("request {0} process P1 node", request->ID());
                     if (request->getDataType() == vtf::DataType::DATATYPE_RT)
-                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     else
-                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     for (auto&& out : request->output())
                     {
                         *((int*)out->ptr) = 0;
@@ -125,7 +126,7 @@ void testPipeline()
                 .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario3},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P2 node", request->ID());
-                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     return true;
                 }
             },
@@ -135,7 +136,7 @@ void testPipeline()
                 .pipelineScenarios = {MyScenario::Scenario2},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process P3 node", request->ID());
-                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     int sz = request->input().size();
                     for (int i = 0; i < sz; i++) {
                         auto in = request->input()[i];
@@ -152,9 +153,9 @@ void testPipeline()
                 [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process MDP node", request->ID());
                     if (request->getDataType() == vtf::DataType::DATATYPE_RT)
-                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     else
-                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                        std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     int sz = request->input().size();
                     for (int i = 0; i < sz; i++) {
                         auto in = request->input()[i];
@@ -174,7 +175,7 @@ void testPipeline()
                 {MyScenario::Scenario1, MyScenario::Scenario2},
                 [](std::shared_ptr<PipelineRequest> request) -> bool {
                     VTF_LOGD("request {0} process WPE node", request->ID());
-                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+                    std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
                     return true;
                 }
             }
@@ -241,10 +242,10 @@ void testPipeline()
         } else {
             std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
             if (!isSTop) {
-                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario4, cnt);
-                if (req->ID() % 2 == 0) {
+                auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
+                // if (req->ID() % 2 == 0) {
                     req->setDataType(vtf::DataType::DATATYPE_RT);
-                }
+                // }
                 req->addNotifierForNode(P1NODE, 1);
                 req->addNotifierForNode(P3NODE, 1);
                 ppl->submit(req);
@@ -265,7 +266,7 @@ void testPipeline()
 
     //         break;
     //     } else {
-    //         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+    //         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
     //         if (!isSTop) {
     //             auto req = std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
     //             // if (req->ID() % 2 == 0) {

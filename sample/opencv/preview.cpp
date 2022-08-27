@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-06 18:51:10
+ * @LastEditTime: 2022-08-27 20:25:47
  */
 #include "configTable.hpp"
 #include <opencv2/opencv.hpp>
@@ -56,6 +56,7 @@ int main()
 		}
 		/*获取视频fps*/
 		rate = capture.get(CAP_PROP_FPS);
+		VTF_LOGD("video rate {0}", rate);
 		/*获取视频帧的尺寸*/
 		int width = capture.get(CAP_PROP_FRAME_WIDTH);
 		int height = capture.get(CAP_PROP_FRAME_HEIGHT);

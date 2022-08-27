@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-14 20:56:56
+ * @LastEditTime: 2022-08-27 20:36:00
  */
 
 #pragma once
@@ -445,9 +445,9 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> data)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
+    VTF_LOGD("submit a data {0}", data->ID());
     data->constructDependency(getPipelineWithScenario(data->scenario()), m_bufferMgrFactory);
     m_pipeNodeDispatcher->queueInDispacther(data);
-    VTF_LOGD("submit a data {0}", data->ID());
     if (m_processingDataCount >= m_processingMaxDataCount)
     {
         m_processingDataCV.wait(lk, [&]() { return m_processingDataCount < m_processingMaxDataCount; });
