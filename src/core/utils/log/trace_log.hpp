@@ -28,7 +28,6 @@
 #define TRACE_END() trace.stop();
 #define TRACE_END_WITH_TIME(duration) duration = trace.stop();
 
-
 namespace vtf
 {
 namespace utils
@@ -64,8 +63,7 @@ void TraceLog::start()
     m_isStop = false;
 }
 
-auto TraceLog::stop()
-    -> std::chrono::milliseconds
+auto TraceLog::stop() -> std::chrono::milliseconds
 {
     if (m_isStop) return std::chrono::milliseconds(0);
     m_isStop        = true;

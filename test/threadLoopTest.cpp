@@ -1,6 +1,6 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2021-10-24 15:59:50
  * @LastEditors: yeonon
@@ -8,13 +8,8 @@
  */
 #include <thread>
 
+int main() {
 
-int main()
-{
-
-
-
-    while (true) {
-
-    }
+  while (true) {
+  }
 }

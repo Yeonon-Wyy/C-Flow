@@ -1,6 +1,6 @@
 /*
- * @Descripttion: 
- * @version: 
+ * @Descripttion:
+ * @version:
  * @Author: yeonon
  * @Date: 2021-11-28 20:27:52
  * @LastEditors: Yeonon
@@ -8,33 +8,23 @@
  */
 #pragma once
 
-#include <opencv4/opencv2/opencv.hpp>
 #include "../../src/core/pipeline/pipedata.hpp"
-
+#include <opencv4/opencv2/opencv.hpp>
 
 using namespace cv;
 using namespace vtf::pipeline;
 
-
 class FrameRequest : public PipeData {
 public:
-	
-	FrameRequest(PipelineScenario scenario, Mat mat);
+  FrameRequest(PipelineScenario scenario, Mat mat);
 
-	~FrameRequest()
-	{
-		VTF_LOGD("frame request destory");
-	}
+  ~FrameRequest() { VTF_LOGD("frame request destory"); }
 
-	std::shared_ptr<Mat> getFrame() { return m_frame; }
-	
+  std::shared_ptr<Mat> getFrame() { return m_frame; }
+
 private:
-	std::shared_ptr<Mat> m_frame;
+  std::shared_ptr<Mat> m_frame;
 };
 
 FrameRequest::FrameRequest(PipelineScenario scenario, Mat mat)
-	:PipeData(scenario, true),
-	 m_frame(std::make_shared<Mat>(mat))
-{
-    
-}
+    : PipeData(scenario, true), m_frame(std::make_shared<Mat>(mat)) {}
