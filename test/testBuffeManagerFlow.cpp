@@ -16,8 +16,8 @@
 
 std::mutex g_lock;
 std::condition_variable g_cv;
-using namespace vtf::utils::memory;
-using namespace vtf::utils::queue;
+using namespace cflow::utils::memory;
+using namespace cflow::utils::queue;
 
 using BufferInfo = std::shared_ptr<BufferManager<int>::BufferInfo>;
 
@@ -25,7 +25,7 @@ void getBuffer(BufferManager<int> &bmgr, BlockingQueue<BufferInfo> &curBufQ) {
   for (int i = 0; i < 100; i++) {
     BufferInfo bf = bmgr.popBuffer();
     curBufQ.push(bf);
-    VTF_LOGD("get buffer : {0} curBufQ.isempty : {1}", (void *)bf->ptr,
+    CFLOW_LOGD("get buffer : {0} curBufQ.isempty : {1}", (void *)bf->ptr,
              curBufQ.isEmpty());
   }
 }
@@ -35,7 +35,7 @@ void returnBuffer(BufferManager<int> &bmgr,
   for (int i = 0; i < 100; i++) {
     auto bf = curBufQ.pop();
     bmgr.pushBuffer(bf);
-    VTF_LOGD("return buffer : {0}", (void *)bf->ptr);
+    CFLOW_LOGD("return buffer : {0}", (void *)bf->ptr);
   }
 }
 

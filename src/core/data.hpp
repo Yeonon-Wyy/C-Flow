@@ -14,7 +14,7 @@
 #include "./utils/memory/buffer_manager_factory.hpp"
 #include "type.hpp"
 
-namespace vtf
+namespace cflow
 {
 /**
  * @name: class Data
@@ -31,7 +31,7 @@ public:
 
     virtual ~Data() {}
 
-    vtf_id_t ID() { return m_id; };
+    cflow_id_t ID() { return m_id; };
 
     /**
      * @name: constructDependency
@@ -39,7 +39,7 @@ public:
      * @param {*}
      * @return {*}
      */
-    virtual bool constructDependency(const std::vector<vtf_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
+    virtual bool constructDependency(const std::vector<cflow_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
 
     /**
      * @name: constructIO
@@ -68,7 +68,7 @@ public:
      * @param {*}
      * @return {*}
      */
-    virtual vtf_id_t getCurrentNode() = 0;
+    virtual cflow_id_t getCurrentNode() = 0;
 
     /**
      * @name: getNextNode
@@ -76,7 +76,7 @@ public:
      * @param {*}
      * @return {*}
      */
-    virtual vtf_id_t getNextNode() = 0;
+    virtual cflow_id_t getNextNode() = 0;
 
     /**
      * @name: checkDependencyIsReady
@@ -153,24 +153,24 @@ public:
     /**
      * @name: addNotifierForNode
      * @Descripttion: add a notifier for node, when node done, the specified Notifier will be called when node process done
-     * @param {vtf_id_t} notifierId
-     * @param {vtf_id_t} nodeId
+     * @param {cflow_id_t} notifierId
+     * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    virtual void addNotifierForNode(vtf_id_t nodeId, vtf_id_t notifierId) = 0;
+    virtual void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) = 0;
 
     /**
      * @name: getNotifiersByNodeId
      * @Descripttion: get notifiers by node id
-     * @param {vtf_id_t} nodeId
+     * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    virtual std::vector<vtf_id_t> getNotifiersByNodeId(vtf_id_t nodeId) = 0;
+    virtual std::vector<cflow_id_t> getNotifiersByNodeId(cflow_id_t nodeId) = 0;
 
 private:
-    static vtf::utils::IDGenerator m_idGenerator;
-    vtf_id_t                       m_id;
+    static cflow::utils::IDGenerator m_idGenerator;
+    cflow_id_t                       m_id;
 };
 
-vtf::utils::IDGenerator Data::m_idGenerator;
-}  // namespace vtf
+cflow::utils::IDGenerator Data::m_idGenerator;
+}  // namespace cflow

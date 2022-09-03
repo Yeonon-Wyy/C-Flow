@@ -20,10 +20,10 @@
 #include "utils/str_convertor.hpp"
 #include "utils/thread/threadLoop.hpp"
 
-namespace vtf
+namespace cflow
 {
 #define NOTIFIER_DEFAULT_PREFIX "notfier_default";
-constexpr vtf_id_t initExpectItemId = 1;
+constexpr cflow_id_t initExpectItemId = 1;
 
 /**
  * @name: Notifier
@@ -32,7 +32,7 @@ constexpr vtf_id_t initExpectItemId = 1;
  * Note: if notifier type is NotifierType::FINAL, it will start a thread for loop.
  *       And if notier type is DATA_LISTEN or is other "data-feedback-like" will not start a thread, because it's no need for thread, so you shouln only put some light logic in callback.
  */
-using namespace vtf::utils::thread;
+using namespace cflow::utils::thread;
 
 template <typename Item>
 class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
@@ -41,11 +41,11 @@ public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
     using ConfigProgress          = std::function<void()>;
     using StopProgress            = std::function<void()>;
-    using NotifyDoneCallback      = std::function<void(vtf_id_t)>;
+    using NotifyDoneCallback      = std::function<void(cflow_id_t)>;
 
     struct NotifierCreateInfo
     {
-        vtf_id_t                id = -1;
+        cflow_id_t                id = -1;
         std::string             name;
         NotifierProcessCallback processCallback;
         ConfigProgress          configProgress;
@@ -58,7 +58,7 @@ public:
     {
     public:
         NotifierBuilder() : m_id(-1), m_type(NotifierType::FINAL) {}
-        NotifierBuilder* setID(vtf_id_t id);
+        NotifierBuilder* setID(cflow_id_t id);
         NotifierBuilder* setName(const std::string& name);
         NotifierBuilder* setProcessCallback(NotifierProcessCallback&& cb);
         NotifierBuilder* setNotifyDoneCallback(NotifyDoneCallback&& cb);
@@ -69,7 +69,7 @@ public:
         std::shared_ptr<Notifier<Item>> build();
 
     private:
-        vtf_id_t                m_id;
+        cflow_id_t                m_id;
         std::string             m_name;
         NotifierProcessCallback m_processCallback;
         NotifyDoneCallback      m_notifyDoneCallback;
@@ -79,9 +79,9 @@ public:
     };
 
 public:
-    Notifier(vtf_id_t id) : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(id), m_expectItemId(initExpectItemId) {}
+    Notifier(cflow_id_t id) : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(id), m_expectItemId(initExpectItemId) {}
 
-    ~Notifier() { VTF_LOGD("notifier {0} destory", m_name); }
+    ~Notifier() { CFLOW_LOGD("notifier {0} destory", m_name); }
 
     static NotifierBuilder builder() { return NotifierBuilder(); }
 
@@ -123,7 +123,7 @@ public:
      * @param {*}
      * @return {*}
      */
-    vtf_id_t ID() const { return m_id; }
+    cflow_id_t ID() const { return m_id; }
 
     /**
      * @name: config
@@ -142,14 +142,14 @@ public:
     void stop();
 
 private:
-    vtf_id_t                                  m_id;
+    cflow_id_t                                  m_id;
     std::string                               m_name;
     NotifierProcessCallback                   m_processCallback;
     NotifyDoneCallback                        m_notifyDoneCallback;
     ConfigProgress                            m_configProgress;
     StopProgress                              m_stopProgress;
-    std::map<vtf_id_t, std::shared_ptr<Item>> m_pendingItemMap;
-    vtf_id_t                                  m_expectItemId = initExpectItemId;
+    std::map<cflow_id_t, std::shared_ptr<Item>> m_pendingItemMap;
+    cflow_id_t                                  m_expectItemId = initExpectItemId;
     NotifierType                              m_type;
 };
 
@@ -165,7 +165,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
     bool ret = true;
     if (!m_processCallback)
     {
-        VTF_LOGD("user must give a process function for notify.");
+        CFLOW_LOGD("user must give a process function for notify.");
         return false;
     }
     if (item->ID() == m_expectItemId)
@@ -177,7 +177,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
         m_notifyDoneCallback(item->ID());
         // update m_expectItemId
         m_expectItemId = item->ID() + 1;
-        VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
+        CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
 
         // if pending map is not empty, mean future item arrive first, we need process it.
         for (auto it = m_pendingItemMap.begin(); it != m_pendingItemMap.end();)
@@ -189,7 +189,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
                 m_notifyDoneCallback(it->first);
                 // update m_expectItemId
                 m_expectItemId = it->second->ID() + 1;
-                VTF_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
+                CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
                 m_pendingItemMap.erase(it++);
             }
             else
@@ -224,18 +224,18 @@ void Notifier<Item>::notify(std::shared_ptr<Item> item)
 template <typename Item>
 void Notifier<Item>::config()
 {
-    VTF_LOGD("notifier [{0}] config start", m_name);
+    CFLOW_LOGD("notifier [{0}] config start", m_name);
     if (m_configProgress)
     {
         m_configProgress();
     }
-    VTF_LOGD("notifier [{0}] config end", m_name);
+    CFLOW_LOGD("notifier [{0}] config end", m_name);
 }
 
 template <typename Item>
 void Notifier<Item>::stop()
 {
-    VTF_LOGD("notifier [{0}] stop start", m_name);
+    CFLOW_LOGD("notifier [{0}] stop start", m_name);
     if (m_stopProgress)
     {
         m_stopProgress();
@@ -243,7 +243,7 @@ void Notifier<Item>::stop()
     ThreadLoop<std::shared_ptr<Item>, Scheduler>::stop();
     m_pendingItemMap.clear();
     m_expectItemId = initExpectItemId;
-    VTF_LOGD("notifier [{0}] stop end", m_name);
+    CFLOW_LOGD("notifier [{0}] stop end", m_name);
 }
 
 /*
@@ -253,7 +253,7 @@ void Notifier<Item>::stop()
  */
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(vtf_id_t id)
+typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(cflow_id_t id)
 {
     this->m_id = id;
     return this;
@@ -308,13 +308,13 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
 {
     if (!m_processCallback)
     {
-        VTF_LOGE("notifier process callback must be given!");
+        CFLOW_LOGE("notifier process callback must be given!");
         return nullptr;
     }
 
     if (m_id == -1)
     {
-        VTF_LOGE("notifier id {0} can't less than 0. please check it.", m_id);
+        CFLOW_LOGE("notifier id {0} can't less than 0. please check it.", m_id);
         return nullptr;
     }
 
@@ -348,4 +348,4 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     return notifier;
 }
 
-}  // namespace vtf
+}  // namespace cflow

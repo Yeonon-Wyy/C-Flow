@@ -18,17 +18,17 @@
 #include "log.hpp"
 
 #define TRACE_FUNC_START(functionName)             \
-    vtf::utils::log::TraceLog trace(functionName); \
+    cflow::utils::log::TraceLog trace(functionName); \
     trace.start();
 
 #define TRACE_FUNC_ID_START(functionName, dataId)          \
-    vtf::utils::log::TraceLog trace(functionName, dataId); \
+    cflow::utils::log::TraceLog trace(functionName, dataId); \
     trace.start();
 
 #define TRACE_END() trace.stop();
 #define TRACE_END_WITH_TIME(duration) duration = trace.stop();
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -68,14 +68,14 @@ auto TraceLog::stop() -> std::chrono::milliseconds
     if (m_isStop) return std::chrono::milliseconds(0);
     m_isStop        = true;
     m_end           = std::chrono::steady_clock::now();
-    auto elapsed_ms = vtf::utils::TimeUtil::convertTime<std::chrono::milliseconds>(m_end - m_start);
+    auto elapsed_ms = cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(m_end - m_start);
     if (m_dataId != -1)
     {
-        VTF_LOGD("[func[{0}]:dataId[{1}]] execute {2} ms", m_functionName, m_dataId, elapsed_ms.count());
+        CFLOW_LOGD("[func[{0}]:dataId[{1}]] execute {2} ms", m_functionName, m_dataId, elapsed_ms.count());
     }
     else
     {
-        VTF_LOGD("[func[{0}]] execute {1} ms", m_functionName, elapsed_ms.count());
+        CFLOW_LOGD("[func[{0}]] execute {1} ms", m_functionName, elapsed_ms.count());
     }
     return elapsed_ms;
 }
@@ -90,4 +90,4 @@ TraceLog::~TraceLog()
 
 }  // namespace log
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

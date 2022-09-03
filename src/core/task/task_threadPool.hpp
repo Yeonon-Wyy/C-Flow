@@ -12,7 +12,7 @@
 #include "../utils/log/log.hpp"
 #include "task.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace task
 {
@@ -120,4 +120,4 @@ TaskThreadPool::~TaskThreadPool()
 }
 
 }  // namespace task
-}  // namespace vtf
+}  // namespace cflow

@@ -16,21 +16,21 @@
 int main()
 {
 
-    vtf::task::Task task1({1});
+    cflow::task::Task task1({1});
     auto task = task1.commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    task1.setPriority(vtf::task::TaskPriority::URGENCY);
+    task1.setPriority(cflow::task::TaskPriority::URGENCY);
     
-    vtf::task::Task task2({2});
+    cflow::task::Task task2({2});
 
-    vtf::utils::thread::ThreadPool pool(4);
+    cflow::utils::thread::ThreadPool pool(4);
     auto future = pool.emplace([task]() {
         (*task)();
     });
 
 
-    // vtf::ThreadPool pool(8);
+    // cflow::ThreadPool pool(8);
     
 }

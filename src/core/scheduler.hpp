@@ -16,7 +16,7 @@
 #include "type.hpp"
 #include "utils/log/log.hpp"
 
-namespace vtf
+namespace cflow
 {
 /**
  * @name: class Scheduler
@@ -33,13 +33,13 @@ public:
     struct ItemPriorityComp
     {
         template <typename Q = T>
-        typename std::enable_if<std::is_pointer<Q>::value || vtf::is_shared_ptr<Q>::value, bool>::type operator()(T lhs, T rhs)
+        typename std::enable_if<std::is_pointer<Q>::value || cflow::is_shared_ptr<Q>::value, bool>::type operator()(T lhs, T rhs)
         {
             return lhs->getPriority() < rhs->getPriority();
         }
 
         template <typename Q = T>
-        typename std::enable_if<!std::is_pointer<Q>::value && !vtf::is_shared_ptr<Q>::value, bool>::type operator()(T lhs, T rhs)
+        typename std::enable_if<!std::is_pointer<Q>::value && !cflow::is_shared_ptr<Q>::value, bool>::type operator()(T lhs, T rhs)
         {
             return lhs.getPriority() < rhs.getPriority();
             ;
@@ -60,13 +60,13 @@ public:
 
 private:
     template <typename Q = T>
-    typename std::enable_if<std::is_pointer<Q>::value || vtf::is_shared_ptr<Q>::value, DataType>::type extractDataTypeFromItem(T item)
+    typename std::enable_if<std::is_pointer<Q>::value || cflow::is_shared_ptr<Q>::value, DataType>::type extractDataTypeFromItem(T item)
     {
         return item->getDataType();
     }
 
     template <typename Q = T>
-    typename std::enable_if<!std::is_pointer<Q>::value && !vtf::is_shared_ptr<Q>::value, DataType>::type extractDataTypeFromItem(T item)
+    typename std::enable_if<!std::is_pointer<Q>::value && !cflow::is_shared_ptr<Q>::value, DataType>::type extractDataTypeFromItem(T item)
     {
         return item.getDataType();
     }
@@ -95,7 +95,7 @@ void Scheduler<T>::emplace(T item)
     auto curItemDataType = extractDataTypeFromItem(item);
     if (curItemDataType <= DataType::DATATYPE_START || curItemDataType >= DataType::DATATYPE_END)
     {
-        VTF_LOGE("please check current data's data type (%d)", curItemDataType);
+        CFLOW_LOGE("please check current data's data type (%d)", curItemDataType);
         std::abort();
     }
     m_dataTypeQueueMap[curItemDataType].push(item);
@@ -135,7 +135,7 @@ size_t Scheduler<T>::getQueueCapWithFromItem(T item)
 
     if (curItemDataType <= DataType::DATATYPE_START || curItemDataType >= DataType::DATATYPE_END || m_dataTypeQueueCapMap.count(curItemDataType) == 0)
     {
-        VTF_LOGE("please check current data's data type (%d)", curItemDataType);
+        CFLOW_LOGE("please check current data's data type (%d)", curItemDataType);
         std::abort();
     }
     return m_dataTypeQueueCapMap[curItemDataType];
@@ -148,11 +148,11 @@ size_t Scheduler<T>::getQueueSizeWithFromItem(T item)
 
     if (curItemDataType <= DataType::DATATYPE_START || curItemDataType >= DataType::DATATYPE_END || m_dataTypeQueueMap.count(curItemDataType) == 0)
     {
-        VTF_LOGE("please check current data's data type (%d)", curItemDataType);
+        CFLOW_LOGE("please check current data's data type (%d)", curItemDataType);
         std::abort();
     }
     return m_dataTypeQueueMap[curItemDataType].size();
 }
 // ---------------- Scheduler end----------------
 
-}  // namespace vtf
+}  // namespace cflow

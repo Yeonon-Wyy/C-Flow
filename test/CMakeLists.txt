@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.6)
-project(vtf_test)
+project(cflow_test)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DVTF_DEBUG_MODE")
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DCFlow_DEBUG_MODE")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
 
 # user-define log file path
-add_definitions( -DLOGFILENAME="/tmp/vtf_log/vtf_log.txt")
+add_definitions( -DLOGFILENAME="/tmp/cflow_log/cflow_log.txt")
 
 include_directories("/usr/include/")
 

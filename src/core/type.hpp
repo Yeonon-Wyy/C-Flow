@@ -10,9 +10,9 @@
 #include <memory>
 #include <type_traits>
 
-namespace vtf
+namespace cflow
 {
-using vtf_id_t = long;
+using cflow_id_t = long;
 
 enum class NotifierType
 {
@@ -78,4 +78,4 @@ public:
     static const bool value = sizeof(test<T>(0)) == sizeof(yes);
 };
 
-}  // namespace vtf
+}  // namespace cflow

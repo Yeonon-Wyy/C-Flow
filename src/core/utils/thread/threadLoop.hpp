@@ -20,7 +20,7 @@
 #include "../log/log.hpp"
 // #include "scheduler.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -95,7 +95,7 @@ private:
 template <typename T, template <typename> typename Scheduler>
 void ThreadLoop<T, Scheduler>::_threadLoop()
 {
-    VTF_LOGD("ThreadLoop start");
+    CFLOW_LOGD("ThreadLoop start");
     while (true)
     {
         T item;
@@ -118,7 +118,7 @@ void ThreadLoop<T, Scheduler>::_threadLoop()
             return;
         }
     }
-    VTF_LOGD("ThreadLoop end");
+    CFLOW_LOGD("ThreadLoop end");
 }
 
 template <typename T, template <typename> typename Scheduler>
@@ -174,4 +174,4 @@ ThreadLoop<T, Scheduler>::~ThreadLoop()
 
 }  // namespace thread
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

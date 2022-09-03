@@ -22,11 +22,11 @@
 #include "pipenode.hpp"
 #include "pipenode_dispatcher.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace pipeline
 {
-using namespace vtf::utils::memory;
+using namespace cflow::utils::memory;
 
 const static int pplDefaultMaxProcessingSize = 32;
 // some CPU architectures are 4 core 8 threads(like intel), _SC_NPROCESSORS_CONF can't get cpu thread number
@@ -52,7 +52,7 @@ public:
         int                                                      threadPoolSize    = pplDefaultThreadPoolSize;
         std::vector<typename PipeNode<Item>::PipeNodeCreateInfo> pipeNodeCreateInfos;
         std::vector<typename Notifier<Item>::NotifierCreateInfo> notifierCreateInfos;
-        std::vector<std::pair<vtf_id_t, vtf_id_t>>               nodeConnections;
+        std::vector<std::pair<cflow_id_t, cflow_id_t>>               nodeConnections;
     };
 
 public:
@@ -127,7 +127,7 @@ public:
      * @param {*}
      * @return {*}
      */
-    void notifyDone(vtf_id_t id);
+    void notifyDone(cflow_id_t id);
 
     /**
      * @name: submit a data to pipeline
@@ -160,7 +160,7 @@ private:
      * @param {PipelineScenario} scenario
      * @return {*}
      */
-    std::vector<vtf_id_t> getPipelineWithScenario(PipelineScenario scenario);
+    std::vector<cflow_id_t> getPipelineWithScenario(PipelineScenario scenario);
 
     /**
      * @name: dumpPipelines
@@ -178,14 +178,14 @@ private:
      */
     bool checkValid();
 
-    void connectNode(vtf_id_t src, vtf_id_t dst);
+    void connectNode(cflow_id_t src, cflow_id_t dst);
 
 private:
     DAG                                                           m_dag;
     std::shared_ptr<PipeNodeDispatcher<Item>>                     m_pipeNodeDispatcher;
-    std::unordered_map<vtf_id_t, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;
-    std::vector<std::vector<vtf_id_t>>                            m_pipelines;
-    std::unordered_map<PipelineScenario, std::vector<vtf_id_t>>   m_scenario2PipelineMaps;
+    std::unordered_map<cflow_id_t, std::shared_ptr<PipeNode<Item>>> m_pipeNodeMaps;
+    std::vector<std::vector<cflow_id_t>>                            m_pipelines;
+    std::unordered_map<PipelineScenario, std::vector<cflow_id_t>>   m_scenario2PipelineMaps;
     std::unordered_map<PipelineScenario, int>                     m_pipelineScenarioMap;
     //<notifierType, notfiers>
     std::unordered_map<NotifierType, std::vector<std::shared_ptr<Notifier<Item>>>> m_notifierMaps;
@@ -206,17 +206,17 @@ std::shared_ptr<PipeLine<Item>> PipeLine<Item>::generatePipeLineByConfigureTable
     {
         ppl->addPipeNode(pipeNodeCreateInfo);
     }
-    VTF_LOGD("pipeline add pipe node finish");
+    CFLOW_LOGD("pipeline add pipe node finish");
     for (auto notifierCreateInfo : configTable.notifierCreateInfos)
     {
         ppl->addNotifier(notifierCreateInfo);
     }
-    VTF_LOGD("pipeline add notifier finish");
+    CFLOW_LOGD("pipeline add notifier finish");
     for (auto [srcNodeId, dstNodeId] : configTable.nodeConnections)
     {
         ppl->connectNode(srcNodeId, dstNodeId);
     }
-    VTF_LOGD("pipeline connect node finish");
+    CFLOW_LOGD("pipeline connect node finish");
     return ppl;
 }
 
@@ -225,19 +225,19 @@ bool PipeLine<Item>::checkValid()
 {
     if (m_isStop)
     {
-        VTF_LOGD("pipeline already stoped, can't submit any data, please construct another pipeline obejct!!!!");
+        CFLOW_LOGD("pipeline already stoped, can't submit any data, please construct another pipeline obejct!!!!");
         return false;
     }
     return true;
 }
 
 template <typename Item>
-void PipeLine<Item>::connectNode(vtf_id_t src, vtf_id_t dst)
+void PipeLine<Item>::connectNode(cflow_id_t src, cflow_id_t dst)
 {
-    VTF_LOGD("connectNode src {0} dst {1}", src, dst);
+    CFLOW_LOGD("connectNode src {0} dst {1}", src, dst);
     if (m_pipeNodeMaps.count(src) == 0 || m_pipeNodeMaps.count(dst) == 0)
     {
-        VTF_LOGE("can't find src node {0} info or dst node {1} info, please check it.", src, dst);
+        CFLOW_LOGE("can't find src node {0} info or dst node {1} info, please check it.", src, dst);
         return;
     }
 
@@ -273,7 +273,7 @@ bool PipeLine<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> node)
     if (!checkValid()) return false;
     if (m_pipeNodeMaps.count(node->getNodeId()) != 0)
     {
-        VTF_LOGE("node [{0}:{1}] already be added to pipeline. don't need add again.", node->getNodeId(), node->name());
+        CFLOW_LOGE("node [{0}:{1}] already be added to pipeline. don't need add again.", node->getNodeId(), node->name());
         return false;
     }
     node->config();
@@ -317,10 +317,10 @@ void PipeLine<Item>::addNotifier(typename Notifier<Item>::NotifierCreateInfo cre
 
     if (!notifier)
     {
-        VTF_LOGE("create notifier failed. please check notifier buidler's build progress");
+        CFLOW_LOGE("create notifier failed. please check notifier buidler's build progress");
         return;
     }
-    VTF_LOGD("add notifier type is {0}", notifier->type());
+    CFLOW_LOGD("add notifier type is {0}", notifier->type());
     m_pipeNodeDispatcher->addNotifier(notifier);
     m_notifierMaps[notifier->type()].push_back(notifier);
     notifier->config();
@@ -344,7 +344,7 @@ bool PipeLine<Item>::constructPipelinesByScenario()
 
     auto pipelines = m_dag.multiTopologicalSort();
     // get all node in pipeline, maybe not equal all graph node.
-    std::unordered_set<vtf_id_t> pipelineNodeIds;
+    std::unordered_set<cflow_id_t> pipelineNodeIds;
     for (auto&& pipeline : pipelines)
     {
         for (auto&& nodeId : pipeline)
@@ -368,16 +368,16 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     {
         PipelineScenario scenario         = it->first;
         size_t           scenarioNodeSize = it->second;
-        VTF_LOGD("current construct pipeline for scenario {0} ", scenario);
+        CFLOW_LOGD("current construct pipeline for scenario {0} ", scenario);
         for (auto pipelineIter = pipelines.begin(); pipelineIter != pipelines.end(); pipelineIter++)
         {
             auto                  pipeline = *pipelineIter;
-            std::vector<vtf_id_t> nodeConnections;
-            for (vtf_id_t& nodeID : pipeline)
+            std::vector<cflow_id_t> nodeConnections;
+            for (cflow_id_t& nodeID : pipeline)
             {
                 if (m_pipeNodeMaps.count(nodeID) == 0)
                 {
-                    VTF_LOGE("can't find node {0} in m_pipeNodeMaps, please check it.", nodeID);
+                    CFLOW_LOGE("can't find node {0} in m_pipeNodeMaps, please check it.", nodeID);
                     m_scenario2PipelineMaps.clear();
                     return false;
                 }
@@ -403,7 +403,7 @@ bool PipeLine<Item>::constructPipelinesByScenario()
                 {
                     if (m_scenario2PipelineMaps.count(scenario))
                     {
-                        VTF_LOGW("already have a pieline of scenario {0}, new pipeline will cover old pipeline, something error???", scenario);
+                        CFLOW_LOGE("already have a pieline of scenario {0}, new pipeline will cover old pipeline, something error???", scenario);
                     }
                     m_scenario2PipelineMaps[scenario] = nodeConnections;
                 }
@@ -417,20 +417,20 @@ bool PipeLine<Item>::constructPipelinesByScenario()
 }
 
 template <typename Item>
-void PipeLine<Item>::notifyDone(vtf_id_t id)
+void PipeLine<Item>::notifyDone(cflow_id_t id)
 {
     m_processingDataCount--;
     m_processingDataCV.notify_one();
 }
 
 template <typename Item>
-std::vector<vtf_id_t> PipeLine<Item>::getPipelineWithScenario(PipelineScenario scenario)
+std::vector<cflow_id_t> PipeLine<Item>::getPipelineWithScenario(PipelineScenario scenario)
 {
     if (!checkValid()) return {};
-    std::vector<vtf_id_t> pipeline;
+    std::vector<cflow_id_t> pipeline;
     if (m_scenario2PipelineMaps.count(scenario) == 0)
     {
-        VTF_LOGE("can't find any pipelie about scenario {0}", scenario);
+        CFLOW_LOGE("can't find any pipelie about scenario {0}", scenario);
     }
     else
     {
@@ -445,7 +445,7 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> data)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
-    VTF_LOGD("submit a data {0}", data->ID());
+    CFLOW_LOGD("submit a data {0}", data->ID());
     data->constructDependency(getPipelineWithScenario(data->scenario()), m_bufferMgrFactory);
     m_pipeNodeDispatcher->queueInDispacther(data);
     if (m_processingDataCount >= m_processingMaxDataCount)
@@ -460,11 +460,11 @@ template <typename Item>
 void PipeLine<Item>::start()
 {
     if (!checkValid()) return;
-    VTF_LOGD("pipeline start...");
+    CFLOW_LOGD("pipeline start...");
     m_isStop = false;
     constructPipelinesByScenario();
     m_pipeNodeDispatcher->start();
-    VTF_LOGD("pipeline start END");
+    CFLOW_LOGD("pipeline start END");
 }
 
 template <typename Item>
@@ -503,14 +503,14 @@ void PipeLine<Item>::dumpPipelines()
     {
         std::stringstream ss;
         ss << scenario << ": [";
-        for (vtf_id_t& nodeId : pipeline)
+        for (cflow_id_t& nodeId : pipeline)
         {
             ss << nodeId << " ";
         }
         ss << "]";
-        VTF_LOGD(ss.str());
+        CFLOW_LOGD(ss.str());
     }
 }
 
 }  // namespace pipeline
-}  // namespace vtf
+}  // namespace cflow

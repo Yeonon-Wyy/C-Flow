@@ -13,7 +13,7 @@
 
 #include "../type.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -26,7 +26,7 @@ public:
      * @param {*}
      * @return {*} id
      */
-    vtf_id_t generate()
+    cflow_id_t generate()
     {
         std::unique_lock<std::mutex> lk(m_idLock);
         m_id++;
@@ -38,4 +38,4 @@ private:
     std::mutex       m_idLock;
 };
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

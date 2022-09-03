@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "../log/log.hpp"
-#include "VTFPrimaryThread.hpp"
+#include "CFlowPrimaryThread.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -21,7 +21,7 @@ namespace thread
 class ThreadPool
 {
 public:
-    using VTFPrimaryThreadPtr = std::unique_ptr<VTFPrimaryThread>;
+    using CFlowPrimaryThreadPtr = std::unique_ptr<CFlowPrimaryThread>;
 
     ThreadPool(size_t threadSize);
 
@@ -44,7 +44,7 @@ public:
 
 private:
     // thread list, we need keep fixed number of threads
-    std::vector<VTFPrimaryThreadPtr> m_workers;
+    std::vector<CFlowPrimaryThreadPtr> m_workers;
     // stop flag
     bool   isStop;
     size_t m_curIdx;
@@ -54,7 +54,7 @@ ThreadPool::ThreadPool(size_t threadSize) : isStop(false), m_curIdx(0)
 {
     for (size_t i = 0; i < threadSize; i++)
     {
-        m_workers.emplace_back(new VTFPrimaryThread());
+        m_workers.emplace_back(new CFlowPrimaryThread());
     }
 }
 
@@ -124,4 +124,4 @@ int ThreadPool::dispatch()
 
 }  // namespace thread
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

@@ -15,15 +15,15 @@
 void testBufferManagerBasic() {
   printf("%s + \n", __func__);
 
-  vtf::utils::memory::BufferSpecification bfs = {
+  cflow::utils::memory::BufferSpecification bfs = {
       .sizeOfBytes = 16,
       .minQueueSize = 8,
       .maxQueueSize = 10,
   };
 
-  vtf::utils::memory::BufferManager<int> bfm(bfs);
+  cflow::utils::memory::BufferManager<int> bfm(bfs);
   std::queue<
-      std::shared_ptr<vtf::utils::memory::BufferManager<int>::BufferInfo>>
+      std::shared_ptr<cflow::utils::memory::BufferManager<int>::BufferInfo>>
       buffers;
 
   ASSERT_EQ(8, (int)bfm.availableCount());

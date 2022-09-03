@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "../log/log.hpp"
-#include "VTFPrimaryThread.hpp"
+#include "CFlowPrimaryThread.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -139,4 +139,4 @@ void ThreadPool::stop()
 
 }  // namespace thread
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

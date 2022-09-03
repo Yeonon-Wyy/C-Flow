@@ -23,7 +23,7 @@
 
 #define TASK_NAME_PREFIX "task_"
 
-namespace vtf
+namespace cflow
 {
 namespace task
 {
@@ -146,4 +146,4 @@ auto Task::commit(Function&& f, Args&&... args) -> std::shared_ptr<std::packaged
     return pt;
 }
 }  // namespace task
-}  // namespace vtf
+}  // namespace cflow

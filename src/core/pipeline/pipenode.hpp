@@ -16,7 +16,7 @@
 #include "../utils/str_convertor.hpp"
 #include "type.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace pipeline
 {
@@ -40,7 +40,7 @@ template <typename Item>
 class PipeNodeDispatcher;
 
 template <typename Item>
-class PipeNode : public vtf::DAGNode, public std::enable_shared_from_this<PipeNode<Item>>
+class PipeNode : public cflow::DAGNode, public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:
     using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
@@ -81,9 +81,9 @@ public:
     };
 
 public:
-    PipeNode(PipeNodeId id) : DAGNode(id), m_id(id), m_status(PipeNodeStatus::IDLE) { m_name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(m_id); }
+    PipeNode(PipeNodeId id) : DAGNode(id), m_id(id), m_status(PipeNodeStatus::IDLE) { m_name = PIPENODE_DEFAULT_NAME_PREFIX + cflow::utils::StringConvetor::digit2String(m_id); }
 
-    ~PipeNode() { VTF_LOGD("node {0} destory", m_name); }
+    ~PipeNode() { CFLOW_LOGD("node {0} destory", m_name); }
 
     /**
      * @name: process
@@ -217,24 +217,24 @@ bool PipeNode<Item>::hasScenario(PipelineScenario scenario)
 template <typename Item>
 void PipeNode<Item>::config()
 {
-    VTF_LOGD("pipeNode [{0}:{1}] config start", m_id, m_name);
+    CFLOW_LOGD("pipeNode [{0}:{1}] config start", m_id, m_name);
     if (m_configProgress)
     {
         m_configProgress();
     }
-    VTF_LOGD("pipeNode [{0}:{1}] config end", m_id, m_name);
+    CFLOW_LOGD("pipeNode [{0}:{1}] config end", m_id, m_name);
 }
 
 template <typename Item>
 void PipeNode<Item>::stop()
 {
-    VTF_LOGD("PipeNode [{0}] stop start", m_name);
+    CFLOW_LOGD("PipeNode [{0}] stop start", m_name);
     m_isStop = true;
     if (m_stopProgress)
     {
         m_stopProgress();
     }
-    VTF_LOGD("PipeNode [{0}] stop end", m_name);
+    CFLOW_LOGD("PipeNode [{0}] stop end", m_name);
 }
 
 /*
@@ -295,13 +295,13 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 {
     if (id < 0)
     {
-        VTF_LOGE("id must set greater than 0");
+        CFLOW_LOGE("id must set greater than 0");
         return nullptr;
     }
 
     if (name == "")
     {
-        name = PIPENODE_DEFAULT_NAME_PREFIX + vtf::utils::StringConvetor::digit2String(id);
+        name = PIPENODE_DEFAULT_NAME_PREFIX + cflow::utils::StringConvetor::digit2String(id);
     }
 
     std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id);
@@ -325,4 +325,4 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 }
 
 }  // namespace pipeline
-}  // namespace vtf
+}  // namespace cflow

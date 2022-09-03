@@ -17,7 +17,7 @@
 #include "../utils/thread/threadPool.hpp"
 #include "pipenode.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace pipeline
 {
@@ -29,10 +29,10 @@ template <typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item>
 {
 public:
-    using PipeNodeMap = std::unordered_map<vtf_id_t, std::weak_ptr<PipeNode<Item>>>;
+    using PipeNodeMap = std::unordered_map<cflow_id_t, std::weak_ptr<PipeNode<Item>>>;
     PipeNodeDispatcher(int threadPoolSize) : Dispatcher<Item>(), m_threadPool(threadPoolSize) {}
 
-    ~PipeNodeDispatcher() { VTF_LOGD("dispatch destory"); }
+    ~PipeNodeDispatcher() { CFLOW_LOGD("dispatch destory"); }
 
     /**
      * @name: dispatch
@@ -69,10 +69,10 @@ public:
     /**
      * @name: getNodeNameByNodeId
      * @Descripttion: just a util function, return a name of given node id.
-     * @param {vtf_id_t} nodeId
+     * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    std::string getNodeNameByNodeId(vtf_id_t nodeId);
+    std::string getNodeNameByNodeId(cflow_id_t nodeId);
 
     /**
      * @name: stop
@@ -104,18 +104,18 @@ public:
      * @param {*}
      * @return {*}
      */
-    void notifyNotFinal(std::shared_ptr<Item>, vtf_id_t callerNodeId);
+    void notifyNotFinal(std::shared_ptr<Item>, cflow_id_t callerNodeId);
 
 private:
     PipeNodeMap                                                                  m_pipeNodeMaps;
     std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>>> m_notifierMaps;
-    vtf::utils::thread::ThreadPool                                               m_threadPool;
+    cflow::utils::thread::ThreadPool                                               m_threadPool;
 };
 
 template <typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 {
-    VTF_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(), data->getCurrentNode());
+    CFLOW_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(), data->getCurrentNode());
     // final or pipeline is stoped, will call notifier
     if (data->getCurrentNode() == -1 || m_threadPool.isStoped())
     {
@@ -133,7 +133,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 
     if (data->checkDependencyIsReady())
     {
-        vtf_id_t currentProcessNodeId = data->getCurrentNode();
+        cflow_id_t currentProcessNodeId = data->getCurrentNode();
         if (currentProcessNodeId < 0)
         {
             // finish
@@ -141,7 +141,7 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
         }
         if (m_pipeNodeMaps.count(currentProcessNodeId) == 0)
         {
-            VTF_LOGE("can't find currentNode node {0}", currentProcessNodeId);
+            CFLOW_LOGE("can't find currentNode node {0}", currentProcessNodeId);
             return true;
         }
 
@@ -164,7 +164,7 @@ template <typename Item>
 void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> data)
 {
     ThreadLoop<std::shared_ptr<Item>, Scheduler>::queueItem(data);
-    VTF_LOGD("queue data id({0})", data->ID());
+    CFLOW_LOGD("queue data id({0})", data->ID());
     return;
 }
 
@@ -179,16 +179,16 @@ bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> data)
 template <typename Item>
 void PipeNodeDispatcher<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode)
 {
-    vtf_id_t nodeId = pipeNode->getNodeId();
+    cflow_id_t nodeId = pipeNode->getNodeId();
     if (m_pipeNodeMaps.count(nodeId) == 0)
     {
         m_pipeNodeMaps[nodeId] = pipeNode;
     }
-    VTF_LOGD("add a pipe node [{0}:{1}]", nodeId, pipeNode->name());
+    CFLOW_LOGD("add a pipe node [{0}:{1}]", nodeId, pipeNode->name());
 }
 
 template <typename Item>
-std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(vtf_id_t nodeId)
+std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(cflow_id_t nodeId)
 {
     if (m_pipeNodeMaps.count(nodeId) > 0)
     {
@@ -201,12 +201,12 @@ std::string PipeNodeDispatcher<Item>::getNodeNameByNodeId(vtf_id_t nodeId)
 template <typename Item>
 void PipeNodeDispatcher<Item>::stop()
 {
-    VTF_LOGD("pipeNodeDispatcher stop start");
+    CFLOW_LOGD("pipeNodeDispatcher stop start");
     m_threadPool.stop();
     ThreadLoop<std::shared_ptr<Item>, Scheduler>::stop();
     m_pipeNodeMaps.clear();
     m_notifierMaps.clear();
-    VTF_LOGD("pipeNodeDispatcher stop end");
+    CFLOW_LOGD("pipeNodeDispatcher stop end");
 }
 
 template <typename Item>
@@ -228,9 +228,9 @@ void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data, NotifySta
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, vtf_id_t callerNodeId)
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, cflow_id_t callerNodeId)
 {
-    std::vector<vtf_id_t> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
+    std::vector<cflow_id_t> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
     for (auto [notifierType, notifiers] : m_notifierMaps)
     {
         // foreach all notifiers
@@ -247,7 +247,7 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, vtf_id
                 }
                 if (notifierSp)
                 {
-                    vtf_id_t notifierId = notifierSp->ID();
+                    cflow_id_t notifierId = notifierSp->ID();
                     // find current data and node notifier
                     auto it = std::find(notifierIdsForCurrentItem.begin(), notifierIdsForCurrentItem.end(), notifierId);
                     if (it != notifierIdsForCurrentItem.end())
@@ -261,4 +261,4 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, vtf_id
 }
 
 }  // namespace pipeline
-}  // namespace vtf
+}  // namespace cflow

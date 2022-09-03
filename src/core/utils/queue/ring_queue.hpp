@@ -12,7 +12,7 @@
 
 #include <vector>
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -115,4 +115,4 @@ private:
 
 }  // namespace queue
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

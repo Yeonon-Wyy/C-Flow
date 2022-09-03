@@ -9,7 +9,7 @@
 #include "../log/log.hpp"
 #include "../queue/ring_queue.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -105,7 +105,7 @@ public:
         unsigned int                 totalCapcity = (unsigned int)m_bufferQueue.capcity() + (unsigned int)m_tempBufferQueue.capcity();
         if (totalCapcity < m_alloctBufferCount)
         {
-            VTF_LOGE("fatal error!!! system panic!!!");
+            CFLOW_LOGE("fatal error!!! system panic!!!");
             std::abort();
         }
         return totalCapcity - m_alloctBufferCount;
@@ -186,7 +186,7 @@ private:
         unsigned int totalCapcity = (unsigned int)m_bufferQueue.capcity() + (unsigned int)m_tempBufferQueue.capcity();
         if (totalCapcity < m_alloctBufferCount)
         {
-            VTF_LOGE("fatal error!!! system panic!!!");
+            CFLOW_LOGE("fatal error!!! system panic!!!");
             std::abort();
         }
         return totalCapcity - m_alloctBufferCount;
@@ -194,12 +194,12 @@ private:
 
 private:
     const BufferSpecification                                 m_bfs;
-    vtf::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
+    cflow::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
 
     // Note: Q: why need tempBufferQueue?
     //      A: because I want manage all of the buffer from bufferManager. Such as When bufferManager exit(dctr), the buffer should free whatever the buffer push or not.
     //         So, I need a container to save it.
-    vtf::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_tempBufferQueue;
+    cflow::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_tempBufferQueue;
 
     std::atomic<unsigned int> m_alloctBufferCount;
     std::mutex                m_bufferLock;
@@ -217,20 +217,20 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::popBuff
     m_bufferReadyCV.wait(lk, [this]() {
         bool hasCacheBuffer   = !m_bufferQueue.empty();
         bool hasNoAllocBuffer = noAlloctCountWithoutLock() > 0;
-        VTF_LOGD("hasCacheBuffer: {0}, hasNoAllocBuffer: {1}", hasCacheBuffer, hasNoAllocBuffer);
+        CFLOW_LOGD("hasCacheBuffer: {0}, hasNoAllocBuffer: {1}", hasCacheBuffer, hasNoAllocBuffer);
         return hasCacheBuffer || hasNoAllocBuffer || m_exit;
     });
 
     if (m_exit)
     {
-        VTF_LOGD("buffer manager exit.. will free all buffer soon");
+        CFLOW_LOGD("buffer manager exit.. will free all buffer soon");
         return std::make_shared<BufferInfo>(BufferInfo{.isValid = false});
     }
 
     if (m_bufferQueue.empty())
     {
         // no available buffer now, alloc new temp buffer
-        VTF_LOGW("no available cache buffer now, alloc temp buffer");
+        CFLOW_LOGE("no available cache buffer now, alloc temp buffer");
         // alloc temp buffer
         auto bf = alloctBuffer(true);
         m_tempBufferQueue.push(bf);
@@ -253,7 +253,7 @@ void BufferManager<E>::pushBuffer(std::shared_ptr<BufferManager<E>::BufferInfo> 
     std::unique_lock<std::mutex> lk(m_bufferLock);
     if (bf->owner != m_bfs.hash())
     {
-        VTF_LOGE("this buffer info is not own by this buffer manager. please check it. buffer owner is {0}, this buffer manager is {1}", bf->owner, m_bfs.hash());
+        CFLOW_LOGE("this buffer info is not own by this buffer manager. please check it. buffer owner is {0}, this buffer manager is {1}", bf->owner, m_bfs.hash());
     }
     if (--bf->numOfUser == 0)
     {
@@ -302,7 +302,7 @@ std::shared_ptr<typename BufferManager<E>::BufferInfo> BufferManager<E>::alloctB
     }
 
     m_alloctBufferCount++;
-    VTF_LOGD("buffer was alloct, now alloct buffer count : {0}", m_alloctBufferCount);
+    CFLOW_LOGD("buffer was alloct, now alloct buffer count : {0}", m_alloctBufferCount);
 
     return std::make_shared<BufferInfo>(bf);
 }
@@ -328,10 +328,10 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
         bf->ptr     = nullptr;
         bf->isValid = false;
         m_alloctBufferCount--;
-        VTF_LOGD("buffer was free, now alloct buffer count : {0}", m_alloctBufferCount);
+        CFLOW_LOGD("buffer was free, now alloct buffer count : {0}", m_alloctBufferCount);
     }
 }
 
 }  // namespace memory
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

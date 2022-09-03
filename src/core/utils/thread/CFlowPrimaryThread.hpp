@@ -3,7 +3,7 @@
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-08-06 17:20:58
- * @FilePath: /src/core/utils/thread/VTFPrimaryThread.hpp
+ * @FilePath: /src/core/utils/thread/CFlowPrimaryThread.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-07-17 15:08:25
@@ -17,18 +17,18 @@
 
 #define MAX_TASK_CAPCITY 100
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
 namespace thread
 {
-class VTFPrimaryThread
+class CFlowPrimaryThread
 {
 public:
-    VTFPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0) { m_thread = std::move(std::thread(&VTFPrimaryThread::execute, this)); }
+    CFlowPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0) { m_thread = std::move(std::thread(&CFlowPrimaryThread::execute, this)); }
 
-    ~VTFPrimaryThread();
+    ~CFlowPrimaryThread();
 
     /**
      * @description: reset thread state. need wait current process stop
@@ -69,14 +69,14 @@ private:
     int32_t totalTaskNum() const { return m_totalTaskNum; }
 
 private:
-    vtf::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
+    cflow::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
     std::thread                                                 m_thread;
     bool                                                        m_stop;
     int32_t                                                     m_totalTaskNum;
     friend class ThreadPool;
 };
 
-void VTFPrimaryThread::reset()
+void CFlowPrimaryThread::reset()
 {
     m_stop = true;
     if (m_thread.joinable())
@@ -85,7 +85,7 @@ void VTFPrimaryThread::reset()
     }
 }
 
-void VTFPrimaryThread::execute()
+void CFlowPrimaryThread::execute()
 {
     while (!m_stop)
     {
@@ -103,13 +103,13 @@ void VTFPrimaryThread::execute()
     }
 }
 
-void VTFPrimaryThread::pushTask(std::function<void()>&& func)
+void CFlowPrimaryThread::pushTask(std::function<void()>&& func)
 {
     m_totalTaskNum++;
     m_tasks.push(std::move(func));
 }
 
-void VTFPrimaryThread::processTask()
+void CFlowPrimaryThread::processTask()
 {
     auto task = popTask();
     if (task)
@@ -123,15 +123,15 @@ void VTFPrimaryThread::processTask()
     }
 }
 
-std::function<void()> VTFPrimaryThread::popTask()
+std::function<void()> CFlowPrimaryThread::popTask()
 {
     std::function<void()> task;
     m_tasks.pop(task);
     return task;
 }
 
-VTFPrimaryThread::~VTFPrimaryThread() { reset(); }
+CFlowPrimaryThread::~CFlowPrimaryThread() { reset(); }
 
 }  // namespace thread
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

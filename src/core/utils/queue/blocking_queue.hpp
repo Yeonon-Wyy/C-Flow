@@ -14,7 +14,7 @@
 
 #include "../log/log.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -138,4 +138,4 @@ void BlockingQueue<T>::stop()
 }
 }  // namespace queue
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

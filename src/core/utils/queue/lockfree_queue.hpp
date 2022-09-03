@@ -17,7 +17,7 @@
 #include <mutex>
 #include <thread>
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -132,4 +132,4 @@ bool LockFreeQueue<T>::pop(T& data)
 
 }  // namespace queue
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

@@ -1,13 +1,13 @@
-## VTF
+## CFlow
 
 ### 1. 概述
 
-"VTF"是"very tiny flow"的首字母缩写，这是一个致力于为任何符合“任务流”模型的业务提供高效，方便的接口的一个“引擎“。
+"CFlow"是"very tiny flow"的首字母缩写，这是一个致力于为任何符合“任务流”模型的业务提供高效，方便的接口的一个“引擎“。
 
 目前支持以下两种任务流模型：
 
-1. taskflow，即以小任务为基本单位构建的一个大任务，小任务之间可能存在依赖关系，存在前置依赖的任务需要等到前置任务完成之后才能执行，而不存在依赖关系的任务则可并行执行。使用VTF，用户仅需要定义任务处理逻辑以及任务之间的一个依赖关系，VTF即可帮助用户完成上述流程。
-2. pipeline，即“流水线模型”（在图形学领域也被叫做“管线”）。该模型主要用于处理流式数据，输入源像水流一样源源不断。通过将数据处理逻辑拆分为多个不同的子逻辑，数据流过某一个子逻辑不会block其他子逻辑。从而使得无论有多少个子流程，数据都能以与输入相近的速率进行输出，提升整体效率。在VTF中，用户也可以通过定义子逻辑以及子逻辑之间的依赖关系（即子流程的处理顺序）来实现流水线模型。
+1. taskflow，即以小任务为基本单位构建的一个大任务，小任务之间可能存在依赖关系，存在前置依赖的任务需要等到前置任务完成之后才能执行，而不存在依赖关系的任务则可并行执行。使用CFlow，用户仅需要定义任务处理逻辑以及任务之间的一个依赖关系，CFlow即可帮助用户完成上述流程。
+2. pipeline，即“流水线模型”（在图形学领域也被叫做“管线”）。该模型主要用于处理流式数据，输入源像水流一样源源不断。通过将数据处理逻辑拆分为多个不同的子逻辑，数据流过某一个子逻辑不会block其他子逻辑。从而使得无论有多少个子流程，数据都能以与输入相近的速率进行输出，提升整体效率。在CFlow中，用户也可以通过定义子逻辑以及子逻辑之间的依赖关系（即子流程的处理顺序）来实现流水线模型。
 
 ### 2. 简单使用
 
@@ -15,12 +15,12 @@
 
 ```c++
 //声明定义一个TaskFlowCtl对象
-vtf::task::TaskFlowCtl flowCtl(true);
-using BufferQ = vtf::BlockingQueue<Buffer>;
+cflow::task::TaskFlowCtl flowCtl(true);
+using BufferQ = cflow::BlockingQueue<Buffer>;
 
 //通过addTaskWithTaskInfo接口，添加一个task
 auto task1 = flowCtl.addTaskWithTaskInfo(
-    {vtf::task::TaskPriority::NORMAL,"task1"}, 
+    {cflow::task::TaskPriority::NORMAL,"task1"}, 
     [](std::shared_ptr<BufferQ> inbufferQ, std::shared_ptr<BufferQ> outBufferQ) {
 		//logic
     },
@@ -30,7 +30,7 @@ auto task1 = flowCtl.addTaskWithTaskInfo(
 
 //通过addTaskWithTaskInfo接口，添加一个task
 auto task2 = flowCtl.addTaskWithTaskInfo(
-    {vtf::task::TaskPriority::NORMAL,"task1"}, 
+    {cflow::task::TaskPriority::NORMAL,"task1"}, 
     [](std::shared_ptr<BufferQ> inbufferQ) {
 		//logic
     },
@@ -38,7 +38,7 @@ auto task2 = flowCtl.addTaskWithTaskInfo(
 );
 
 auto task3 = flowCtl.addTaskWithTaskInfo(
-    {vtf::task::TaskPriority::NORMAL,"task1"}, 
+    {cflow::task::TaskPriority::NORMAL,"task1"}, 
     [](std::shared_ptr<BufferQ> inbufferQ) {
 		//logic
     },
@@ -65,7 +65,7 @@ public:
 
 	~FrameRequest()
 	{
-		VTF_LOGD("frame request destory");
+		CFLOW_LOGD("frame request destory");
 	}
 
 	std::shared_ptr<Mat> getFrame() { return m_frame; }
@@ -107,33 +107,33 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
                 .id = 1,
                 .name = "pipeline_node_done_notifier",
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) {
-                        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
-                            VTF_LOGE("node done {0} notify ERROR", request->ID());
+                        if (request->getNotifyStatus() == cflow::NotifyStatus::ERROR) {
+                            CFLOW_LOGE("node done {0} notify ERROR", request->ID());
                         } else {
-                            VTF_LOGE("node done {0} notify OK", request->ID());
+                            CFLOW_LOGE("node done {0} notify OK", request->ID());
                         }
                         return true;
                 },
                 .configProgress = []() {
-                    VTF_LOGD("pipeline_node_done_notifier - user define config");  
+                    CFLOW_LOGD("pipeline_node_done_notifier - user define config");  
                 },
                 .stopProgress = []() {
-                    VTF_LOGD("pipeline_node_done_notifier - user define stop");
+                    CFLOW_LOGD("pipeline_node_done_notifier - user define stop");
                 },
-                .type = vtf::NotifierType::DATA_LISTEN,
+                .type = cflow::NotifierType::DATA_LISTEN,
             },
             {
                 .id = 2,
                 .name = "pipeline_result_notifier",
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) {
-                        if (request->getNotifyStatus() == vtf::NotifyStatus::ERROR) {
-                            VTF_LOGE("result {0} notify ERROR", request->ID());
+                        if (request->getNotifyStatus() == cflow::NotifyStatus::ERROR) {
+                            CFLOW_LOGE("result {0} notify ERROR", request->ID());
                         } else {
-                            VTF_LOGE("result {0} notify OK", request->ID());
+                            CFLOW_LOGE("result {0} notify OK", request->ID());
                         }
                         return true;
                 },
-                .type = vtf::NotifierType::FINAL,
+                .type = cflow::NotifierType::FINAL,
             }
         },
     .nodeConnections = 
@@ -147,8 +147,8 @@ auto ppl = PipeLine<PipelineRequest>::generatePipeLineByConfigureTable(table);
 //启动pipeline
 ppl->start();
 
-//构造一个request，这里FrameRequest也是用户自定义的，但必须继承vtf::pipeline::Data
-//VYF提供了一个vtf::pipeline::Data的默认实现vtf::pipeline::PipeData，实现了构建依赖等必须的接口，用户可选择继承vtf::pipeline::Data之后加上自己的逻辑即可，也可以直接继承vtf::pipeline::Data，但必须实现vtf::pipeline::Data的接口
+//构造一个request，这里FrameRequest也是用户自定义的，但必须继承cflow::pipeline::Data
+//VYF提供了一个cflow::pipeline::Data的默认实现cflow::pipeline::PipeData，实现了构建依赖等必须的接口，用户可选择继承cflow::pipeline::Data之后加上自己的逻辑即可，也可以直接继承cflow::pipeline::Data，但必须实现cflow::pipeline::Data的接口
 std::shared_ptr<FrameRequest> request = std::make_shared<FrameRequest>(curScenario, frame);
 
 //PipeData还提供了addNotifierForNode接口可为当前data path中的某个node指定notifier

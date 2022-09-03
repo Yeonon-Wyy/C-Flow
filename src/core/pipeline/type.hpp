@@ -13,12 +13,12 @@
 
 #include "../type.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace pipeline
 {
 using PipelineScenario = uint32_t;
-using PipeNodeId       = vtf_id_t;
+using PipeNodeId       = cflow_id_t;
 
 }  // namespace pipeline
-}  // namespace vtf
+}  // namespace cflow

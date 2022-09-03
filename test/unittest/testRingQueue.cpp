@@ -12,7 +12,7 @@
 #include "testUtils.hpp"
 
 int main() {
-  vtf::utils::queue::RingQueue<int> rq(4);
+  cflow::utils::queue::RingQueue<int> rq(4);
   rq.push(1);
   rq.push(2);
   rq.push(3);

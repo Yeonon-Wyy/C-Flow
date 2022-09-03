@@ -13,7 +13,7 @@
 #include "../src/core/utils/log/trace_log.hpp"
 #include "../src/core/utils/time_util.hpp"
 
-using namespace vtf::pipeline;
+using namespace cflow::pipeline;
 
 enum MyScenario { Scenario1 = 100, Scenario2, Scenario3, Scenario4 };
 
@@ -26,23 +26,23 @@ enum NodeId {
 };
 
 void testDispatch() {
-  // vtf::pipeline::PipeNodeDispatcher<PipelineRequest> pd(8);
+  // cflow::pipeline::PipeNodeDispatcher<PipelineRequest> pd(8);
 
   // while (true) {
   //     std::shared_ptr<PipelineRequest> req =
   //     std::make_shared<PipelineRequest>(MyScenario::Scenario1);
   //     pd.queueInDispacther(req);
-  //     std::this_thread::sleep_until(vtf::util::TimeUtil::awake_time(300));
+  //     std::this_thread::sleep_until(cflow::util::TimeUtil::awake_time(300));
   // }
 }
 
-using namespace vtf::utils::memory;
+using namespace cflow::utils::memory;
 
-class MypipeData : public vtf::pipeline::PipeData {
+class MypipeData : public cflow::pipeline::PipeData {
 
 public:
   MypipeData(PipelineScenario scenario, int d)
-      : vtf::pipeline::PipeData(scenario, true), data(d) {}
+      : cflow::pipeline::PipeData(scenario, true), data(d) {}
 
   bool constructIO() override {
     if (scenario() == MyScenario::Scenario2) {
@@ -90,13 +90,13 @@ void testPipeline() {
              .processCallback =
                  [](std::shared_ptr<PipelineRequest> request) -> bool {
                TRACE_FUNC_ID_START("P1NodeProcess", request->ID());
-               VTF_LOGD("request {0} process P1 node", request->ID());
-               if (request->getDataType() == vtf::DataType::DATATYPE_RT)
+               CFLOW_LOGD("request {0} process P1 node", request->ID());
+               if (request->getDataType() == cflow::DataType::DATATYPE_RT)
                  std::this_thread::sleep_until(
-                     vtf::utils::TimeUtil::awake_time(1));
+                     cflow::utils::TimeUtil::awake_time(1));
                else
                  std::this_thread::sleep_until(
-                     vtf::utils::TimeUtil::awake_time(1));
+                     cflow::utils::TimeUtil::awake_time(1));
                for (auto &&out : request->output()) {
                  *((int *)out->ptr) = 0;
                }
@@ -108,9 +108,9 @@ void testPipeline() {
                                    MyScenario::Scenario3},
              .processCallback =
                  [](std::shared_ptr<PipelineRequest> request) -> bool {
-               VTF_LOGD("request {0} process P2 node", request->ID());
+               CFLOW_LOGD("request {0} process P2 node", request->ID());
                std::this_thread::sleep_until(
-                   vtf::utils::TimeUtil::awake_time(1));
+                   cflow::utils::TimeUtil::awake_time(1));
                return true;
              }},
             {.id = NodeId::P3NODE,
@@ -118,9 +118,9 @@ void testPipeline() {
              .pipelineScenarios = {MyScenario::Scenario2},
              .processCallback =
                  [](std::shared_ptr<PipelineRequest> request) -> bool {
-               VTF_LOGD("request {0} process P3 node", request->ID());
+               CFLOW_LOGD("request {0} process P3 node", request->ID());
                std::this_thread::sleep_until(
-                   vtf::utils::TimeUtil::awake_time(1));
+                   cflow::utils::TimeUtil::awake_time(1));
                int sz = request->input().size();
                for (int i = 0; i < sz; i++) {
                  auto in = request->input()[i];
@@ -133,13 +133,13 @@ void testPipeline() {
              "MDPNode",
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
-               VTF_LOGD("request {0} process MDP node", request->ID());
-               if (request->getDataType() == vtf::DataType::DATATYPE_RT)
+               CFLOW_LOGD("request {0} process MDP node", request->ID());
+               if (request->getDataType() == cflow::DataType::DATATYPE_RT)
                  std::this_thread::sleep_until(
-                     vtf::utils::TimeUtil::awake_time(1));
+                     cflow::utils::TimeUtil::awake_time(1));
                else
                  std::this_thread::sleep_until(
-                     vtf::utils::TimeUtil::awake_time(1));
+                     cflow::utils::TimeUtil::awake_time(1));
                int sz = request->input().size();
                for (int i = 0; i < sz; i++) {
                  auto in = request->input()[i];
@@ -148,7 +148,7 @@ void testPipeline() {
                }
 
                for (auto &&out : request->output()) {
-                 VTF_LOGD("last output val : {0}", *((int *)out->ptr));
+                 CFLOW_LOGD("last output val : {0}", *((int *)out->ptr));
                }
                return true;
              }},
@@ -156,9 +156,9 @@ void testPipeline() {
              "WPENode",
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
-               VTF_LOGD("request {0} process WPE node", request->ID());
+               CFLOW_LOGD("request {0} process WPE node", request->ID());
                std::this_thread::sleep_until(
-                   vtf::utils::TimeUtil::awake_time(1));
+                   cflow::utils::TimeUtil::awake_time(1));
                return true;
              }}},
        .notifierCreateInfos =
@@ -168,24 +168,24 @@ void testPipeline() {
                 .processCallback =
                     [](std::shared_ptr<PipelineRequest> request) {
                       if (request->getNotifyStatus() ==
-                          vtf::NotifyStatus::ERROR) {
-                        VTF_LOGE("node done {0} notify ERROR", request->ID());
+                          cflow::NotifyStatus::ERROR) {
+                        CFLOW_LOGE("node done {0} notify ERROR", request->ID());
                       } else {
-                        VTF_LOGE("node done {0} notify OK", request->ID());
+                        CFLOW_LOGE("node done {0} notify OK", request->ID());
                       }
                       return true;
                     },
                 .configProgress =
                     []() {
-                      VTF_LOGD(
+                      CFLOW_LOGD(
                           "pipeline_node_done_notifier - user define config");
                     },
                 .stopProgress =
                     []() {
-                      VTF_LOGD(
+                      CFLOW_LOGD(
                           "pipeline_node_done_notifier - user define stop");
                     },
-                .type = vtf::NotifierType::DATA_LISTEN,
+                .type = cflow::NotifierType::DATA_LISTEN,
             },
             {
                 .id = 2,
@@ -193,14 +193,14 @@ void testPipeline() {
                 .processCallback =
                     [](std::shared_ptr<PipelineRequest> request) {
                       if (request->getNotifyStatus() ==
-                          vtf::NotifyStatus::ERROR) {
-                        VTF_LOGE("result {0} notify ERROR", request->ID());
+                          cflow::NotifyStatus::ERROR) {
+                        CFLOW_LOGE("result {0} notify ERROR", request->ID());
                       } else {
-                        VTF_LOGE("result {0} notify OK", request->ID());
+                        CFLOW_LOGE("result {0} notify OK", request->ID());
                       }
                       return true;
                     },
-                .type = vtf::NotifierType::FINAL,
+                .type = cflow::NotifierType::FINAL,
             }},
        .nodeConnections = {{P1NODE, P2NODE},
                            {P1NODE, P3NODE},
@@ -216,18 +216,18 @@ void testPipeline() {
     if (cnt == 100) {
       ppl->stop();
 
-      VTF_LOGD("start stop");
+      CFLOW_LOGD("start stop");
       isSTop = true;
-      VTF_LOGD("end stop");
+      CFLOW_LOGD("end stop");
 
       break;
     } else {
-      std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(33));
+      std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(33));
       if (!isSTop) {
         auto req =
             std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
         // if (req->ID() % 2 == 0) {
-        req->setDataType(vtf::DataType::DATATYPE_RT);
+        req->setDataType(cflow::DataType::DATATYPE_RT);
         // }
         req->addNotifierForNode(P1NODE, 1);
         req->addNotifierForNode(P3NODE, 1);
@@ -243,18 +243,18 @@ void testPipeline() {
   //     if (cnt == 100) {
   //         // ppl->stop();
 
-  //         VTF_LOGD("start stop");
+  //         CFLOW_LOGD("start stop");
   //         isSTop = true;
-  //         VTF_LOGD("end stop");
+  //         CFLOW_LOGD("end stop");
 
   //         break;
   //     } else {
-  //         std::this_thread::sleep_until(vtf::utils::TimeUtil::awake_time(1));
+  //         std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(1));
   //         if (!isSTop) {
   //             auto req =
   //             std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
   //             // if (req->ID() % 2 == 0) {
-  //                 req->setDataType(vtf::DataType::DATATYPE_RT);
+  //                 req->setDataType(cflow::DataType::DATATYPE_RT);
   //             // }
   //             req->addNotifierForNode(P1NODE, 1);
   //             req->addNotifierForNode(P3NODE, 1);
@@ -264,7 +264,7 @@ void testPipeline() {
   //     cnt++;
   // }
 
-  VTF_LOGD("test pipeline stop");
+  CFLOW_LOGD("test pipeline stop");
 }
 
 int main() {

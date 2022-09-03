@@ -11,7 +11,7 @@
 #include <sstream>
 #include <type_traits>
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -49,4 +49,4 @@ public:
 };
 
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

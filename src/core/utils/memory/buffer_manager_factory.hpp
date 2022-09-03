@@ -16,7 +16,7 @@
 
 #include "buffer_manager.hpp"
 
-namespace vtf
+namespace cflow
 {
 namespace utils
 {
@@ -64,13 +64,13 @@ typename BufferManagerFactory<E>::BufferManagerSp BufferManagerFactory<E>::creat
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs))
     {
-        VTF_LOGD("buffer manager is already exit. don't create");
+        CFLOW_LOGD("buffer manager is already exit. don't create");
         return m_bufferManagerMap[bfs];
     }
 
     auto bmsp               = std::make_shared<BufferManager<E>>(bfs);
     m_bufferManagerMap[bfs] = bmsp;
-    VTF_LOGD("create a buffer manager {0} success", bfs.name);
+    CFLOW_LOGD("create a buffer manager {0} success", bfs.name);
     return bmsp;
 }
 
@@ -80,7 +80,7 @@ typename BufferManagerFactory<E>::BufferManagerSp BufferManagerFactory<E>::getBu
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs) == 0)
     {
-        VTF_LOGE("buffer manager does not exist. please check buffer specification.");
+        CFLOW_LOGE("buffer manager does not exist. please check buffer specification.");
         return nullptr;
     }
     return m_bufferManagerMap[bfs];
@@ -92,13 +92,13 @@ void BufferManagerFactory<E>::releaseBufferManager(const BufferSpecification& bf
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs) == 0)
     {
-        VTF_LOGE("buffer manager does not exist. please check buffer specification.");
+        CFLOW_LOGE("buffer manager does not exist. please check buffer specification.");
         return;
     }
     m_bufferManagerMap.erase(bfs);
-    VTF_LOGD("release a buffer manager from buffer manager factory, please ensure you don't hold buffer manager.");
+    CFLOW_LOGD("release a buffer manager from buffer manager factory, please ensure you don't hold buffer manager.");
 }
 
 }  // namespace memory
 }  // namespace utils
-}  // namespace vtf
+}  // namespace cflow

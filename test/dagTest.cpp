@@ -10,13 +10,13 @@ void testDAGbasic()
 {
 
     
-    std::shared_ptr<vtf::DAGNode> node1 = std::make_shared<vtf::DAGNode>(1);
-    std::shared_ptr<vtf::DAGNode> node2 = std::make_shared<vtf::DAGNode>(2);
-    std::shared_ptr<vtf::DAGNode> node3 = std::make_shared<vtf::DAGNode>(3);
-    std::shared_ptr<vtf::DAGNode> node4 = std::make_shared<vtf::DAGNode>(4);
-    std::shared_ptr<vtf::DAGNode> node5 = std::make_shared<vtf::DAGNode>(5);
-    std::shared_ptr<vtf::DAGNode> node6 = std::make_shared<vtf::DAGNode>(6);
-    std::shared_ptr<vtf::DAGNode> node7 = std::make_shared<vtf::DAGNode>(7);
+    std::shared_ptr<cflow::DAGNode> node1 = std::make_shared<cflow::DAGNode>(1);
+    std::shared_ptr<cflow::DAGNode> node2 = std::make_shared<cflow::DAGNode>(2);
+    std::shared_ptr<cflow::DAGNode> node3 = std::make_shared<cflow::DAGNode>(3);
+    std::shared_ptr<cflow::DAGNode> node4 = std::make_shared<cflow::DAGNode>(4);
+    std::shared_ptr<cflow::DAGNode> node5 = std::make_shared<cflow::DAGNode>(5);
+    std::shared_ptr<cflow::DAGNode> node6 = std::make_shared<cflow::DAGNode>(6);
+    std::shared_ptr<cflow::DAGNode> node7 = std::make_shared<cflow::DAGNode>(7);
 
 
     node1->connect(node2);
@@ -31,7 +31,7 @@ void testDAGbasic()
     // node2->connect(node4);
     // node3->connect(node4);
 
-    vtf::DAG dag;
+    cflow::DAG dag;
     dag.addNode(node1);
     dag.addNode(node2);
     dag.addNode(node3);
@@ -51,40 +51,40 @@ void testDAGbasic()
 void testTaskDag()
 {
 
-    // vtf::task::Task task1("task_1");
-    std::shared_ptr<vtf::task::Task> task1 = std::make_shared<vtf::task::Task>();
+    // cflow::task::Task task1("task_1");
+    std::shared_ptr<cflow::task::Task> task1 = std::make_shared<cflow::task::Task>();
     auto pt1 = task1->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task2 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task2 = std::make_shared<cflow::task::Task>();
     auto pt2 = task2->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task3 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task3 = std::make_shared<cflow::task::Task>();
     auto pt3 = task3->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task4 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task4 = std::make_shared<cflow::task::Task>();
     auto pt4 = task4->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task5 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task5 = std::make_shared<cflow::task::Task>();
     auto pt5 = task5->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
-    task5->setPriority(vtf::task::TaskPriority::URGENCY);
+    task5->setPriority(cflow::task::TaskPriority::URGENCY);
 
-    std::shared_ptr<vtf::task::Task> task6 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task6 = std::make_shared<cflow::task::Task>();
 
     auto pt6 = task6->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task7 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task7 = std::make_shared<cflow::task::Task>();
     auto pt7 = task7->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
@@ -101,7 +101,7 @@ void testTaskDag()
     task2->connect(task7);
 
 
-    vtf::DAG dag;
+    cflow::DAG dag;
     dag.addNode(task1);
     dag.addNode(task2);
     dag.addNode(task3);
@@ -137,39 +137,39 @@ constexpr T convertTime(std::chrono::duration<double> originTime)
 void testTaskExecute()
 {
 
-    std::shared_ptr<vtf::task::Task> task1 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task1 = std::make_shared<cflow::task::Task>();
     auto pt1 = task1->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task2 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task2 = std::make_shared<cflow::task::Task>();
     auto pt2 = task2->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task3 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task3 = std::make_shared<cflow::task::Task>();
     auto pt3 = task3->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task4 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task4 = std::make_shared<cflow::task::Task>();
     auto pt4 = task4->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task5 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task5 = std::make_shared<cflow::task::Task>();
     auto pt5 = task5->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
-    task5->setPriority(vtf::task::TaskPriority::URGENCY);
+    task5->setPriority(cflow::task::TaskPriority::URGENCY);
 
-    std::shared_ptr<vtf::task::Task> task6 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task6 = std::make_shared<cflow::task::Task>();
 
     auto pt6 = task6->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<vtf::task::Task> task7 = std::make_shared<vtf::task::Task>();
+    std::shared_ptr<cflow::task::Task> task7 = std::make_shared<cflow::task::Task>();
     auto pt7 = task7->commit([](int a, int b) {
         return a + b;
     }, 1, 2);
@@ -186,7 +186,7 @@ void testTaskExecute()
     task2->connect(task7);
 
 
-    vtf::DAG dag;
+    cflow::DAG dag;
     dag.addNode(task1);
     dag.addNode(task2);
     dag.addNode(task3);
@@ -195,7 +195,7 @@ void testTaskExecute()
     dag.addNode(task6);
     dag.addNode(task7);
 
-    std::unordered_map<long, std::shared_ptr<vtf::task::Task>> taskMap;
+    std::unordered_map<long, std::shared_ptr<cflow::task::Task>> taskMap;
     taskMap[task1->getID()] = task1;
     taskMap[task2->getID()] = task2;
     taskMap[task3->getID()] = task3;
@@ -207,7 +207,7 @@ void testTaskExecute()
 
     dag.buildGraph();
 
-    vtf::utils::thread::ThreadPool pool(4);
+    cflow::utils::thread::ThreadPool pool(4);
 
 
     auto start = std::chrono::system_clock::now();
@@ -224,7 +224,7 @@ void testTaskExecute()
     }
     auto end = std::chrono::system_clock::now();
     std::chrono::duration<double> runTime = end - start;
-    VTF_LOGI("all task need: {0}ms", convertTime<std::chrono::milliseconds>(runTime).count());
+    CFLOW_LOGE("all task need: {0}ms", convertTime<std::chrono::milliseconds>(runTime).count());
 
 
 }

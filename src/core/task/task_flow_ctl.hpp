@@ -22,7 +22,7 @@
 #include "task_threadPool.hpp"
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
-namespace vtf
+namespace cflow
 {
 namespace task
 {
@@ -75,8 +75,8 @@ private:
     void commonSetting(std::shared_ptr<Task> task);
 
 private:
-    std::unordered_map<vtf_id_t, std::shared_ptr<Task>> m_taskIdMap;
-    std::vector<std::vector<vtf_id_t>>                  m_taskOrder;
+    std::unordered_map<cflow_id_t, std::shared_ptr<Task>> m_taskIdMap;
+    std::vector<std::vector<cflow_id_t>>                  m_taskOrder;
     TaskThreadPool                                      m_threadPool;
     DAG                                                 m_dag;
 
@@ -107,16 +107,16 @@ void TaskFlowCtl::reorganizeTaskOrder()
 
     if (m_debugEnable)
     {
-        VTF_LOGI("dump task order: ");
+        CFLOW_LOGE("dump task order: ");
         std::stringstream ss;
         for (auto& curLevelTask : m_taskOrder)
         {
             ss << "[";
-            for (vtf_id_t taskId : curLevelTask)
+            for (cflow_id_t taskId : curLevelTask)
             {
                 ss << m_taskIdMap[taskId]->getName() << ",";
             }
-            VTF_LOGI("{0}]", ss.str());
+            CFLOW_LOGE("{0}]", ss.str());
         }
     }
 }
@@ -133,7 +133,7 @@ void TaskFlowCtl::start()
     for (auto& curLevelTaskIds : m_taskOrder)
     {
         std::vector<std::pair<std::string, std::future<void>>> taskfutureList;
-        for (vtf_id_t taskId : curLevelTaskIds)
+        for (cflow_id_t taskId : curLevelTaskIds)
         {
             if (m_taskIdMap.count(taskId) == 0)
             {
@@ -147,10 +147,10 @@ void TaskFlowCtl::start()
         for (std::pair<std::string, std::future<void>>& taskfuturePair : taskfutureList)
         {
             taskfuturePair.second.get();
-            VTF_LOGI("{0} execute complate!", taskfuturePair.first);
+            CFLOW_LOGE("{0} execute complate!", taskfuturePair.first);
         }
     }
 }
 
 }  // namespace task
-}  // namespace vtf
+}  // namespace cflow

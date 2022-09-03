@@ -14,7 +14,7 @@
 
 #include "testUtils.hpp"
 
-using namespace vtf::utils::memory;
+using namespace cflow::utils::memory;
 
 void testBufferMnaagerInterface() {
   BufferManagerFactory<int> bmf;
