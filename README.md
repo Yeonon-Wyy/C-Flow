@@ -184,6 +184,8 @@ ppl->stop();
 
 5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
 
+> 更相信的例子请查看/sample/opencv/
+
 ### 3. support feature
 
 
