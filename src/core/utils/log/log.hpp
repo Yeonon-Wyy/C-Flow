@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-21 23:07:13
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 18:29:12
+ * @LastEditTime: 2022-09-03 19:05:53
  */
 #pragma once
 
@@ -30,12 +30,12 @@ namespace cflow
 #define PREFIX(msg) std::string("").append("[").append(__FILENAME__).append(":").append(std::to_string(__LINE__)).append("]").append("[").append(__FUNCTION__).append("]").append(msg).c_str()
 #endif  // prefix
 
-#define CFLOW_LOGE(msg, ...) cflow::Log::getInstance().getLogger()->trace(PREFIX(msg), ##__VA_ARGS__)
+#define CFLOW_LOGT(msg, ...) cflow::Log::getInstance().getLogger()->trace(PREFIX(msg), ##__VA_ARGS__)
 #define CFLOW_LOGD(msg, ...) cflow::Log::getInstance().getLogger()->debug(PREFIX(msg), ##__VA_ARGS__)
-#define CFLOW_LOGE(msg, ...) cflow::Log::getInstance().getLogger()->info(PREFIX(msg), ##__VA_ARGS__)
-#define CFLOW_LOGE(msg, ...) cflow::Log::getInstance().getLogger()->warn(PREFIX(msg), ##__VA_ARGS__)
+#define CFLOW_LOGI(msg, ...) cflow::Log::getInstance().getLogger()->info(PREFIX(msg), ##__VA_ARGS__)
+#define CFLOW_LOGW(msg, ...) cflow::Log::getInstance().getLogger()->warn(PREFIX(msg), ##__VA_ARGS__)
 #define CFLOW_LOGE(msg, ...) cflow::Log::getInstance().getLogger()->error(PREFIX(msg), ##__VA_ARGS__)
-#define CFLOW_LOGE(msg, ...) cflow::Log::getInstance().getLogger()->critical(PREFIX(msg), ##__VA_ARGS__)
+#define CFLOW_LOGC(msg, ...) cflow::Log::getInstance().getLogger()->critical(PREFIX(msg), ##__VA_ARGS__)
 
 class Log
 {

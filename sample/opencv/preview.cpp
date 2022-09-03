@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-27 20:25:47
+ * @LastEditTime: 2022-09-03 21:29:54
  */
 #include <mutex>
 #include <opencv2/opencv.hpp>
@@ -14,7 +14,7 @@
 using namespace cv;
 using namespace std;
 using namespace cflow::pipeline;
-double rate;
+
 
 int main()
 {
@@ -51,26 +51,24 @@ int main()
     {
         Point            pt1, pt2;
         Mat              frame;
-        cv::VideoCapture capture(
-            "/home/yeonon/learn/cpp/cflow/sample/bin/"
-            "testVideo.mp4");  //关联读入视频文件
+        std::string      inputFilename = "/home/yeonon/learn/cpp/cflow/sample/bin/testVideo.mp4";
+        std::string      outputFilename = "re_video.avi";
+        cv::VideoCapture capture(inputFilename);  //关联读入视频文件
         if (!capture.isOpened())
         {
-            std::cout << "fail to load video";
+            CFLOW_LOGE("can't open video file {0}", inputFilename);
             return 1;
         }
         /*获取视频fps*/
-        rate = capture.get(CAP_PROP_FPS);
+        double rate = capture.get(CAP_PROP_FPS);
         CFLOW_LOGD("video rate {0}", rate);
         /*获取视频帧的尺寸*/
         int width  = capture.get(CAP_PROP_FRAME_WIDTH);
         int height = capture.get(CAP_PROP_FRAME_HEIGHT);
         /*根据打开视频的参数初始化输出视频格式*/
 
-        w_cap = cv::VideoWriter("re_video.avi", VideoWriter::fourcc('M', 'J', 'P', 'G'), rate, cv::Size(width, height));
+        w_cap = cv::VideoWriter(outputFilename, VideoWriter::fourcc('M', 'J', 'P', 'G'), rate, cv::Size(width, height));
         /*自定义输出视频的尺寸，需要将读取的视频帧尺寸进行变换，下文使用的resize函数完成*/
-        // cv::VideoWriter w_cap("re_video.avi", CV_FOURCC('M', 'J', 'P', 'G'),
-        // rate, cv::Size(your.width, your.height));
 
         /*循环读取视频的帧*/
         while (capture.read(frame))

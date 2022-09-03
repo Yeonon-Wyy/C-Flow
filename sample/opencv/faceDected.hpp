@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-27 22:24:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 17:41:42
+ * @LastEditTime: 2022-09-03 21:18:13
  */
 #pragma once
 
@@ -18,7 +18,6 @@
 #include "../../src/core/utils/log/log.hpp"
 #include "FrameRequest.hpp"
 
-using namespace std;
 using namespace cv;
 
 class FrameRequest;
@@ -32,7 +31,8 @@ private:
     std::mutex        m_mutex;
     //构造函数 传入模型文件
     dnnfacedetect();
-
+    
+    Rect translateROI(Rect& originROI, float scaleRatio);
 public:
     static dnnfacedetect *getInstance()
     {
@@ -47,7 +47,6 @@ public:
 
     //人脸检测
     bool detect(std::shared_ptr<FrameRequest> request);
-    bool detectFix(std::shared_ptr<FrameRequest> request);
 };
 
 dnnfacedetect::dnnfacedetect()
@@ -56,16 +55,16 @@ dnnfacedetect::dnnfacedetect()
     getcwd(filepath, sizeof(filepath));
     CFLOW_LOGD("filePath: {0}", filepath);
     //定义模型文件
-    string faceBindr = (string)filepath + "/haarcascade_frontalface_alt2.xml";
-    string eyeBindry = (string)filepath + "/haarcascade_eye_tree_eyeglasses.xml";
+    std::string faceBindr = (std::string)filepath + "/haarcascade_frontalface_alt2.xml";
+    std::string eyeBindry = (std::string)filepath + "/haarcascade_eye_tree_eyeglasses.xml";
 
     if (!faceCascade.load(faceBindr))
     {
-        CFLOW_LOGE("人脸检测级联分类器没找到！！");
+        CFLOW_LOGE("haarcascade_frontalface_alt2.xml can't found");
     }
     if (!eyes_Cascade.load(eyeBindry))
     {
-        CFLOW_LOGE("人脸检测级联分类器没找到！！");
+        CFLOW_LOGE("haarcascade_eye_tree_eyeglasses can't found");
     }
 
     CFLOW_LOGD("dnnfaceDected construct, this {0}", fmt::ptr(this));
@@ -90,55 +89,53 @@ bool dnnfacedetect::initdnnNet() { return true; }
 //人脸检测
 bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
 {
-    std::unique_lock<std::mutex> lk(m_mutex);
     TRACE_FUNC_ID_START(__FUNCTION__, request->ID());
+    std::unique_lock<std::mutex> lk(m_mutex);
 
+    auto get240PFrame = [](auto&& img) -> Mat {
+        int originWidth = img.cols;
+        int originHeight = img.rows;
+        float dsRatio = (float)originHeight / 240.0f;
+        int newWidth = originWidth / dsRatio;
+        int newHeight = 240;
+        Mat fdImg;
+        cv::resize(img, fdImg, Size(newWidth, newHeight), dsRatio, dsRatio, INTER_LINEAR);
+        return fdImg;
+    };
     Mat  imgGray;
-    auto img = *(request->getFrame());
-    cvtColor(img, imgGray, CV_BGR2GRAY);
+    Mat img = *(request->getFrame());
+    float dsRatio = (float)img.rows / 240.0f;
+    Mat fdImg = get240PFrame(img);
+    CFLOW_LOGD("[debug] fdImg w/h {0}/{1}", fdImg.cols, fdImg.rows);
+
+    cvtColor(fdImg, imgGray, CV_BGR2GRAY);
     equalizeHist(imgGray, imgGray);  //直方图均匀化
-    vector<Rect> faces, eyes;
-    faceCascade.detectMultiScale(imgGray, faces, 1.2, 5, 0, Size(30, 30));
-    for (auto b : faces)
+    std::vector<Rect> faces, eyes;
     {
-        CFLOW_LOGD("face roi [{0},{1},{2},{3}]", b.x, b.y, b.width, b.height);
+        faceCascade.detectMultiScale(imgGray, faces, 1.2, 5, 0, Size(30, 30));
+    }
+    for (auto face : faces)
+    {
+        CFLOW_LOGD("face roi [{0},{1},{2},{3}]", face.x, face.y, face.width, face.height);
     }
     if (faces.size() > 0)
     {
         for (size_t i = 0; i < faces.size(); i++)
         {
-            rectangle(img, Point(faces[i].x, faces[i].y), Point(faces[i].x + faces[i].width, faces[i].y + faces[i].height), Scalar(0, 0, 255), 1, 8);
-            cout << faces[i] << endl;
-            //将人脸从灰度图中抠出来
-            Mat face_ = imgGray(faces[i]);
-            eyes_Cascade.detectMultiScale(face_, eyes, 1.2, 2, 0, Size(30, 30));
-            for (size_t j = 0; j < eyes.size(); j++)
-            {
-                Point eye_center(faces[i].x + eyes[j].x + eyes[j].width / 2, faces[i].y + eyes[j].y + eyes[j].height / 2);
-                int   radius = cvRound((eyes[j].width + eyes[j].height) * 0.25);
-                circle(img, eye_center, radius, Scalar(65, 105, 255), 4, 8, 0);
-            }
+            auto newROI = translateROI(faces[i], dsRatio);
+            request->addFaceRect(newROI);            
         }
     }
 
     return true;
 }
 
-bool dnnfacedetect::detectFix(std::shared_ptr<FrameRequest> request)
+Rect dnnfacedetect::translateROI(Rect& originROI, float scaleRatio)
 {
-    std::unique_lock<std::mutex> lk(m_mutex);
-
-    auto frame = *(request->getFrame());
-    //计算矩形
-    int xLeftBottom = static_cast<int>(160);
-    int yLeftBottom = static_cast<int>(120);
-    int xRightTop   = static_cast<int>(160 + 320);
-    int yRightTop   = static_cast<int>(120 + 240);
-    //生成矩形
-    Rect rect((int)xLeftBottom, (int)yLeftBottom, (int)(xRightTop - xLeftBottom), (int)(yRightTop - yLeftBottom));
-
-    //在原图上用红框画出矩形
-    rectangle(frame, rect, Scalar(0, 0, 255));
-    std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(33));
-    return true;
+    Rect newROI;
+    newROI.x = scaleRatio * originROI.x;
+    newROI.y = scaleRatio * originROI.y;
+    newROI.width = scaleRatio * originROI.width;
+    newROI.height = scaleRatio * originROI.height;
+    return newROI;
 }
