@@ -3,8 +3,8 @@
  * @version: V1.0
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-06 22:32:28
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-04 19:21:00
  */
 #pragma once
 
@@ -23,9 +23,7 @@
 
 #define TASK_NAME_PREFIX "task_"
 
-namespace cflow
-{
-namespace task
+namespace cflow::task
 {
 enum TaskPriority
 {
@@ -145,5 +143,4 @@ auto Task::commit(Function&& f, Args&&... args) -> std::shared_ptr<std::packaged
 
     return pt;
 }
-}  // namespace task
-}  // namespace cflow
+}  // namespace cflow::task

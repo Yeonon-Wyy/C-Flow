@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-27 20:36:00
+ * @LastEditTime: 2022-09-04 19:19:11
  */
 
 #pragma once
@@ -22,9 +22,7 @@
 #include "pipenode.hpp"
 #include "pipenode_dispatcher.hpp"
 
-namespace cflow
-{
-namespace pipeline
+namespace cflow::pipeline
 {
 using namespace cflow::utils::memory;
 
@@ -511,6 +509,4 @@ void PipeLine<Item>::dumpPipelines()
         CFLOW_LOGD(ss.str());
     }
 }
-
-}  // namespace pipeline
-}  // namespace cflow
+}  // namespace cflow::pipeline

@@ -3,16 +3,14 @@
  * @version:
  * @Author: yeonon
  * @Date: 2021-12-03 23:03:20
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:06:29
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-04 19:24:43
  */
 #pragma once
 
 #include <chrono>
 
-namespace cflow
-{
-namespace utils
+namespace cflow::utils
 {
 class TimeUtil
 {
@@ -43,5 +41,4 @@ public:
     }
 };
 
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils

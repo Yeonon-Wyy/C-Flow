@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:43:32
+ * @LastEditTime: 2022-09-04 19:23:29
  */
 #pragma once
 
@@ -20,11 +20,7 @@
 #include "../log/log.hpp"
 // #include "scheduler.hpp"
 
-namespace cflow
-{
-namespace utils
-{
-namespace thread
+namespace cflow::utils::thread
 {
 constexpr int threadLoopDefaultQueueSize = 8;
 
@@ -172,6 +168,4 @@ ThreadLoop<T, Scheduler>::~ThreadLoop()
     stop();
 }
 
-}  // namespace thread
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::thread

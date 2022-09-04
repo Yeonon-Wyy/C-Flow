@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-02 18:15:21
+ * @LastEditTime: 2022-09-04 19:19:51
  */
 #pragma once
 #include <memory>
@@ -16,9 +16,7 @@
 #include "../utils/str_convertor.hpp"
 #include "type.hpp"
 
-namespace cflow
-{
-namespace pipeline
+namespace cflow::pipeline
 {
 #define PIPENODE_DEFAULT_NAME_PREFIX "pipeNode_"
 constexpr int defaultPipeNodeThreadPoolSize = 8;
@@ -323,6 +321,4 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 
     return pipeNode;
 }
-
-}  // namespace pipeline
-}  // namespace cflow
+}  // namespace cflow::pipeline

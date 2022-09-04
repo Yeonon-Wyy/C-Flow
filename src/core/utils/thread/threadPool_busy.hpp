@@ -12,11 +12,7 @@
 #include "../log/log.hpp"
 #include "CFlowPrimaryThread.hpp"
 
-namespace cflow
-{
-namespace utils
-{
-namespace thread
+namespace cflow::utils::thread
 {
 class ThreadPool
 {
@@ -122,6 +118,4 @@ int ThreadPool::dispatch()
     return selectThreadIdx;
 }
 
-}  // namespace thread
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::thread

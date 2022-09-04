@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-03 23:04:22
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-28 13:53:26
+ * @LastEditTime: 2022-09-04 19:24:19
  */
 #pragma once
 
@@ -13,9 +13,7 @@
 
 #include "../type.hpp"
 
-namespace cflow
-{
-namespace utils
+namespace cflow::utils
 {
 class IDGenerator
 {
@@ -37,5 +35,5 @@ private:
     std::atomic_long m_id;
     std::mutex       m_idLock;
 };
-}  // namespace utils
-}  // namespace cflow
+
+}  // namespace cflow::utils

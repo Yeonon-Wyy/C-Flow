@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-06 17:20:58
+ * @LastEditTime: 2022-09-04 19:23:12
  * @FilePath: /src/core/utils/thread/CFlowPrimaryThread.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -17,11 +17,7 @@
 
 #define MAX_TASK_CAPCITY 100
 
-namespace cflow
-{
-namespace utils
-{
-namespace thread
+namespace cflow::utils::thread
 {
 class CFlowPrimaryThread
 {
@@ -132,6 +128,4 @@ std::function<void()> CFlowPrimaryThread::popTask()
 
 CFlowPrimaryThread::~CFlowPrimaryThread() { reset(); }
 
-}  // namespace thread
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::thread

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-14 20:58:20
+ * @LastEditTime: 2022-09-04 19:18:47
  */
 #pragma once
 
@@ -18,9 +18,7 @@
 
 using namespace cflow::utils::memory;
 
-namespace cflow
-{
-namespace pipeline
+namespace cflow::pipeline
 {
 /**
  * @name: class PipeData
@@ -492,5 +490,4 @@ void PipeData::dumpDataInfo()
     }
 }
 
-}  // namespace pipeline
-}  // namespace cflow
+}  // namespace cflow::pipeline

@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-29 15:24:00
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-06-25 18:22:37
+ * @LastEditTime: 2022-09-04 19:21:51
  * @FilePath: /src/core/utils/memory/buffer_manager_factory.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -16,11 +16,7 @@
 
 #include "buffer_manager.hpp"
 
-namespace cflow
-{
-namespace utils
-{
-namespace memory
+namespace cflow::utils::memory
 {
 /**
  * @description: buffer manager factory, provider create,get,release interface for user.
@@ -99,6 +95,4 @@ void BufferManagerFactory<E>::releaseBufferManager(const BufferSpecification& bf
     CFLOW_LOGD("release a buffer manager from buffer manager factory, please ensure you don't hold buffer manager.");
 }
 
-}  // namespace memory
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::memory

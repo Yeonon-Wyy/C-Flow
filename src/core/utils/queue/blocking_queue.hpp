@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-16 22:00:26
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-17 17:24:45
+ * @LastEditTime: 2022-09-04 19:22:24
  */
 #pragma once
 
@@ -14,11 +14,7 @@
 
 #include "../log/log.hpp"
 
-namespace cflow
-{
-namespace utils
-{
-namespace queue
+namespace cflow::utils::queue
 {
 template <typename T>
 class BlockingQueue
@@ -136,6 +132,4 @@ void BlockingQueue<T>::stop()
     m_not_full.notify_all();
     m_not_empty.notify_all();
 }
-}  // namespace queue
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::queue

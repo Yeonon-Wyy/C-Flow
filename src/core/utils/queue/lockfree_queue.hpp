@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-24 16:13:47
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-06 17:22:37
+ * @LastEditTime: 2022-09-04 19:22:40
  * @FilePath: /src/core/utils/queue/lockfree_queue.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -17,11 +17,7 @@
 #include <mutex>
 #include <thread>
 
-namespace cflow
-{
-namespace utils
-{
-namespace queue
+namespace cflow::utils::queue
 {
 /**
  * @description: Implementation of lock free queue.
@@ -130,6 +126,4 @@ bool LockFreeQueue<T>::pop(T& data)
     return true;
 }
 
-}  // namespace queue
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::queue

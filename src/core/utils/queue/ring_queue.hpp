@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-21 17:00:57
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-29 15:28:06
+ * @LastEditTime: 2022-09-04 19:22:56
  * @FilePath: /src/core/utils/queue/ring_queue.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -12,11 +12,7 @@
 
 #include <vector>
 
-namespace cflow
-{
-namespace utils
-{
-namespace queue
+namespace cflow::utils::queue
 {
 /**
  * @description: RingQueue is a ring queue, receive a fix size, and memory can reuse.
@@ -113,6 +109,4 @@ private:
     int            m_frontIdx;
 };
 
-}  // namespace queue
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::queue

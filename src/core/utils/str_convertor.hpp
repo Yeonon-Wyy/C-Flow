@@ -3,17 +3,15 @@
  * @version:
  * @Author: yeonon
  * @Date: 2021-12-03 23:05:33
- * @LastEditors: yeonon
- * @LastEditTime: 2021-12-03 23:10:35
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-04 19:24:32
  */
 #pragma once
 
 #include <sstream>
 #include <type_traits>
 
-namespace cflow
-{
-namespace utils
+namespace cflow::utils
 {
 class StringConvetor
 {
@@ -48,5 +46,4 @@ public:
     }
 };
 
-}  // namespace utils
 }  // namespace cflow

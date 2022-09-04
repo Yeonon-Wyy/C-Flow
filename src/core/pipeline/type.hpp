@@ -3,8 +3,8 @@
  * @version:
  * @Author: yeonon
  * @Date: 2021-11-10 20:52:24
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-30 21:42:55
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-04 19:20:13
  */
 #pragma once
 
@@ -13,12 +13,9 @@
 
 #include "../type.hpp"
 
-namespace cflow
-{
-namespace pipeline
+namespace cflow::pipeline
 {
 using PipelineScenario = uint32_t;
 using PipeNodeId       = cflow_id_t;
 
-}  // namespace pipeline
-}  // namespace cflow
+}  // namespace cflow::pipeline

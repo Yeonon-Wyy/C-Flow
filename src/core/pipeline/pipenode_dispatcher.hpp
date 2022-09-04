@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:44:07
+ * @LastEditTime: 2022-09-04 19:19:32
  */
 #pragma once
 
@@ -17,9 +17,7 @@
 #include "../utils/thread/threadPool.hpp"
 #include "pipenode.hpp"
 
-namespace cflow
-{
-namespace pipeline
+namespace cflow::pipeline
 {
 /**
  * @name: class PipeNodeDispatcher
@@ -259,6 +257,4 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, cflow_
         }
     }
 }
-
-}  // namespace pipeline
 }  // namespace cflow

@@ -12,9 +12,7 @@
 #include "../utils/log/log.hpp"
 #include "task.hpp"
 
-namespace cflow
-{
-namespace task
+namespace cflow::task
 {
 class TaskThreadPool
 {
@@ -119,5 +117,4 @@ TaskThreadPool::~TaskThreadPool()
     }
 }
 
-}  // namespace task
-}  // namespace cflow
+}  // namespace cflow::task

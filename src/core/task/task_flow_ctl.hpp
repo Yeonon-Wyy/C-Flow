@@ -3,8 +3,8 @@
  * @version:
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
- * @LastEditors: yeonon
- * @LastEditTime: 2022-01-29 14:51:17
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-04 19:20:23
  */
 
 #pragma once
@@ -22,9 +22,7 @@
 #include "task_threadPool.hpp"
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
-namespace cflow
-{
-namespace task
+namespace cflow::task
 {
 class TaskFlowCtl
 {
@@ -151,6 +149,4 @@ void TaskFlowCtl::start()
         }
     }
 }
-
-}  // namespace task
-}  // namespace cflow
+}  // namespace cflow::task

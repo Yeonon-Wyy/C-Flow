@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-08-21 16:55:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-27 20:18:17
+ * @LastEditTime: 2022-09-04 19:21:35
  * @FilePath: /src/core/utils/log/trace_log.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -28,11 +28,7 @@
 #define TRACE_END() trace.stop();
 #define TRACE_END_WITH_TIME(duration) duration = trace.stop();
 
-namespace cflow
-{
-namespace utils
-{
-namespace log
+namespace cflow::utils::log
 {
 class TraceLog
 {
@@ -88,6 +84,4 @@ TraceLog::~TraceLog()
     }
 }
 
-}  // namespace log
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::log

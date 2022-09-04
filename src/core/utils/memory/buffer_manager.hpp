@@ -9,11 +9,7 @@
 #include "../log/log.hpp"
 #include "../queue/ring_queue.hpp"
 
-namespace cflow
-{
-namespace utils
-{
-namespace memory
+namespace cflow::utils::memory
 {
 struct BufferSpecification
 {
@@ -332,6 +328,4 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
     }
 }
 
-}  // namespace memory
-}  // namespace utils
-}  // namespace cflow
+}  // namespace cflow::utils::memory
