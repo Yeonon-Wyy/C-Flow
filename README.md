@@ -186,13 +186,34 @@ ppl->stop();
 
 > 更详细的例子请查看/sample/opencv/，这个demo实现了读取视频流数据，对每一帧做人脸检测，水印等处理，最终合成新的视频。
 
-### 3. 支持的功能
-> 待补充
+### 3. 整体架构设计
 
-
-### 4. 整体架构设计
 ![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/C-Flow%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
 ![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg)
+
+### 4. 如何编译
+
+C-Flow使用Header-only风格进行编写，只需要获取/src目录下的源码，并在项目中include需要的头文件即可。当前不支持编译成独立的静态库或者共享库。
+
+对于C-Flow提供的Test实例，可以按如下方式编译：
+```shell
+cd test && mkdir build
+cd build
+cmake ..
+make -j
+```
+
+对于C-Flow提供的sample实例，可以按如下方式编译：
+```shell
+cd sample && mkdir build
+cd build
+cmake ..
+make -j
+```
+
+### 4. 支持的功能
+> 待补充
+
 
 ### 5. 后续计划
 
