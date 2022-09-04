@@ -174,7 +174,7 @@ ppl->stop();
    
    - name表示node name，可根据业务自定义，方便日志中展示
    
-   - pipelineScenarios，表示该node在哪些scenarios中使用，其中scenarios也是用户自定义的，对于框架来说，他只是一个类似id的东西用于表示某一具体的常见。这个参数非常重要，框架 会更具scenarios来串联node得到一个pipeline。
+   - pipelineScenarios，表示该node在哪些scenarios中使用，其中scenarios也是用户自定义的，对于框架来说，他只是一个类似id的东西用于表示某一具体的场景。这个参数非常重要，框架会根据scenarios来串联node得到一条pipeline。
    
    - processCallback，即node的处理函数，函数的具体实现由用户提供。用户可实现复杂的逻辑，最后在这个函数里调用，随心所欲吧。
    
@@ -184,7 +184,7 @@ ppl->stop();
 
 5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
 
-> 更相信的例子请查看/sample/opencv/
+> 更详细的例子请查看/sample/opencv/，这个demo实现了读取视频流数据，对每一帧做人脸检测，水印等处理，最终合成新的视频。
 
 ### 3. support feature
 
