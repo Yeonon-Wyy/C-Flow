@@ -4,19 +4,20 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 21:29:54
+ * @LastEditTime: 2022-09-11 20:46:25
  */
 #include <mutex>
 #include <opencv2/opencv.hpp>
+#include <pthread.h>
 
 #include "configTable.hpp"
+#include "../../src/core/utils/thread/thread_utils.hpp"
 
 using namespace cv;
 using namespace std;
 using namespace cflow::pipeline;
 
-
-int main()
+void startPipeline()
 {
     auto ppl = PipeLine<FrameRequest>::generatePipeLineByConfigureTable(configTable);
     ppl->start();
@@ -57,7 +58,7 @@ int main()
         if (!capture.isOpened())
         {
             CFLOW_LOGE("can't open video file {0}", inputFilename);
-            return 1;
+            return;
         }
         /*获取视频fps*/
         double rate = capture.get(CAP_PROP_FPS);
@@ -85,5 +86,12 @@ int main()
     }
 
     ppl->stop();
-    return 0;
 }
+
+int main()
+{
+    std::thread t1(startPipeline);
+    cflow::utils::thread::setScheduling(t1, SCHED_FIFO, 20);
+    t1.join();
+}
+

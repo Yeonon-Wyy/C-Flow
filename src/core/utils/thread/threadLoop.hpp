@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 15:39:39
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:23:29
+ * @LastEditTime: 2022-09-11 20:44:51
  */
 #pragma once
 
@@ -18,7 +18,7 @@
 #include <vector>
 
 #include "../log/log.hpp"
-// #include "scheduler.hpp"
+#include "thread_utils.hpp"
 
 namespace cflow::utils::thread
 {
@@ -136,6 +136,7 @@ void ThreadLoop<T, Scheduler>::start()
 {
     m_isNeedLoop = true;
     m_thread     = std::thread(&ThreadLoop::_threadLoop, this);
+    setScheduling(m_thread, SCHED_FIFO, 30);
 }
 
 template <typename T, template <typename> typename Scheduler>

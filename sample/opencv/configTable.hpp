@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-12-05 19:18:44
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 21:14:55
+ * @LastEditTime: 2022-09-11 16:08:47
  */
 
 #include <mutex>
@@ -24,8 +24,7 @@ using namespace cv;
 
 const static PipeLine<FrameRequest>::ConfigureTable configTable = 
 {
-    .maxProcessingSize   = 8,
-    .threadPoolSize      = 50,
+    .maxProcessingSize   = 40,
     .pipeNodeCreateInfos = 
     {
         {   .id                = FD_NODE,
