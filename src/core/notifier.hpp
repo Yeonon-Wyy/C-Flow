@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:48:18
+ * @LastEditTime: 2022-09-12 17:39:04
  */
 #pragma once
 
@@ -13,12 +13,14 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <chrono>
 
 #include "scheduler.hpp"
 #include "type.hpp"
 #include "utils/id_generator.hpp"
 #include "utils/str_convertor.hpp"
 #include "utils/thread/threadLoop.hpp"
+#include "utils/time_util.hpp"
 
 namespace cflow
 {
@@ -79,7 +81,12 @@ public:
     };
 
 public:
-    Notifier(cflow_id_t id) : ThreadLoop<std::shared_ptr<Item>, Scheduler>(), m_id(id), m_expectItemId(initExpectItemId) {}
+    Notifier(cflow_id_t id) : 
+        ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
+        m_id(id), 
+        m_expectItemId(initExpectItemId),
+        m_lastNotifierTimePoint(std::chrono::steady_clock::now())
+    {}
 
     ~Notifier() { CFLOW_LOGD("notifier {0} destory", m_name); }
 
@@ -143,14 +150,17 @@ public:
 
 private:
     cflow_id_t                                  m_id;
-    std::string                               m_name;
-    NotifierProcessCallback                   m_processCallback;
-    NotifyDoneCallback                        m_notifyDoneCallback;
-    ConfigProgress                            m_configProgress;
-    StopProgress                              m_stopProgress;
+    std::string                                 m_name;
+    NotifierProcessCallback                     m_processCallback;
+    NotifyDoneCallback                          m_notifyDoneCallback;
+    ConfigProgress                              m_configProgress;
+    StopProgress                                m_stopProgress;
     std::map<cflow_id_t, std::shared_ptr<Item>> m_pendingItemMap;
     cflow_id_t                                  m_expectItemId = initExpectItemId;
-    NotifierType                              m_type;
+    NotifierType                                m_type;
+
+    //debug
+    std::chrono::time_point<std::chrono::steady_clock> m_lastNotifierTimePoint;
 };
 
 /*
@@ -171,13 +181,16 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
     if (item->ID() == m_expectItemId)
     {
         // if current item id equal m_expectItemId
-
         // process current item first
         ret = m_processCallback(item);
         m_notifyDoneCallback(item->ID());
         // update m_expectItemId
         m_expectItemId = item->ID() + 1;
-        CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), item->ID(), m_expectItemId);
+        // for debug
+        auto curTimePoint = std::chrono::steady_clock::now();
+        auto elapsed_ms = cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(curTimePoint - m_lastNotifierTimePoint);
+        m_lastNotifierTimePoint = curTimePoint;
+        CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2} duration {3} ms", name(), item->ID(), m_expectItemId, elapsed_ms.count());
 
         // if pending map is not empty, mean future item arrive first, we need process it.
         for (auto it = m_pendingItemMap.begin(); it != m_pendingItemMap.end();)
@@ -189,7 +202,10 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
                 m_notifyDoneCallback(it->first);
                 // update m_expectItemId
                 m_expectItemId = it->second->ID() + 1;
-                CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2}", name(), it->second->ID(), m_expectItemId);
+                // for debug
+                curTimePoint = std::chrono::steady_clock::now();
+                auto elapsed_ms = cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(curTimePoint - m_lastNotifierTimePoint);
+                CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2} duration {3} ms", name(), it->second->ID(), m_expectItemId, elapsed_ms.count());
                 m_pendingItemMap.erase(it++);
             }
             else

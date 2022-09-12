@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-09-03 20:59:39
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 21:25:58
+ * @LastEditTime: 2022-09-12 17:47:47
  * @FilePath: /sample/opencv/resultProcess.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -26,7 +26,7 @@ using namespace cv;
 bool imageShowResultCallback(std::shared_ptr<FrameRequest> request)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
-    CFLOW_LOGD("result callback {0} ", request->ID());
+    TRACE_FUNC_ID_START(__FUNCTION__, request->ID());    
     if (request->getNotifyStatus() == cflow::NotifyStatus::ERROR)
     {
         return true;

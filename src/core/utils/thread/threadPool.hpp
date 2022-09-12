@@ -95,7 +95,6 @@ auto ThreadPool::emplace(F&& f, Args&&... agrs) -> std::future<typename std::res
         if (isStop)
         {
             throw std::runtime_error("emplace on stopped ThreadPool");
-            ;
         }
         this->m_tasks.emplace([task]() { (*task)(); });
     }
