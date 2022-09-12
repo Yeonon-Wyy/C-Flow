@@ -12,8 +12,7 @@
 #include "../log/log.hpp"
 #include "CFlowPrimaryThread.hpp"
 
-namespace cflow::utils::thread
-{
+namespace cflow::utils::thread {
 class ThreadPool
 {
 public:
@@ -26,7 +25,8 @@ public:
      * @return {*}
      */
     template <typename F, typename... Args>
-    auto emplace(F&& f, Args&&... agrs) -> std::future<typename std::result_of<F(Args...)>::type>;
+    auto emplace(F&& f, Args&&... agrs)
+        -> std::future<typename std::result_of<F(Args...)>::type>;
 
     void stop();
 
@@ -46,7 +46,7 @@ private:
     std::queue<std::function<void()>> m_tasks;
 
     // for synchronization
-    std::mutex              m_taskMutex;
+    std::mutex m_taskMutex;
     std::condition_variable m_taskCV;
 
     // stop flag
@@ -64,9 +64,12 @@ ThreadPool::ThreadPool(size_t threadSize) : isStop(false)
 
                 {
                     std::unique_lock<std::mutex> lk(this->m_taskMutex);
-                    this->m_taskCV.wait(lk, [this]() { return this->isStop || !m_tasks.empty(); });
-                    // if isStop flag is ture and task queue is empty, we just return
-                    // else we need execute task, even if isStop flag is true
+                    this->m_taskCV.wait(lk, [this]() {
+                        return this->isStop || !m_tasks.empty();
+                    });
+                    // if isStop flag is ture and task queue is empty, we just
+                    // return else we need execute task, even if isStop flag is
+                    // true
                     if (this->isStop && m_tasks.empty())
                     {
                         return;
@@ -82,11 +85,13 @@ ThreadPool::ThreadPool(size_t threadSize) : isStop(false)
 }
 
 template <typename F, typename... Args>
-auto ThreadPool::emplace(F&& f, Args&&... agrs) -> std::future<typename std::result_of<F(Args...)>::type>
+auto ThreadPool::emplace(F&& f, Args&&... agrs)
+    -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using returnType = typename std::result_of<F(Args...)>::type;
 
-    auto task = std::make_shared<std::packaged_task<returnType()>>(std::bind(std::forward<F>(f), std::forward<Args>(agrs)...));
+    auto task = std::make_shared<std::packaged_task<returnType()>>(
+        std::bind(std::forward<F>(f), std::forward<Args>(agrs)...));
 
     std::future<returnType> taskFuture = task->get_future();
 
@@ -132,4 +137,4 @@ void ThreadPool::stop()
     }
 }
 
-}  // namespace cflow::utils::thread
+} // namespace cflow::utils::thread

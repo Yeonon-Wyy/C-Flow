@@ -20,14 +20,14 @@
 #include "../log/log.hpp"
 #include "thread_utils.hpp"
 
-namespace cflow::utils::thread
-{
+namespace cflow::utils::thread {
 constexpr int threadLoopDefaultQueueSize = 8;
 
 /**
  * @name: class ThreadLoop
- * @Descripttion: provide some function of thread alway loop utils condition is reach.
- *                Note: a thread loop need some scheduler to control flow.and scheduler object need provide some function like:
+ * @Descripttion: provide some function of thread alway loop utils condition is
+ * reach. Note: a thread loop need some scheduler to control flow.and scheduler
+ * object need provide some function like:
  *                1. default constructor
  *                2. "schedule" function
  *                3. "empty","size","emplace" function
@@ -45,7 +45,8 @@ public:
 
     /**
      * @name: threadLoop
-     * @Descripttion: threadLoop is pure virtual function, inheritor must provider a implementation
+     * @Descripttion: threadLoop is pure virtual function, inheritor must
+     * provider a implementation
      * @param {*} none
      * @return {*} true mean continue, false mean stop loop
      */
@@ -53,7 +54,8 @@ public:
 
     /**
      * @name: start
-     * @Descripttion: start a thread for loop,if you want a threadLoop, you must call start first
+     * @Descripttion: start a thread for loop,if you want a threadLoop, you must
+     * call start first
      * @param {*}
      * @return {*}
      */
@@ -79,13 +81,13 @@ private:
     void _threadLoop();
 
 private:
-    std::atomic_bool        m_isStop;
-    std::atomic_bool        m_isNeedLoop;
-    std::thread             m_thread;
-    std::mutex              m_mutex;
+    std::atomic_bool m_isStop;
+    std::atomic_bool m_isNeedLoop;
+    std::thread m_thread;
+    std::mutex m_mutex;
     std::condition_variable m_condition;
     std::condition_variable m_not_full_cv;
-    Scheduler<T>            m_scheduler;
+    Scheduler<T> m_scheduler;
 };
 
 template <typename T, template <typename> typename Scheduler>
@@ -97,10 +99,13 @@ void ThreadLoop<T, Scheduler>::_threadLoop()
         T item;
         {
             std::unique_lock<std::mutex> lk(m_mutex);
-            m_condition.wait(lk, [this]() { return this->m_isStop || !m_scheduler.empty(); });
+            m_condition.wait(lk, [this]() {
+                return this->m_isStop || !m_scheduler.empty();
+            });
 
             // if isStop flag was set and  m_scheduler is empty, exit loop
-            // so, if isStop flag was set, but m_scheduler is not empty, the loop will execute continue untile queue is empty
+            // so, if isStop flag was set, but m_scheduler is not empty, the
+            // loop will execute continue untile queue is empty
             if (this->m_isStop && m_scheduler.empty())
             {
                 break;
@@ -135,7 +140,7 @@ template <typename T, template <typename> typename Scheduler>
 void ThreadLoop<T, Scheduler>::start()
 {
     m_isNeedLoop = true;
-    m_thread     = std::thread(&ThreadLoop::_threadLoop, this);
+    m_thread = std::thread(&ThreadLoop::_threadLoop, this);
     setScheduling(m_thread, SCHED_FIFO, 30);
 }
 
@@ -165,8 +170,9 @@ ThreadLoop<T, Scheduler>::~ThreadLoop()
             return;
         }
     }
-    // if user don't call stop, must call stop in destructor, and wait thread exit, or else maybe will core dump.
+    // if user don't call stop, must call stop in destructor, and wait thread
+    // exit, or else maybe will core dump.
     stop();
 }
 
-}  // namespace cflow::utils::thread
+} // namespace cflow::utils::thread

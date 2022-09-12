@@ -12,15 +12,17 @@
 #include "../utils/log/log.hpp"
 #include "task.hpp"
 
-namespace cflow::task
-{
+namespace cflow::task {
 class TaskThreadPool
 {
 public:
     // Task Compare, with task priority
     struct TaskComp
     {
-        bool operator()(std::shared_ptr<Task> lhs, std::shared_ptr<Task> rhs) { return lhs->getPriority() > rhs->getPriority(); }
+        bool operator()(std::shared_ptr<Task> lhs, std::shared_ptr<Task> rhs)
+        {
+            return lhs->getPriority() > rhs->getPriority();
+        }
     };
 
     TaskThreadPool(size_t threadSize);
@@ -40,10 +42,12 @@ private:
     std::vector<std::thread> m_workers;
 
     // task queue
-    std::priority_queue<std::shared_ptr<Task>, std::vector<std::shared_ptr<Task>>, TaskComp> m_tasks;
+    std::priority_queue<std::shared_ptr<Task>,
+                        std::vector<std::shared_ptr<Task>>, TaskComp>
+        m_tasks;
 
     // for synchronization
-    std::mutex              m_taskMutex;
+    std::mutex m_taskMutex;
     std::condition_variable m_taskCV;
 
     // stop flag
@@ -61,9 +65,12 @@ TaskThreadPool::TaskThreadPool(size_t threadSize) : isStop(false)
 
                 {
                     std::unique_lock<std::mutex> lk(this->m_taskMutex);
-                    this->m_taskCV.wait(lk, [this]() { return this->isStop || !m_tasks.empty(); });
-                    // if isStop flag is ture and task queue is empty, we just return
-                    // else we need execute task, even if isStop flag is true
+                    this->m_taskCV.wait(lk, [this]() {
+                        return this->isStop || !m_tasks.empty();
+                    });
+                    // if isStop flag is ture and task queue is empty, we just
+                    // return else we need execute task, even if isStop flag is
+                    // true
                     if (this->isStop && m_tasks.empty())
                     {
                         return;
@@ -78,7 +85,8 @@ TaskThreadPool::TaskThreadPool(size_t threadSize) : isStop(false)
     }
 }
 
-auto TaskThreadPool::emplaceTask(std::shared_ptr<Task> task) -> std::future<void>
+auto TaskThreadPool::emplaceTask(std::shared_ptr<Task> task)
+    -> std::future<void>
 {
     auto pt = std::make_shared<std::packaged_task<void()>>(task->getTaskFunc());
 
@@ -117,4 +125,4 @@ TaskThreadPool::~TaskThreadPool()
     }
 }
 
-}  // namespace cflow::task
+} // namespace cflow::task

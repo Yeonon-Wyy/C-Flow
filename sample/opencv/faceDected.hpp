@@ -27,14 +27,15 @@ class dnnfacedetect
 private:
     CascadeClassifier faceCascade;
     CascadeClassifier eyes_Cascade;
-    bool              m_isInit = false;
-    std::mutex        m_mutex;
+    bool m_isInit = false;
+    std::mutex m_mutex;
     //构造函数 传入模型文件
     dnnfacedetect();
-    
+
     Rect translateROI(Rect& originROI, float scaleRatio);
+
 public:
-    static dnnfacedetect *getInstance()
+    static dnnfacedetect* getInstance()
     {
         static dnnfacedetect fd;
         return &fd;
@@ -55,8 +56,10 @@ dnnfacedetect::dnnfacedetect()
     getcwd(filepath, sizeof(filepath));
     CFLOW_LOGD("filePath: {0}", filepath);
     //定义模型文件
-    std::string faceBindr = (std::string)filepath + "/haarcascade_frontalface_alt2.xml";
-    std::string eyeBindry = (std::string)filepath + "/haarcascade_eye_tree_eyeglasses.xml";
+    std::string faceBindr =
+        (std::string)filepath + "/haarcascade_frontalface_alt2.xml";
+    std::string eyeBindry =
+        (std::string)filepath + "/haarcascade_eye_tree_eyeglasses.xml";
 
     if (!faceCascade.load(faceBindr))
     {
@@ -99,31 +102,33 @@ bool dnnfacedetect::detect(std::shared_ptr<FrameRequest> request)
         int newWidth = originWidth / dsRatio;
         int newHeight = 240;
         Mat fdImg;
-        cv::resize(img, fdImg, Size(newWidth, newHeight), dsRatio, dsRatio, INTER_LINEAR);
+        cv::resize(img, fdImg, Size(newWidth, newHeight), dsRatio, dsRatio,
+                   INTER_LINEAR);
         return fdImg;
     };
-    Mat  imgGray;
+    Mat imgGray;
     Mat img = *(request->getFrame());
     float dsRatio = (float)img.rows / 240.0f;
     Mat fdImg = get240PFrame(img);
     CFLOW_LOGD("[debug] fdImg w/h {0}/{1}", fdImg.cols, fdImg.rows);
 
     cvtColor(fdImg, imgGray, CV_BGR2GRAY);
-    equalizeHist(imgGray, imgGray);  //直方图均匀化
+    equalizeHist(imgGray, imgGray); //直方图均匀化
     std::vector<Rect> faces, eyes;
     {
         faceCascade.detectMultiScale(imgGray, faces, 1.2, 5, 0, Size(30, 30));
     }
     for (auto face : faces)
     {
-        CFLOW_LOGD("face roi [{0},{1},{2},{3}]", face.x, face.y, face.width, face.height);
+        CFLOW_LOGD("face roi [{0},{1},{2},{3}]", face.x, face.y, face.width,
+                   face.height);
     }
     if (faces.size() > 0)
     {
         for (size_t i = 0; i < faces.size(); i++)
         {
             auto newROI = translateROI(faces[i], dsRatio);
-            request->addFaceRect(newROI);            
+            request->addFaceRect(newROI);
         }
     }
 

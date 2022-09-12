@@ -13,8 +13,7 @@
 
 #include "../type.hpp"
 
-namespace cflow::utils
-{
+namespace cflow::utils {
 class IDGenerator
 {
 public:
@@ -33,7 +32,7 @@ public:
 
 private:
     std::atomic_long m_id;
-    std::mutex       m_idLock;
+    std::mutex m_idLock;
 };
 
-}  // namespace cflow::utils
+} // namespace cflow::utils

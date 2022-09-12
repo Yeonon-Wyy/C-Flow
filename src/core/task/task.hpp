@@ -23,8 +23,7 @@
 
 #define TASK_NAME_PREFIX "task_"
 
-namespace cflow::task
-{
+namespace cflow::task {
 enum TaskPriority
 {
     NOURGENCY,
@@ -35,20 +34,30 @@ enum TaskPriority
 
 struct TaskCreateInfo
 {
-    int         priority = TaskPriority::NORMAL;
-    std::string name     = "";
+    int priority = TaskPriority::NORMAL;
+    std::string name = "";
 };
 
 class Task : public DAGNode
 {
 public:
-    Task() : DAGNode(m_idGenerator.generate()), m_ID(getNodeId()), m_priority(TaskPriority::NORMAL) { m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID); }
+    Task()
+        : DAGNode(m_idGenerator.generate()),
+          m_ID(getNodeId()),
+          m_priority(TaskPriority::NORMAL)
+    {
+        m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID);
+    }
 
-    Task(TaskCreateInfo&& createInfo) : DAGNode(m_idGenerator.generate()), m_ID(getNodeId()), m_priority(createInfo.priority)
+    Task(TaskCreateInfo&& createInfo)
+        : DAGNode(m_idGenerator.generate()),
+          m_ID(getNodeId()),
+          m_priority(createInfo.priority)
     {
         if (createInfo.name == "")
         {
-            m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID);
+            m_name =
+                TASK_NAME_PREFIX + utils::StringConvetor::digit2String(m_ID);
         }
         else
         {
@@ -58,12 +67,14 @@ public:
 
     /**
      * @name: commit
-     * @Descripttion: commit a task, but not execute task for now. just construct a package_task object than retrun it.
+     * @Descripttion: commit a task, but not execute task for now. just
+     * construct a package_task object than retrun it.
      * @param {*}
      * @return {*} a package_task object
      */
     template <typename Function, typename... Args>
-    auto commit(Function&& f, Args&&... args) -> std::shared_ptr<std::packaged_task<typename std::result_of<Function(Args...)>::type()> >;
+    auto commit(Function&& f, Args&&... args) -> std::shared_ptr<
+        std::packaged_task<typename std::result_of<Function(Args...)>::type()>>;
 
     /* setter and getter function  */
     Task& setName(const std::string& name)
@@ -123,24 +134,27 @@ public:
 
 private:
     static utils::IDGenerator m_idGenerator;
-    std::string               m_name;      // task name
-    long                      m_ID;        // task id
-    std::function<void()>     m_taskFunc;  // task function, will execute user task
-    int                       m_priority;  // priority
-    std::function<void()>     m_runable;   // runable function, only for threadPool
+    std::string m_name;               // task name
+    long m_ID;                        // task id
+    std::function<void()> m_taskFunc; // task function, will execute user task
+    int m_priority;                   // priority
+    std::function<void()> m_runable;  // runable function, only for threadPool
 };
 
 utils::IDGenerator Task::m_idGenerator;
 
 template <typename Function, typename... Args>
-auto Task::commit(Function&& f, Args&&... args) -> std::shared_ptr<std::packaged_task<typename std::result_of<Function(Args...)>::type()> >
+auto Task::commit(Function&& f, Args&&... args) -> std::shared_ptr<
+    std::packaged_task<typename std::result_of<Function(Args...)>::type()>>
 {
     using returnType = typename std::result_of<Function(Args...)>::type;
 
-    auto pt = std::make_shared<std::packaged_task<returnType()> >(std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
+    auto pt = std::make_shared<std::packaged_task<returnType()>>(
+        std::bind(std::forward<Function>(f), std::forward<Args>(args)...));
 
-    m_taskFunc = std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
+    m_taskFunc =
+        std::bind(std::forward<Function>(f), std::forward<Args>(args)...);
 
     return pt;
 }
-}  // namespace cflow::task
+} // namespace cflow::task

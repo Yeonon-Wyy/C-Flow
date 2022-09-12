@@ -20,8 +20,7 @@
 #include "type.hpp"
 #include "utils/log/log.hpp"
 
-namespace cflow
-{
+namespace cflow {
 class DAGNode
 {
 public:
@@ -35,7 +34,8 @@ public:
 
     /**
      * @name: connect
-     * @Descripttion: connect set dependency of node, nodeA->connect(NodeB) mean A -> B
+     * @Descripttion: connect set dependency of node, nodeA->connect(NodeB) mean
+     * A -> B
      * @param {DAGNode*} otherNode
      * @return {*}
      */
@@ -58,8 +58,8 @@ public:
     std::vector<cflow_id_t> getOutNodes() { return m_outNodes; }
 
 private:
-    cflow_id_t              m_nodeId;    // node-id
-    std::vector<cflow_id_t> m_outNodes;  // out-degree
+    cflow_id_t m_nodeId;                // node-id
+    std::vector<cflow_id_t> m_outNodes; // out-degree
 };
 
 class DAG
@@ -101,7 +101,8 @@ public:
 
     /**
      * @name: multiTopologicalSort
-     * @Descripttion: topological sort algorithem for DAG, will generte multi order
+     * @Descripttion: topological sort algorithem for DAG, will generte multi
+     * order
      * @param {*}
      * @return {*} all topological order
      */
@@ -113,7 +114,10 @@ public:
      * @param {*}
      * @return {*}
      */
-    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graph() { return m_graph; }
+    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graph()
+    {
+        return m_graph;
+    }
     /**
      * @name: dumpGraph
      * @Descripttion: dump Graph info
@@ -124,7 +128,8 @@ public:
 
     /**
      * @name: clear
-     * @Descripttion: clear all info of dag, include graph info, node info, etc...
+     * @Descripttion: clear all info of dag, include graph info, node info,
+     * etc...
      * @param {*}
      * @return {*}
      */
@@ -146,14 +151,17 @@ private:
      * @param {*}
      * @return {*}
      */
-    void findAllTopologicalSort(std::vector<std::vector<cflow_id_t>>& nodeOrder, std::set<std::vector<cflow_id_t>>& allTopoOrder, std::vector<cflow_id_t>& topoOrder, int startIdx);
+    void findAllTopologicalSort(std::vector<std::vector<cflow_id_t>>& nodeOrder,
+                                std::set<std::vector<cflow_id_t>>& allTopoOrder,
+                                std::vector<cflow_id_t>& topoOrder,
+                                int startIdx);
 
 private:
-    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>>  m_graph;
+    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> m_graph;
     std::unordered_map<cflow_id_t, std::weak_ptr<DAGNode>> m_nodeIdMap;
-    std::unordered_map<cflow_id_t, cflow_id_t>               m_nodeIndegreeMap;
-    bool                                                 m_graphModified = false;
-    std::vector<std::vector<cflow_id_t>>                   m_nodeOrderCache;
+    std::unordered_map<cflow_id_t, cflow_id_t> m_nodeIndegreeMap;
+    bool m_graphModified = false;
+    std::vector<std::vector<cflow_id_t>> m_nodeOrderCache;
 };
 
 /*
@@ -161,14 +169,17 @@ private:
  */
 DAGNode::DAGNode(cflow_id_t id) : m_nodeId(id) {}
 
-void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode) { this->m_outNodes.push_back(succsorNode->m_nodeId); }
+void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
+{
+    this->m_outNodes.push_back(succsorNode->m_nodeId);
+}
 
 /*
  * class DAG
  */
 void DAG::addNode(std::shared_ptr<DAGNode> node)
 {
-    cflow_id_t nodeId     = node->getNodeId();
+    cflow_id_t nodeId = node->getNodeId();
     m_nodeIdMap[nodeId] = node;
 
     // set flag for grpah is modified
@@ -198,10 +209,11 @@ std::vector<std::vector<cflow_id_t>> DAG::topologicalSort()
     rebuildGraphIfNeed();
 
     std::vector<std::vector<cflow_id_t>> nodeOrder;
-    std::vector<cflow_id_t>              sameLevelNodes;
+    std::vector<cflow_id_t> sameLevelNodes;
 
-    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy           = m_graph;
-    std::unordered_map<cflow_id_t, cflow_id_t>              nodeIndegreeMapCopy = m_nodeIndegreeMap;
+    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy = m_graph;
+    std::unordered_map<cflow_id_t, cflow_id_t> nodeIndegreeMapCopy =
+        m_nodeIndegreeMap;
 
     while (true)
     {
@@ -248,10 +260,11 @@ std::set<std::vector<cflow_id_t>> DAG::multiTopologicalSort()
 {
     rebuildGraphIfNeed();
     std::vector<std::vector<cflow_id_t>> nodeOrder;
-    std::vector<cflow_id_t>              sameLevelNodes;
+    std::vector<cflow_id_t> sameLevelNodes;
 
-    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy           = m_graph;
-    std::unordered_map<cflow_id_t, cflow_id_t>              nodeIndegreeMapCopy = m_nodeIndegreeMap;
+    std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy = m_graph;
+    std::unordered_map<cflow_id_t, cflow_id_t> nodeIndegreeMapCopy =
+        m_nodeIndegreeMap;
     while (true)
     {
         for (auto& [nodeId, degree] : nodeIndegreeMapCopy)
@@ -290,12 +303,15 @@ std::set<std::vector<cflow_id_t>> DAG::multiTopologicalSort()
         }
     }
     std::set<std::vector<cflow_id_t>> allTopoOrder;
-    std::vector<cflow_id_t>           topoOrder;
+    std::vector<cflow_id_t> topoOrder;
     findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, 0);
     return allTopoOrder;
 }
 
-void DAG::findAllTopologicalSort(std::vector<std::vector<cflow_id_t>>& nodeOrder, std::set<std::vector<cflow_id_t>>& allTopoOrder, std::vector<cflow_id_t>& topoOrder, int startIdx)
+void DAG::findAllTopologicalSort(
+    std::vector<std::vector<cflow_id_t>>& nodeOrder,
+    std::set<std::vector<cflow_id_t>>& allTopoOrder,
+    std::vector<cflow_id_t>& topoOrder, int startIdx)
 {
     if (topoOrder.size() == nodeOrder.size())
     {
@@ -332,7 +348,8 @@ bool DAG::checkDependency(cflow_id_t srcNodeId, cflow_id_t dstNodeId)
     }
 
     auto connectionsIter = m_graph.find(srcNodeId);
-    auto resultIter      = std::find(connectionsIter->second.cbegin(), connectionsIter->second.cend(), dstNodeId);
+    auto resultIter = std::find(connectionsIter->second.cbegin(),
+                                connectionsIter->second.cend(), dstNodeId);
     if (resultIter == connectionsIter->second.cend())
     {
         return false;
@@ -372,4 +389,4 @@ void DAG::clear()
     m_nodeOrderCache.clear();
 }
 
-}  // namespace cflow
+} // namespace cflow

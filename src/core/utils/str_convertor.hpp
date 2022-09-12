@@ -11,8 +11,7 @@
 #include <sstream>
 #include <type_traits>
 
-namespace cflow::utils
-{
+namespace cflow::utils {
 class StringConvetor
 {
 public:
@@ -40,10 +39,10 @@ public:
     static digitType string2digit(std::string str)
     {
         std::istringstream iss(str);
-        digitType          digit;
+        digitType digit;
         iss >> digit;
         return digit;
     }
 };
 
-}  // namespace cflow
+} // namespace cflow::utils

@@ -16,10 +16,10 @@
 
 #include "buffer_manager.hpp"
 
-namespace cflow::utils::memory
-{
+namespace cflow::utils::memory {
 /**
- * @description: buffer manager factory, provider create,get,release interface for user.
+ * @description: buffer manager factory, provider create,get,release interface
+ * for user.
  * @return {*}
  */
 template <typename E>
@@ -36,7 +36,8 @@ public:
     BufferManagerSp createBufferManager(const BufferSpecification& bfs);
 
     /**
-     * @description: get a buffer manager by BufferSpecification, is not exit, just return empty sp, don't create
+     * @description: get a buffer manager by BufferSpecification, is not exit,
+     * just return empty sp, don't create
      * @param {BufferSpecification&} bfs
      * @return {*}
      */
@@ -50,12 +51,15 @@ public:
     void releaseBufferManager(const BufferSpecification& bfs);
 
 private:
-    std::unordered_map<BufferSpecification, BufferManagerSp, hash_of_bufferSpecification> m_bufferManagerMap;
-    std::mutex                                                                            m_bufferManagerMapLock;
+    std::unordered_map<BufferSpecification, BufferManagerSp,
+                       hash_of_bufferSpecification>
+        m_bufferManagerMap;
+    std::mutex m_bufferManagerMapLock;
 };
 
 template <typename E>
-typename BufferManagerFactory<E>::BufferManagerSp BufferManagerFactory<E>::createBufferManager(const BufferSpecification& bfs)
+typename BufferManagerFactory<E>::BufferManagerSp
+BufferManagerFactory<E>::createBufferManager(const BufferSpecification& bfs)
 {
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs))
@@ -64,35 +68,40 @@ typename BufferManagerFactory<E>::BufferManagerSp BufferManagerFactory<E>::creat
         return m_bufferManagerMap[bfs];
     }
 
-    auto bmsp               = std::make_shared<BufferManager<E>>(bfs);
+    auto bmsp = std::make_shared<BufferManager<E>>(bfs);
     m_bufferManagerMap[bfs] = bmsp;
     CFLOW_LOGD("create a buffer manager {0} success", bfs.name);
     return bmsp;
 }
 
 template <typename E>
-typename BufferManagerFactory<E>::BufferManagerSp BufferManagerFactory<E>::getBufferManager(const BufferSpecification& bfs)
+typename BufferManagerFactory<E>::BufferManagerSp
+BufferManagerFactory<E>::getBufferManager(const BufferSpecification& bfs)
 {
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs) == 0)
     {
-        CFLOW_LOGE("buffer manager does not exist. please check buffer specification.");
+        CFLOW_LOGE("buffer manager does not exist. please check buffer "
+                   "specification.");
         return nullptr;
     }
     return m_bufferManagerMap[bfs];
 }
 
 template <typename E>
-void BufferManagerFactory<E>::releaseBufferManager(const BufferSpecification& bfs)
+void BufferManagerFactory<E>::releaseBufferManager(
+    const BufferSpecification& bfs)
 {
     std::unique_lock<std::mutex> lk(m_bufferManagerMapLock);
     if (m_bufferManagerMap.count(bfs) == 0)
     {
-        CFLOW_LOGE("buffer manager does not exist. please check buffer specification.");
+        CFLOW_LOGE("buffer manager does not exist. please check buffer "
+                   "specification.");
         return;
     }
     m_bufferManagerMap.erase(bfs);
-    CFLOW_LOGD("release a buffer manager from buffer manager factory, please ensure you don't hold buffer manager.");
+    CFLOW_LOGD("release a buffer manager from buffer manager factory, please "
+               "ensure you don't hold buffer manager.");
 }
 
-}  // namespace cflow::utils::memory
+} // namespace cflow::utils::memory

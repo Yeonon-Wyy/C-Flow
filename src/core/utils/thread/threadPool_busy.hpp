@@ -12,8 +12,7 @@
 #include "../log/log.hpp"
 #include "CFlowPrimaryThread.hpp"
 
-namespace cflow::utils::thread
-{
+namespace cflow::utils::thread {
 class ThreadPool
 {
 public:
@@ -28,7 +27,8 @@ public:
      * @return {*}
      */
     template <typename F, typename... Args>
-    auto emplace(F&& f, Args&&... agrs) -> std::future<typename std::result_of<F(Args...)>::type>;
+    auto emplace(F&& f, Args&&... agrs)
+        -> std::future<typename std::result_of<F(Args...)>::type>;
 
     void stop();
 
@@ -42,7 +42,7 @@ private:
     // thread list, we need keep fixed number of threads
     std::vector<CFlowPrimaryThreadPtr> m_workers;
     // stop flag
-    bool   isStop;
+    bool isStop;
     size_t m_curIdx;
 };
 
@@ -55,11 +55,13 @@ ThreadPool::ThreadPool(size_t threadSize) : isStop(false), m_curIdx(0)
 }
 
 template <typename F, typename... Args>
-auto ThreadPool::emplace(F&& f, Args&&... agrs) -> std::future<typename std::result_of<F(Args...)>::type>
+auto ThreadPool::emplace(F&& f, Args&&... agrs)
+    -> std::future<typename std::result_of<F(Args...)>::type>
 {
     using returnType = typename std::result_of<F(Args...)>::type;
 
-    auto task = std::make_shared<std::packaged_task<returnType()> >(std::bind(std::forward<F>(f), std::forward<Args>(agrs)...));
+    auto task = std::make_shared<std::packaged_task<returnType()>>(
+        std::bind(std::forward<F>(f), std::forward<Args>(agrs)...));
 
     std::future<returnType> taskFuture = task->get_future();
 
@@ -118,4 +120,4 @@ int ThreadPool::dispatch()
     return selectThreadIdx;
 }
 
-}  // namespace cflow::utils::thread
+} // namespace cflow::utils::thread

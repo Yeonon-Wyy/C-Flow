@@ -13,9 +13,8 @@
 
 #include "../type.hpp"
 
-namespace cflow::pipeline
-{
+namespace cflow::pipeline {
 using PipelineScenario = uint32_t;
-using PipeNodeId       = cflow_id_t;
+using PipeNodeId = cflow_id_t;
 
-}  // namespace cflow::pipeline
+} // namespace cflow::pipeline

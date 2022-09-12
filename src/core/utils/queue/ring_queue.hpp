@@ -12,17 +12,23 @@
 
 #include <vector>
 
-namespace cflow::utils::queue
-{
+namespace cflow::utils::queue {
 /**
- * @description: RingQueue is a ring queue, receive a fix size, and memory can reuse.
+ * @description: RingQueue is a ring queue, receive a fix size, and memory can
+ * reuse.
  * @return {*}
  */
 template <typename E>
 class RingQueue
 {
 public:
-    RingQueue(int capcity) : m_capcity(capcity), m_elements(capcity + 1), m_realIdx(0), m_frontIdx(0) {}
+    RingQueue(int capcity)
+        : m_capcity(capcity),
+          m_elements(capcity + 1),
+          m_realIdx(0),
+          m_frontIdx(0)
+    {
+    }
 
     /**
      * @description: push element to queue
@@ -56,7 +62,7 @@ public:
     E real()
     {
         if (empty()) return E();
-        int k       = m_capcity + 1;
+        int k = m_capcity + 1;
         int realIdx = (((m_realIdx - 1) % k) + k) % k;
         return m_elements[realIdx];
     }
@@ -87,7 +93,10 @@ public:
      * @description: return size of queue
      * @return {*}
      */
-    std::size_t size() { return (m_realIdx + (m_capcity + 1) - m_frontIdx) % (m_capcity + 1); }
+    std::size_t size()
+    {
+        return (m_realIdx + (m_capcity + 1) - m_frontIdx) % (m_capcity + 1);
+    }
 
     /**
      * @description: return capcity of queue
@@ -98,15 +107,17 @@ public:
     E at(int idx)
     {
         // idx
-        if (idx < 0 || idx >= m_capcity + 1) std::__throw_length_error("index larger than capcity or less than 0");
+        if (idx < 0 || idx >= m_capcity + 1)
+            std::__throw_length_error(
+                "index larger than capcity or less than 0");
         return m_elements[idx];
     }
 
 private:
-    int            m_capcity;
+    int m_capcity;
     std::vector<E> m_elements;
-    int            m_realIdx;
-    int            m_frontIdx;
+    int m_realIdx;
+    int m_frontIdx;
 };
 
-}  // namespace cflow::utils::queue
+} // namespace cflow::utils::queue

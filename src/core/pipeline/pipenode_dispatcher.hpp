@@ -17,18 +17,23 @@
 #include "../utils/thread/threadPool.hpp"
 #include "pipenode.hpp"
 
-namespace cflow::pipeline
-{
+namespace cflow::pipeline {
 /**
  * @name: class PipeNodeDispatcher
- * @Descripttion: a dispatcher, will auto dispatch data in pipeline by data dependency.
+ * @Descripttion: a dispatcher, will auto dispatch data in pipeline by data
+ * dependency.
  */
 template <typename Item>
 class PipeNodeDispatcher : public Dispatcher<Item>
 {
 public:
-    using PipeNodeMap = std::unordered_map<cflow_id_t, std::weak_ptr<PipeNode<Item>>>;
-    PipeNodeDispatcher(int threadPoolSize) : Dispatcher<Item>(), m_threadPool(threadPoolSize) {}
+    using PipeNodeMap =
+        std::unordered_map<cflow_id_t, std::weak_ptr<PipeNode<Item>>>;
+    PipeNodeDispatcher(int threadPoolSize)
+        : Dispatcher<Item>(),
+          m_threadPool(threadPoolSize)
+    {
+    }
 
     ~PipeNodeDispatcher() { CFLOW_LOGD("dispatch destory"); }
 
@@ -50,7 +55,8 @@ public:
 
     /**
      * @name: threadLoop
-     * @Descripttion: thread loop will loop run process function until receive stop flag
+     * @Descripttion: thread loop will loop run process function until receive
+     * stop flag
      * @param {shared_ptr<Item>} data
      * @return {*}
      */
@@ -58,7 +64,8 @@ public:
 
     /**
      * @name: addPipeNode
-     * @Descripttion: add pipeNode object to dispacther, note the pipeNode will use weak_ptr to save
+     * @Descripttion: add pipeNode object to dispacther, note the pipeNode will
+     * use weak_ptr to save
      * @param {shared_ptr<PipeNode<Item>>} pipeNode
      * @return {*}
      */
@@ -82,11 +89,15 @@ public:
 
     /**
      * @name: addNotifier
-     * @Descripttion: add a result notifier to dispatcher, note the notifier object will use weak_ptr to save
+     * @Descripttion: add a result notifier to dispatcher, note the notifier
+     * object will use weak_ptr to save
      * @param {shared_ptr<Notifier<Item>>} notifier
      * @return {*}
      */
-    void addNotifier(std::shared_ptr<Notifier<Item>> notifier) { m_notifierMaps[notifier->type()].push_back(notifier); }
+    void addNotifier(std::shared_ptr<Notifier<Item>> notifier)
+    {
+        m_notifierMaps[notifier->type()].push_back(notifier);
+    }
 
     /**
      * @name: notifyFinal
@@ -105,15 +116,17 @@ public:
     void notifyNotFinal(std::shared_ptr<Item>, cflow_id_t callerNodeId);
 
 private:
-    PipeNodeMap                                                                  m_pipeNodeMaps;
-    std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>>> m_notifierMaps;
-    cflow::utils::thread::ThreadPool                                               m_threadPool;
+    PipeNodeMap m_pipeNodeMaps;
+    std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>>>
+        m_notifierMaps;
+    cflow::utils::thread::ThreadPool m_threadPool;
 };
 
 template <typename Item>
 bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 {
-    CFLOW_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(), data->getCurrentNode());
+    CFLOW_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(),
+               data->getCurrentNode());
     // final or pipeline is stoped, will call notifier
     if (data->getCurrentNode() == -1 || m_threadPool.isStoped())
     {
@@ -145,7 +158,8 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
 
         auto currentNodeSp = m_pipeNodeMaps[currentProcessNodeId].lock();
         // submit to thread pool
-        if (currentNodeSp && !m_threadPool.isStoped() && !currentNodeSp->isStop())
+        if (currentNodeSp && !m_threadPool.isStoped() &&
+            !currentNodeSp->isStop())
         {
             m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, data);
             // currentNodeSp->submit(data);
@@ -170,12 +184,13 @@ template <typename Item>
 bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> data)
 {
     bool ret = true;
-    ret      = dispatch(data);
+    ret = dispatch(data);
     return ret;
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::addPipeNode(std::shared_ptr<PipeNode<Item>> pipeNode)
+void PipeNodeDispatcher<Item>::addPipeNode(
+    std::shared_ptr<PipeNode<Item>> pipeNode)
 {
     cflow_id_t nodeId = pipeNode->getNodeId();
     if (m_pipeNodeMaps.count(nodeId) == 0)
@@ -208,7 +223,8 @@ void PipeNodeDispatcher<Item>::stop()
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data, NotifyStatus status)
+void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data,
+                                           NotifyStatus status)
 {
     if (m_notifierMaps.count(NotifierType::FINAL))
     {
@@ -226,9 +242,11 @@ void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data, NotifySta
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, cflow_id_t callerNodeId)
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data,
+                                              cflow_id_t callerNodeId)
 {
-    std::vector<cflow_id_t> notifierIdsForCurrentItem = data->getNotifiersByNodeId(callerNodeId);
+    std::vector<cflow_id_t> notifierIdsForCurrentItem =
+        data->getNotifiersByNodeId(callerNodeId);
     for (auto [notifierType, notifiers] : m_notifierMaps)
     {
         // foreach all notifiers
@@ -247,7 +265,9 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, cflow_
                 {
                     cflow_id_t notifierId = notifierSp->ID();
                     // find current data and node notifier
-                    auto it = std::find(notifierIdsForCurrentItem.begin(), notifierIdsForCurrentItem.end(), notifierId);
+                    auto it =
+                        std::find(notifierIdsForCurrentItem.begin(),
+                                  notifierIdsForCurrentItem.end(), notifierId);
                     if (it != notifierIdsForCurrentItem.end())
                     {
                         notifierSp->notify(data);
@@ -257,4 +277,4 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data, cflow_
         }
     }
 }
-}  // namespace cflow
+} // namespace cflow::pipeline

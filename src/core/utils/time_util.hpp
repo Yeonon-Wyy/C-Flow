@@ -10,8 +10,7 @@
 
 #include <chrono>
 
-namespace cflow::utils
-{
+namespace cflow::utils {
 class TimeUtil
 {
 public:
@@ -41,4 +40,4 @@ public:
     }
 };
 
-}  // namespace cflow::utils
+} // namespace cflow::utils

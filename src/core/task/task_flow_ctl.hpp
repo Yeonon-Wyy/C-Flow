@@ -22,12 +22,16 @@
 #include "task_threadPool.hpp"
 
 #define TASKFLOWCTL_THREADPOOL_MAX_THREAD 8
-namespace cflow::task
-{
+namespace cflow::task {
 class TaskFlowCtl
 {
 public:
-    TaskFlowCtl(bool enableDebug = false) : m_threadPool(TASKFLOWCTL_THREADPOOL_MAX_THREAD), m_dag(), m_debugEnable(enableDebug) {}
+    TaskFlowCtl(bool enableDebug = false)
+        : m_threadPool(TASKFLOWCTL_THREADPOOL_MAX_THREAD),
+          m_dag(),
+          m_debugEnable(enableDebug)
+    {
+    }
 
     /**
      * @name: addTask
@@ -45,7 +49,8 @@ public:
      * @return {*} a task object
      */
     template <typename Function, typename... Args>
-    std::shared_ptr<Task> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo, Function&& f, Args&&... args);
+    std::shared_ptr<Task> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo,
+                                              Function&& f, Args&&... args);
 
     /**
      * @name: start
@@ -74,9 +79,9 @@ private:
 
 private:
     std::unordered_map<cflow_id_t, std::shared_ptr<Task>> m_taskIdMap;
-    std::vector<std::vector<cflow_id_t>>                  m_taskOrder;
-    TaskThreadPool                                      m_threadPool;
-    DAG                                                 m_dag;
+    std::vector<std::vector<cflow_id_t>> m_taskOrder;
+    TaskThreadPool m_threadPool;
+    DAG m_dag;
 
     bool m_debugEnable;
 };
@@ -91,7 +96,8 @@ std::shared_ptr<Task> TaskFlowCtl::addTask(Function&& f, Args&&... args)
 }
 
 template <typename Function, typename... Args>
-std::shared_ptr<Task> TaskFlowCtl::addTaskWithTaskInfo(TaskCreateInfo&& taskInfo, Function&& f, Args&&... args)
+std::shared_ptr<Task> TaskFlowCtl::addTaskWithTaskInfo(
+    TaskCreateInfo&& taskInfo, Function&& f, Args&&... args)
 {
     std::shared_ptr<Task> task = std::make_shared<Task>(std::move(taskInfo));
     task->commit(std::forward<Function>(f), std::forward<Args>(args)...);
@@ -135,18 +141,21 @@ void TaskFlowCtl::start()
         {
             if (m_taskIdMap.count(taskId) == 0)
             {
-                std::cerr << "can't find the task id(" << taskId << ") in taskIdMap, please check it." << std::endl;
+                std::cerr << "can't find the task id(" << taskId
+                          << ") in taskIdMap, please check it." << std::endl;
                 return;
             }
             std::shared_ptr<Task> task = m_taskIdMap[taskId];
-            taskfutureList.emplace_back(task->getName(), m_threadPool.emplaceTask(task));
+            taskfutureList.emplace_back(task->getName(),
+                                        m_threadPool.emplaceTask(task));
         }
 
-        for (std::pair<std::string, std::future<void>>& taskfuturePair : taskfutureList)
+        for (std::pair<std::string, std::future<void>>& taskfuturePair :
+             taskfutureList)
         {
             taskfuturePair.second.get();
             CFLOW_LOGE("{0} execute complate!", taskfuturePair.first);
         }
     }
 }
-}  // namespace cflow::task
+} // namespace cflow::task

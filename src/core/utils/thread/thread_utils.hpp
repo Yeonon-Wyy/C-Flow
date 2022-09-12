@@ -4,8 +4,8 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-09-11 20:52:45
  * @FilePath: /src/core/utils/thread/thread_utils.hpp
- * @Description: 
- * Copyright 2022 Yeonon, All Rights Reserved. 
+ * @Description:
+ * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-09-11 20:41:56
  */
 #pragma once
@@ -13,21 +13,19 @@
 #include <pthread.h>
 #include "../log/log.hpp"
 
-namespace cflow::utils::thread
-{
+namespace cflow::utils::thread {
 #ifdef __linux__
-static void setScheduling(std::thread &th, int policy, int priority) 
+static void setScheduling(std::thread &th, int policy, int priority)
 {
     sched_param sch_params;
     sch_params.sched_priority = priority;
-    if(pthread_setschedparam(th.native_handle(), policy, &sch_params)) {
-        CFLOW_LOGE("Failed to set Thread scheduling : {0}", std::strerror(errno));
+    if (pthread_setschedparam(th.native_handle(), policy, &sch_params))
+    {
+        CFLOW_LOGE("Failed to set Thread scheduling : {0}",
+                   std::strerror(errno));
     }
 }
 #else
-static void setScheduling(std::thread &th, int policy, int priority) 
-{
-    return;
-}
+static void setScheduling(std::thread &th, int policy, int priority) { return; }
 #endif
-} //namespace cflow::utils::thread
+} // namespace cflow::utils::thread

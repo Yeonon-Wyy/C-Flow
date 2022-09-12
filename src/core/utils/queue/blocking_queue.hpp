@@ -14,8 +14,7 @@
 
 #include "../log/log.hpp"
 
-namespace cflow::utils::queue
-{
+namespace cflow::utils::queue {
 template <typename T>
 class BlockingQueue
 {
@@ -23,14 +22,31 @@ public:
     template <typename U>
     friend class BlockingQueue;
 
-    explicit BlockingQueue(int capacity) noexcept : m_capacity(capacity), m_items(capacity + 1), m_startIdx(0), m_endIdx(0), m_stop(false) {}
+    explicit BlockingQueue(int capacity) noexcept
+        : m_capacity(capacity),
+          m_items(capacity + 1),
+          m_startIdx(0),
+          m_endIdx(0),
+          m_stop(false)
+    {
+    }
 
     BlockingQueue() = delete;
 
-    BlockingQueue(const BlockingQueue& rhs) noexcept : m_capacity(rhs.m_capacity), m_items(rhs.m_items), m_startIdx(rhs.m_startIdx), m_endIdx(rhs.m_endIdx) {}
+    BlockingQueue(const BlockingQueue& rhs) noexcept
+        : m_capacity(rhs.m_capacity),
+          m_items(rhs.m_items),
+          m_startIdx(rhs.m_startIdx),
+          m_endIdx(rhs.m_endIdx)
+    {
+    }
 
     template <typename U>
-    BlockingQueue(const BlockingQueue<U>& rhs) noexcept : m_capacity(rhs.m_capacity), m_items(rhs.m_items), m_startIdx(rhs.m_startIdx), m_endIdx(rhs.m_endIdx)
+    BlockingQueue(const BlockingQueue<U>& rhs) noexcept
+        : m_capacity(rhs.m_capacity),
+          m_items(rhs.m_items),
+          m_startIdx(rhs.m_startIdx),
+          m_endIdx(rhs.m_endIdx)
     {
     }
 
@@ -47,7 +63,7 @@ public:
         rhs.m_capacity = 0;
         rhs.m_items.reserve(0);
         rhs.m_startIdx = 0;
-        rhs.m_endIdx   = 0;
+        rhs.m_endIdx = 0;
     }
 
     void swap(BlockingQueue& rhs) noexcept
@@ -60,22 +76,25 @@ public:
     }
 
     void push(T item);
-    T    pop();
+    T pop();
 
     bool isEmpty() { return m_startIdx == m_endIdx; }
-    bool isFull() { return (m_startIdx + m_capacity - m_endIdx) % (m_capacity + 1) == 0; }
+    bool isFull()
+    {
+        return (m_startIdx + m_capacity - m_endIdx) % (m_capacity + 1) == 0;
+    }
     void clear();
 
     void stop();
 
 private:
-    int            m_capacity;
+    int m_capacity;
     std::vector<T> m_items;
-    int            m_startIdx;
-    int            m_endIdx;
-    bool           m_stop;
+    int m_startIdx;
+    int m_endIdx;
+    bool m_stop;
 
-    std::mutex              m_mutex;
+    std::mutex m_mutex;
     std::condition_variable m_not_full;
     std::condition_variable m_not_empty;
 };
@@ -87,7 +106,8 @@ void BlockingQueue<T>::push(T item)
         std::unique_lock<std::mutex> lock(m_mutex);
         if (isFull())
         {
-            m_not_full.wait(lock, [this]() { return !this->isFull() || m_stop; });
+            m_not_full.wait(lock,
+                            [this]() { return !this->isFull() || m_stop; });
             if (m_stop) return;
         }
 
@@ -118,7 +138,7 @@ void BlockingQueue<T>::clear()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_startIdx = 0;
-    m_endIdx   = 0;
+    m_endIdx = 0;
     m_items.clear();
 }
 
@@ -132,4 +152,4 @@ void BlockingQueue<T>::stop()
     m_not_full.notify_all();
     m_not_empty.notify_all();
 }
-}  // namespace cflow::utils::queue
+} // namespace cflow::utils::queue

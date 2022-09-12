@@ -38,4 +38,8 @@ private:
     std::vector<Rect> m_eyes;
 };
 
-FrameRequest::FrameRequest(PipelineScenario scenario, Mat mat) : PipeData(scenario, true), m_frame(std::make_shared<Mat>(mat)) {}
+FrameRequest::FrameRequest(PipelineScenario scenario, Mat mat)
+    : PipeData(scenario, true),
+      m_frame(std::make_shared<Mat>(mat))
+{
+}

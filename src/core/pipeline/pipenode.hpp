@@ -16,8 +16,7 @@
 #include "../utils/str_convertor.hpp"
 #include "type.hpp"
 
-namespace cflow::pipeline
-{
+namespace cflow::pipeline {
 #define PIPENODE_DEFAULT_NAME_PREFIX "pipeNode_"
 constexpr int defaultPipeNodeThreadPoolSize = 8;
 
@@ -30,7 +29,8 @@ enum PipeNodeStatus
 
 /**
  * @name: class PipeNode
- * @Descripttion: pipeNode as business processing unit, user only need provide a processCallback, our framework will dispatch some data and call it.
+ * @Descripttion: pipeNode as business processing unit, user only need provide a
+ * processCallback, our framework will dispatch some data and call it.
  * @param {*}
  * @return {*}
  */
@@ -38,21 +38,22 @@ template <typename Item>
 class PipeNodeDispatcher;
 
 template <typename Item>
-class PipeNode : public cflow::DAGNode, public std::enable_shared_from_this<PipeNode<Item>>
+class PipeNode : public cflow::DAGNode,
+                 public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:
     using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
-    using ConfigProgress  = std::function<void()>;
-    using StopProgress    = std::function<void()>;
+    using ConfigProgress = std::function<void()>;
+    using StopProgress = std::function<void()>;
 
     struct PipeNodeCreateInfo
     {
-        PipeNodeId                    id;
-        std::string                   name;
+        PipeNodeId id;
+        std::string name;
         std::vector<PipelineScenario> pipelineScenarios;
-        ProcessCallback               processCallback;
-        ConfigProgress                configProgress;
-        StopProgress                  stopProgress;
+        ProcessCallback processCallback;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
     };
 
     class PipeNodeBuilder
@@ -67,25 +68,34 @@ public:
         PipeNodeBuilder* addScenarios(PipelineScenario&& scenario);
         PipeNodeBuilder* addScenarios(std::vector<PipelineScenario> scenarios);
 
-        std::shared_ptr<PipeNode<Item>> build(std::shared_ptr<PipeNodeDispatcher<Item>>);
+        std::shared_ptr<PipeNode<Item>> build(
+            std::shared_ptr<PipeNodeDispatcher<Item>>);
 
     private:
-        PipeNodeId                    id;
-        std::string                   name;
+        PipeNodeId id;
+        std::string name;
         std::vector<PipelineScenario> pipelineScenarios;
-        ProcessCallback               processCallback;
-        ConfigProgress                configProgress;
-        StopProgress                  stopProgress;
+        ProcessCallback processCallback;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
     };
 
 public:
-    PipeNode(PipeNodeId id) : DAGNode(id), m_id(id), m_status(PipeNodeStatus::IDLE) { m_name = PIPENODE_DEFAULT_NAME_PREFIX + cflow::utils::StringConvetor::digit2String(m_id); }
+    PipeNode(PipeNodeId id)
+        : DAGNode(id),
+          m_id(id),
+          m_status(PipeNodeStatus::IDLE)
+    {
+        m_name = PIPENODE_DEFAULT_NAME_PREFIX +
+                 cflow::utils::StringConvetor::digit2String(m_id);
+    }
 
     ~PipeNode() { CFLOW_LOGD("node {0} destory", m_name); }
 
     /**
      * @name: process
-     * @Descripttion: execute user define process function, and after complete, mark done
+     * @Descripttion: execute user define process function, and after complete,
+     * mark done
      * @param {*}
      * @return {*}
      */
@@ -99,7 +109,10 @@ public:
      * @param {ProcessCallback&&} pf is user define process function
      * @return {*}
      */
-    void setProcessCallback(ProcessCallback&& pf) { m_processCallback = std::move(pf); }
+    void setProcessCallback(ProcessCallback&& pf)
+    {
+        m_processCallback = std::move(pf);
+    }
 
     /**
      * @name: name
@@ -157,15 +170,15 @@ public:
 
 private:
 private:
-    PipeNodeId                              m_id;
-    std::string                             m_name;
-    PipeNodeStatus                          m_status;
-    std::vector<PipelineScenario>           m_pipelineScenarios;
-    ProcessCallback                         m_processCallback;
-    ConfigProgress                          m_configProgress;
-    StopProgress                            m_stopProgress;
+    PipeNodeId m_id;
+    std::string m_name;
+    PipeNodeStatus m_status;
+    std::vector<PipelineScenario> m_pipelineScenarios;
+    ProcessCallback m_processCallback;
+    ConfigProgress m_configProgress;
+    StopProgress m_stopProgress;
     std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
-    std::atomic_bool                        m_isStop = false;
+    std::atomic_bool m_isStop = false;
 };
 
 /*
@@ -200,16 +213,19 @@ PipeNode<Item>* PipeNode<Item>::addScenarios(PipelineScenario scenario)
     return this;
 }
 template <typename Item>
-PipeNode<Item>* PipeNode<Item>::addScenarios(std::initializer_list<PipelineScenario> scenarios)
+PipeNode<Item>* PipeNode<Item>::addScenarios(
+    std::initializer_list<PipelineScenario> scenarios)
 {
-    m_pipelineScenarios.insert(m_pipelineScenarios.end(), scenarios.begin(), scenarios.end());
+    m_pipelineScenarios.insert(m_pipelineScenarios.end(), scenarios.begin(),
+                               scenarios.end());
     return this;
 }
 
 template <typename Item>
 bool PipeNode<Item>::hasScenario(PipelineScenario scenario)
 {
-    return std::find(m_pipelineScenarios.begin(), m_pipelineScenarios.end(), scenario) != m_pipelineScenarios.end();
+    return std::find(m_pipelineScenarios.begin(), m_pipelineScenarios.end(),
+                     scenario) != m_pipelineScenarios.end();
 }
 
 template <typename Item>
@@ -240,56 +256,67 @@ void PipeNode<Item>::stop()
  * Implementation of class PipeNode::PipeNodeBuilder
  */
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setID(PipeNodeId&& id)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::setID(PipeNodeId&& id)
 {
     this->id = std::move(id);
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setName(const std::string& name)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::setName(const std::string& name)
 {
     this->name = name;
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setProcessCallback(ProcessCallback&& cb)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::setProcessCallback(ProcessCallback&& cb)
 {
     this->processCallback = std::move(cb);
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setStopProgress(StopProgress&& stopProgress)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::setStopProgress(StopProgress&& stopProgress)
 {
     this->stopProgress = std::move(stopProgress);
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::setConfigProgress(ConfigProgress&& configProgress)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::setConfigProgress(
+    ConfigProgress&& configProgress)
 {
     this->configProgress = std::move(configProgress);
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(PipelineScenario&& scenario)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::addScenarios(PipelineScenario&& scenario)
 {
     this->pipelineScenarios.push_back(std::move(scenario));
     return this;
 }
 
 template <typename Item>
-typename PipeNode<Item>::PipeNodeBuilder* PipeNode<Item>::PipeNodeBuilder::addScenarios(std::vector<PipelineScenario> scenarios)
+typename PipeNode<Item>::PipeNodeBuilder*
+PipeNode<Item>::PipeNodeBuilder::addScenarios(
+    std::vector<PipelineScenario> scenarios)
 {
-    this->pipelineScenarios.insert(this->pipelineScenarios.end(), scenarios.begin(), scenarios.end());
+    this->pipelineScenarios.insert(this->pipelineScenarios.end(),
+                                   scenarios.begin(), scenarios.end());
     return this;
 }
 
 template <typename Item>
-std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shared_ptr<PipeNodeDispatcher<Item>> dispatcher)
+std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(
+    std::shared_ptr<PipeNodeDispatcher<Item>> dispatcher)
 {
     if (id < 0)
     {
@@ -299,13 +326,15 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 
     if (name == "")
     {
-        name = PIPENODE_DEFAULT_NAME_PREFIX + cflow::utils::StringConvetor::digit2String(id);
+        name = PIPENODE_DEFAULT_NAME_PREFIX +
+               cflow::utils::StringConvetor::digit2String(id);
     }
 
-    std::shared_ptr<PipeNode<Item>> pipeNode = std::make_shared<PipeNode<Item>>(id);
-    pipeNode->m_name                         = name;
-    pipeNode->m_pipelineScenarios            = pipelineScenarios;
-    pipeNode->m_pipeNodeDispatcher           = dispatcher;
+    std::shared_ptr<PipeNode<Item>> pipeNode =
+        std::make_shared<PipeNode<Item>>(id);
+    pipeNode->m_name = name;
+    pipeNode->m_pipelineScenarios = pipelineScenarios;
+    pipeNode->m_pipeNodeDispatcher = dispatcher;
     if (processCallback)
     {
         pipeNode->m_processCallback = processCallback;
@@ -321,4 +350,4 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(std::shar
 
     return pipeNode;
 }
-}  // namespace cflow::pipeline
+} // namespace cflow::pipeline

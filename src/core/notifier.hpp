@@ -22,17 +22,18 @@
 #include "utils/thread/threadLoop.hpp"
 #include "utils/time_util.hpp"
 
-namespace cflow
-{
+namespace cflow {
 #define NOTIFIER_DEFAULT_PREFIX "notfier_default";
 constexpr cflow_id_t initExpectItemId = 1;
 
 /**
  * @name: Notifier
- * @Descripttion: Notifier is a common class. user can inheriting this class for user requirement.
- * Notifier don't lock any function, so if user need lock, user should lock self.
- * Note: if notifier type is NotifierType::FINAL, it will start a thread for loop.
- *       And if notier type is DATA_LISTEN or is other "data-feedback-like" will not start a thread, because it's no need for thread, so you shouln only put some light logic in callback.
+ * @Descripttion: Notifier is a common class. user can inheriting this class for
+ * user requirement. Notifier don't lock any function, so if user need lock,
+ * user should lock self. Note: if notifier type is NotifierType::FINAL, it will
+ * start a thread for loop. And if notier type is DATA_LISTEN or is other
+ * "data-feedback-like" will not start a thread, because it's no need for
+ * thread, so you shouln only put some light logic in callback.
  */
 using namespace cflow::utils::thread;
 
@@ -41,19 +42,19 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 {
 public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
-    using ConfigProgress          = std::function<void()>;
-    using StopProgress            = std::function<void()>;
-    using NotifyDoneCallback      = std::function<void(cflow_id_t)>;
+    using ConfigProgress = std::function<void()>;
+    using StopProgress = std::function<void()>;
+    using NotifyDoneCallback = std::function<void(cflow_id_t)>;
 
     struct NotifierCreateInfo
     {
-        cflow_id_t                id = -1;
-        std::string             name;
+        cflow_id_t id = -1;
+        std::string name;
         NotifierProcessCallback processCallback;
-        ConfigProgress          configProgress;
-        StopProgress            stopProgress;
-        NotifierType            type;
-        int                     readyQueueSize;
+        ConfigProgress configProgress;
+        StopProgress stopProgress;
+        NotifierType type;
+        int readyQueueSize;
     };
 
     class NotifierBuilder
@@ -71,22 +72,23 @@ public:
         std::shared_ptr<Notifier<Item>> build();
 
     private:
-        cflow_id_t                m_id;
-        std::string             m_name;
+        cflow_id_t m_id;
+        std::string m_name;
         NotifierProcessCallback m_processCallback;
-        NotifyDoneCallback      m_notifyDoneCallback;
-        ConfigProgress          m_configProgress;
-        StopProgress            m_stopProgress;
-        NotifierType            m_type;
+        NotifyDoneCallback m_notifyDoneCallback;
+        ConfigProgress m_configProgress;
+        StopProgress m_stopProgress;
+        NotifierType m_type;
     };
 
 public:
-    Notifier(cflow_id_t id) : 
-        ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
-        m_id(id), 
-        m_expectItemId(initExpectItemId),
-        m_lastNotifierTimePoint(std::chrono::steady_clock::now())
-    {}
+    Notifier(cflow_id_t id)
+        : ThreadLoop<std::shared_ptr<Item>, Scheduler>(),
+          m_id(id),
+          m_expectItemId(initExpectItemId),
+          m_lastNotifierTimePoint(std::chrono::steady_clock::now())
+    {
+    }
 
     ~Notifier() { CFLOW_LOGD("notifier {0} destory", m_name); }
 
@@ -149,17 +151,17 @@ public:
     void stop();
 
 private:
-    cflow_id_t                                  m_id;
-    std::string                                 m_name;
-    NotifierProcessCallback                     m_processCallback;
-    NotifyDoneCallback                          m_notifyDoneCallback;
-    ConfigProgress                              m_configProgress;
-    StopProgress                                m_stopProgress;
+    cflow_id_t m_id;
+    std::string m_name;
+    NotifierProcessCallback m_processCallback;
+    NotifyDoneCallback m_notifyDoneCallback;
+    ConfigProgress m_configProgress;
+    StopProgress m_stopProgress;
     std::map<cflow_id_t, std::shared_ptr<Item>> m_pendingItemMap;
-    cflow_id_t                                  m_expectItemId = initExpectItemId;
-    NotifierType                                m_type;
+    cflow_id_t m_expectItemId = initExpectItemId;
+    NotifierType m_type;
 
-    //debug
+    // debug
     std::chrono::time_point<std::chrono::steady_clock> m_lastNotifierTimePoint;
 };
 
@@ -188,14 +190,20 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
         m_expectItemId = item->ID() + 1;
         // for debug
         auto curTimePoint = std::chrono::steady_clock::now();
-        auto elapsed_ms = cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(curTimePoint - m_lastNotifierTimePoint);
+        auto elapsed_ms =
+            cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(
+                curTimePoint - m_lastNotifierTimePoint);
         m_lastNotifierTimePoint = curTimePoint;
-        CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2} duration {3} ms", name(), item->ID(), m_expectItemId, elapsed_ms.count());
+        CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id "
+                   "{2} duration {3} ms",
+                   name(), item->ID(), m_expectItemId, elapsed_ms.count());
 
-        // if pending map is not empty, mean future item arrive first, we need process it.
+        // if pending map is not empty, mean future item arrive first, we need
+        // process it.
         for (auto it = m_pendingItemMap.begin(); it != m_pendingItemMap.end();)
         {
-            // need one-by-one process, so we need juge m_expectItemId and item id.
+            // need one-by-one process, so we need juge m_expectItemId and item
+            // id.
             if (it->first == m_expectItemId)
             {
                 m_processCallback(it->second);
@@ -204,8 +212,13 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
                 m_expectItemId = it->second->ID() + 1;
                 // for debug
                 curTimePoint = std::chrono::steady_clock::now();
-                auto elapsed_ms = cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(curTimePoint - m_lastNotifierTimePoint);
-                CFLOW_LOGD("[{0}] result notifier process item {1}, now expect item id {2} duration {3} ms", name(), it->second->ID(), m_expectItemId, elapsed_ms.count());
+                auto elapsed_ms = cflow::utils::TimeUtil::convertTime<
+                    std::chrono::milliseconds>(curTimePoint -
+                                               m_lastNotifierTimePoint);
+                CFLOW_LOGD("[{0}] result notifier process item {1}, now expect "
+                           "item id {2} duration {3} ms",
+                           name(), it->second->ID(), m_expectItemId,
+                           elapsed_ms.count());
                 m_pendingItemMap.erase(it++);
             }
             else
@@ -228,7 +241,8 @@ void Notifier<Item>::notify(std::shared_ptr<Item> item)
 {
     if (m_type == NotifierType::DATA_LISTEN)
     {
-        // just call directly, please ensure the process callback don't need a lot of time, or else will effect performance
+        // just call directly, please ensure the process callback don't need a
+        // lot of time, or else will effect performance
         m_processCallback(item);
     }
     else
@@ -269,27 +283,32 @@ void Notifier<Item>::stop()
  */
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setID(cflow_id_t id)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setID(cflow_id_t id)
 {
     this->m_id = id;
     return this;
 }
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setName(const std::string& name)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setName(const std::string& name)
 {
     m_name = name;
     return this;
 }
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setProcessCallback(NotifierProcessCallback&& cb)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setProcessCallback(
+    NotifierProcessCallback&& cb)
 {
     m_processCallback = std::move(cb);
     return this;
 }
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setNotifyDoneCallback(NotifyDoneCallback&& cb)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setNotifyDoneCallback(NotifyDoneCallback&& cb)
 {
     if (m_type == NotifierType::FINAL)
     {
@@ -299,21 +318,24 @@ typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setNo
 }
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setConfigProgress(ConfigProgress&& cp)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setConfigProgress(ConfigProgress&& cp)
 {
     m_configProgress = std::move(cp);
     return this;
 }
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setStopProgress(StopProgress&& sp)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setStopProgress(StopProgress&& sp)
 {
     m_stopProgress = std::move(sp);
     return this;
 }
 
 template <typename Item>
-typename Notifier<Item>::NotifierBuilder* Notifier<Item>::NotifierBuilder::setType(NotifierType&& type)
+typename Notifier<Item>::NotifierBuilder*
+Notifier<Item>::NotifierBuilder::setType(NotifierType&& type)
 {
     m_type = std::move(type);
     return this;
@@ -335,7 +357,8 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     }
 
     // set field
-    std::shared_ptr<Notifier<Item>> notifier = std::make_shared<Notifier<Item>>(m_id);
+    std::shared_ptr<Notifier<Item>> notifier =
+        std::make_shared<Notifier<Item>>(m_id);
     if (m_name == "")
     {
         m_name = NOTIFIER_DEFAULT_PREFIX;
@@ -364,4 +387,4 @@ std::shared_ptr<Notifier<Item>> Notifier<Item>::NotifierBuilder::build()
     return notifier;
 }
 
-}  // namespace cflow
+} // namespace cflow

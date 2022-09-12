@@ -22,6 +22,7 @@
 
 using namespace cv;
 
+// clang-format off
 const static PipeLine<FrameRequest>::ConfigureTable configTable = 
 {
     .maxProcessingSize   = 40,
@@ -60,3 +61,4 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
         {FDVIDEO_NODE, WATERMARK_NODE}
     }
 };
+// clang-format on

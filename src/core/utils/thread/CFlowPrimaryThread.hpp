@@ -18,12 +18,11 @@
 
 #define MAX_TASK_CAPCITY 100
 
-namespace cflow::utils::thread
-{
+namespace cflow::utils::thread {
 class CFlowPrimaryThread
 {
 public:
-    CFlowPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0) 
+    CFlowPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0)
     {
         m_thread = std::move(std::thread(&CFlowPrimaryThread::execute, this));
     }
@@ -44,7 +43,8 @@ private:
     void execute();
 
     /**
-     * @description: get a task from task queue, then process it. if task is invalid, thead will yield
+     * @description: get a task from task queue, then process it. if task is
+     * invalid, thead will yield
      * @return {*}
      */
     void processTask();
@@ -70,9 +70,9 @@ private:
 
 private:
     cflow::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
-    std::thread                                                 m_thread;
-    bool                                                        m_stop;
-    int32_t                                                     m_totalTaskNum;
+    std::thread m_thread;
+    bool m_stop;
+    int32_t m_totalTaskNum;
     friend class ThreadPool;
 };
 
@@ -132,4 +132,4 @@ std::function<void()> CFlowPrimaryThread::popTask()
 
 CFlowPrimaryThread::~CFlowPrimaryThread() { reset(); }
 
-}  // namespace cflow::utils::thread
+} // namespace cflow::utils::thread

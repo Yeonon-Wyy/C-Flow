@@ -14,12 +14,12 @@
 #include "./utils/memory/buffer_manager_factory.hpp"
 #include "type.hpp"
 
-namespace cflow
-{
+namespace cflow {
 /**
  * @name: class Data
  * @Descripttion: it is a data object.
- *                but this class just a pure virtual class. provider some interface, users must implement these interfaces.
+ *                but this class just a pure virtual class. provider some
+ * interface, users must implement these interfaces.
  *
  * @param {*}
  * @return {*}
@@ -39,7 +39,9 @@ public:
      * @param {*}
      * @return {*}
      */
-    virtual bool constructDependency(const std::vector<cflow_id_t>&, std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
+    virtual bool constructDependency(
+        const std::vector<cflow_id_t>&,
+        std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
 
     /**
      * @name: constructIO
@@ -53,18 +55,23 @@ public:
      * @description: get input buffer by current node
      * @return {*} input buffer list
      */
-    virtual std::vector<std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>> input() = 0;
+    virtual std::vector<
+        std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>>
+    input() = 0;
 
     /**
      * @name: getOuput
      * @description: get output buffer by current node
      * @return {*} output buffer list
      */
-    virtual std::vector<std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>> output() = 0;
+    virtual std::vector<
+        std::shared_ptr<utils::memory::BufferManager<void>::BufferInfo>>
+    output() = 0;
 
     /**
      * @name: getCurrentNodes
-     * @Descripttion: get current processing node list. the list size can only include one nodes or multi nodes, it decide by impl class
+     * @Descripttion: get current processing node list. the list size can only
+     * include one nodes or multi nodes, it decide by impl class
      * @param {*}
      * @return {*}
      */
@@ -72,7 +79,8 @@ public:
 
     /**
      * @name: getNextNode
-     * @Descripttion: get next process node list. the list size can only include one nodes or multi nodes, it decide by impl class
+     * @Descripttion: get next process node list. the list size can only include
+     * one nodes or multi nodes, it decide by impl class
      * @param {*}
      * @return {*}
      */
@@ -80,7 +88,8 @@ public:
 
     /**
      * @name: checkDependencyIsReady
-     * @Descripttion: check current data state, if is ready will return true, or else will return false
+     * @Descripttion: check current data state, if is ready will return true, or
+     * else will return false
      * @param {*}
      * @return {*}
      */
@@ -88,7 +97,8 @@ public:
 
     /**
      * @name: markCurrentNodeReady
-     * @Descripttion: mark current node is ready. will effect next node dependency setting
+     * @Descripttion: mark current node is ready. will effect next node
+     * dependency setting
      * @param {*}
      * @return {*}
      */
@@ -152,12 +162,14 @@ public:
 
     /**
      * @name: addNotifierForNode
-     * @Descripttion: add a notifier for node, when node done, the specified Notifier will be called when node process done
+     * @Descripttion: add a notifier for node, when node done, the specified
+     * Notifier will be called when node process done
      * @param {cflow_id_t} notifierId
      * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    virtual void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) = 0;
+    virtual void addNotifierForNode(cflow_id_t nodeId,
+                                    cflow_id_t notifierId) = 0;
 
     /**
      * @name: getNotifiersByNodeId
@@ -169,8 +181,8 @@ public:
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;
-    cflow_id_t                       m_id;
+    cflow_id_t m_id;
 };
 
 cflow::utils::IDGenerator Data::m_idGenerator;
-}  // namespace cflow
+} // namespace cflow
