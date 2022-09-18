@@ -3,8 +3,8 @@
  * @version:
  * @Author: yeonon
  * @Date: 2022-01-22 20:06:27
- * @LastEditors: yeonon
- * @LastEditTime: 2022-02-06 17:11:56
+ * @LastEditors: Yeonon
+ * @LastEditTime: 2022-09-18 21:10:34
  */
 #pragma once
 
@@ -95,11 +95,11 @@ template <typename T>
 Scheduler<T>::Scheduler()
 {
     m_dataTypeQueueMap[DataType::DATATYPE_RT] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_RT] = 8;
+    m_dataTypeQueueCapMap[DataType::DATATYPE_RT] = RT_TASK_CAPCITY;
     m_dataTypeQueueMap[DataType::DATATYPE_NORMAL] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_NORMAL] = 8;
+    m_dataTypeQueueCapMap[DataType::DATATYPE_NORMAL] = NORMAL_TASK_CAPCITY;
     m_dataTypeQueueMap[DataType::DATATYPE_IDEL] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_IDEL] = 8;
+    m_dataTypeQueueCapMap[DataType::DATATYPE_IDEL] = IDEL_TASK_CAPCITY;
 }
 
 template <typename T>

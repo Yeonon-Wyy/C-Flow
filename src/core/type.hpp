@@ -4,11 +4,16 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-06-04 16:16:32
+ * @LastEditTime: 2022-09-18 21:10:10
  */
 #pragma once
 #include <memory>
 #include <type_traits>
+
+#define RT_TASK_CAPCITY 8
+#define NORMAL_TASK_CAPCITY 16
+#define IDEL_TASK_CAPCITY 32
+
 
 namespace cflow {
 using cflow_id_t = long;
