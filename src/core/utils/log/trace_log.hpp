@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-08-21 16:55:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:21:35
+ * @LastEditTime: 2022-09-24 21:15:42
  * @FilePath: /src/core/utils/log/trace_log.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -37,7 +37,16 @@ public:
 
     ~TraceLog();
 
+    /**
+     * @description: start timer
+     * @return {*}
+     */    
     void start();
+
+    /**
+     * @description: stop timer
+     * @return {*} return a duration of start
+     */    
     auto stop() -> std::chrono::milliseconds;
 
 private:
