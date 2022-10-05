@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:18:47
+ * @LastEditTime: 2022-10-05 16:55:47
  */
 #pragma once
 
@@ -79,7 +79,7 @@ public:
 
     cflow_id_t getCurrentNode() override { return m_currentProcessNodeId; };
 
-    cflow_id_t getNextNode() override { return {m_nextNodeId}; };
+    cflow_id_t getNextNode() override { return m_nextNodeId; };
 
     bool checkDependencyIsReady() override;
 
@@ -90,18 +90,18 @@ public:
         m_notifyStatus = std::move(status);
     };
 
-    NotifyStatus getNotifyStatus() { return m_notifyStatus; }
+    NotifyStatus getNotifyStatus() override { return m_notifyStatus; }
 
-    void setDataType(DataType&& dataType) { m_dataType = std::move(dataType); }
+    void setDataType(DataType&& dataType) override { m_dataType = std::move(dataType); }
 
-    DataType getDataType() { return m_dataType; }
+    DataType getDataType() override { return m_dataType; }
 
-    void setPriority(DataPriority&& priority)
+    void setPriority(DataPriority&& priority) override
     {
         m_priority = std::move(priority);
     }
 
-    DataPriority getPriority() { return m_priority; }
+    DataPriority getPriority() override { return m_priority; }
 
     void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) override;
 

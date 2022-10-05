@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(cflow_test)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_COMPILER             "/usr/bin/clang++")
 set(CMAKE_BUILD_TYPE "Release")
 set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DCFlow_DEBUG_MODE")
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
