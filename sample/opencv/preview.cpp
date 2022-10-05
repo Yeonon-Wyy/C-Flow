@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:11:06
+ * @LastEditTime: 2022-10-05 18:33:44
  */
 #include <mutex>
 #include <opencv2/opencv.hpp>
@@ -100,6 +100,6 @@ void startPipeline()
 int main()
 {
     std::thread t1(startPipeline);
-    // cflow::utils::thread::setScheduling(t1, SCHED_FIFO, 20);
+    cflow::utils::thread::setScheduling(t1, SCHED_FIFO, 0);
     t1.join();
 }
