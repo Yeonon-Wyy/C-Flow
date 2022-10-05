@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-27 21:35:30
+ * @LastEditTime: 2022-10-05 17:01:40
  */
 #include "../src/core/notifier.hpp"
 #include "../src/core/pipeline/pipedata.hpp"
@@ -217,7 +217,6 @@ void testPipeline() {
       ppl->stop();
 
       CFLOW_LOGD("start stop");
-      isSTop = true;
       CFLOW_LOGD("end stop");
 
       break;
