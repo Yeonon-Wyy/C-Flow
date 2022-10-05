@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:37:36
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-24 16:48:34
+ * @LastEditTime: 2022-10-05 17:12:47
  */
 #pragma once
 #include <memory>
@@ -67,6 +67,8 @@ public:
      * @return {*}
      */
     virtual void stop() = 0;
+
+    ~Dispatcher() {}
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;

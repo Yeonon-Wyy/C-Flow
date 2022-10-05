@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-11 20:28:43
+ * @LastEditTime: 2022-10-05 17:17:51
  */
 #pragma once
 
@@ -24,7 +24,7 @@ namespace cflow::pipeline {
  * dependency.
  */
 template <typename Item>
-class PipeNodeDispatcher : public Dispatcher<Item>
+class PipeNodeDispatcher final : public Dispatcher<Item>
 {
 public:
     using PipeNodeMap =

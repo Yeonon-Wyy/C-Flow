@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:19:51
+ * @LastEditTime: 2022-10-05 17:18:48
  */
 #pragma once
 #include <memory>
@@ -38,7 +38,7 @@ template <typename Item>
 class PipeNodeDispatcher;
 
 template <typename Item>
-class PipeNode : public cflow::DAGNode,
+class PipeNode final : public cflow::DAGNode,
                  public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:

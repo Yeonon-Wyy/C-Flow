@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-12 17:39:04
+ * @LastEditTime: 2022-10-05 17:19:28
  */
 #pragma once
 
@@ -90,7 +90,7 @@ public:
     {
     }
 
-    ~Notifier() { CFLOW_LOGD("notifier {0} destory", m_name); }
+    virtual ~Notifier() { CFLOW_LOGD("notifier {0} destory", m_name); }
 
     static NotifierBuilder builder() { return NotifierBuilder(); }
 

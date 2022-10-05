@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 15:18:18
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-18 21:16:21
+ * @LastEditTime: 2022-10-05 17:11:06
  */
 #include <mutex>
 #include <opencv2/opencv.hpp>
@@ -26,7 +26,6 @@ void startPipeline()
 
     if (curScenario == CVTestScenario::PREVIEW)
     {
-        auto outFile = "/home/weiyanyu/learn/cpp/cflow/sample/bin/test.avi";
         VideoCapture capture(
             0); //读取视摄像头实时画面数据，0默认是笔记本的摄像头；如果是外接摄像头，这里改为1
 

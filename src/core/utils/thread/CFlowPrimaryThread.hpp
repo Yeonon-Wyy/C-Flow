@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-11 20:45:05
+ * @LastEditTime: 2022-10-05 17:08:05
  * @FilePath: /src/core/utils/thread/CFlowPrimaryThread.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -24,7 +24,7 @@ class CFlowPrimaryThread
 public:
     CFlowPrimaryThread() : m_tasks(), m_stop(false), m_totalTaskNum(0)
     {
-        m_thread = std::move(std::thread(&CFlowPrimaryThread::execute, this));
+        m_thread = std::thread(&CFlowPrimaryThread::execute, this);
     }
 
     ~CFlowPrimaryThread();
