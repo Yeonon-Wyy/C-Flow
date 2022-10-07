@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-10 20:52:24
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:20:13
+ * @LastEditTime: 2022-10-07 16:59:22
  */
 #pragma once
 
@@ -16,5 +16,12 @@
 namespace cflow::pipeline {
 using PipelineScenario = uint32_t;
 using PipeNodeId = cflow_id_t;
+
+enum PipeNodeStatus
+{
+    PROCESSING,
+    IDLE,
+    STOP,
+};
 
 } // namespace cflow::pipeline

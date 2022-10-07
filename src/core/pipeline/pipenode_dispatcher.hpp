@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 15:32:04
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:17:51
+ * @LastEditTime: 2022-10-07 19:51:50
  */
 #pragma once
 
@@ -131,12 +131,13 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
     if (data->getCurrentNode() == -1 || m_threadPool.isStoped())
     {
         // just call final notifier
-        if (data->getCurrentNode() == -1)
+        if (data->getCurrentNode() == -1 && data->getStatus() == DataStatus::OK)
         {
             notifyFinal(data, NotifyStatus::OK);
         }
         else
         {
+            CFLOW_LOGD("data process is occur some error? notify error");
             notifyFinal(data, NotifyStatus::ERROR);
         }
         return true;
@@ -257,7 +258,7 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data,
             {
                 // foreach notifiers of someone type
                 auto notifierSp = notifier.lock();
-                if (m_threadPool.isStoped())
+                if (m_threadPool.isStoped() || data->getStatus() == DataStatus::ERROR)
                 {
                     data->setNotifyStatus(NotifyStatus::ERROR);
                 }

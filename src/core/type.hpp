@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-18 21:10:10
+ * @LastEditTime: 2022-10-07 19:36:30
  */
 #pragma once
 #include <memory>
@@ -48,6 +48,12 @@ enum class DataPriority
     DATAPRIORITY_NORMAL,
     DATAPRIORITY_IDEL,
     DATAPRIORITY_END
+};
+
+enum class DataStatus 
+{
+    OK     = 0,
+    ERROR  = 1,
 };
 
 // utils

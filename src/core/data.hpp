@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-07-03 15:01:20
+ * @LastEditTime: 2022-10-07 19:36:25
  */
 
 #pragma once
@@ -105,6 +105,13 @@ public:
     virtual void markCurrentNodeReady() = 0;
 
     /**
+     * @name: markError
+     * @description: mark current data is error
+     * @return {*}
+     */    
+    virtual void markError() = 0;
+
+    /**
      * @name: scenario
      * @Descripttion: get scenario of this data
      * @param {*}
@@ -178,6 +185,13 @@ public:
      * @return {*}
      */
     virtual std::vector<cflow_id_t> getNotifiersByNodeId(cflow_id_t nodeId) = 0;
+
+    /**
+     * @name: getStatus
+     * @description: get data status, OK or ERROR, etc...
+     * @return {*}
+     */    
+    virtual DataStatus getStatus() = 0;
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;

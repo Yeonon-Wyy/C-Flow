@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 16:55:47
+ * @LastEditTime: 2022-10-07 19:54:38
  */
 #pragma once
 
@@ -67,7 +67,7 @@ public:
 public:
     PipeData(PipelineScenario scenario, bool enableDebug = false);
 
-    ~PipeData() {}
+    virtual ~PipeData() {}
 
     bool constructDependency(
         const std::vector<cflow_id_t>& pipeline,
@@ -84,6 +84,8 @@ public:
     bool checkDependencyIsReady() override;
 
     void markCurrentNodeReady() override;
+
+    void markError() override;
 
     void setNotifyStatus(NotifyStatus&& status) override
     {
@@ -122,12 +124,12 @@ public:
         return m_nodeBufferInfoMap[m_currentProcessNodeId].output;
     }
 
+    DataStatus getStatus() override { return m_status; }
+
 private:
     bool checkDependencyValid();
 
     cflow_id_t findNextNode();
-
-    bool notifyResult();
 
     void dumpDataInfo();
 
@@ -148,6 +150,7 @@ private:
     cflow_id_t m_nextNodeId;
     int m_nextNodeIdx;
     bool m_enableDebug;
+    DataStatus m_status;
 };
 
 PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
@@ -160,7 +163,8 @@ PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
       m_currentProcessNodeIdx(-1),
       m_nextNodeId(-1),
       m_nextNodeIdx(-1),
-      m_enableDebug(enableDebug)
+      m_enableDebug(enableDebug),
+      m_status(DataStatus::OK)
 {
 }
 
@@ -339,6 +343,21 @@ void PipeData::markCurrentNodeReady()
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
+}
+
+void PipeData::markError()
+{
+    //release current node buffer, inlcude input and output
+    releaseCurrentNodeBuffer(true);
+    releaseCurrentNodeBuffer(false);
+    //reset data control info
+    m_currentProcessNodeId = -1;
+    m_currentProcessNodeIdx++;
+    m_nextNodeId = -1;
+    m_nextNodeIdx = -1;
+    //mark status is error
+    m_status = DataStatus::ERROR;
+    CFLOW_LOGD("data {0} is error.", ID());
 }
 
 void PipeData::addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId)

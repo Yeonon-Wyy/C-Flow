@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-24 16:17:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:18:48
+ * @LastEditTime: 2022-10-07 19:37:05
  */
 #pragma once
 #include <memory>
@@ -19,14 +19,6 @@
 namespace cflow::pipeline {
 #define PIPENODE_DEFAULT_NAME_PREFIX "pipeNode_"
 constexpr int defaultPipeNodeThreadPoolSize = 8;
-
-enum PipeNodeStatus
-{
-    PROCESSING,
-    IDLE,
-    STOP,
-};
-
 /**
  * @name: class PipeNode
  * @Descripttion: pipeNode as business processing unit, user only need provide a
@@ -195,12 +187,16 @@ bool PipeNode<Item>::process(std::shared_ptr<Item> data)
     if (ret)
     {
         data->markCurrentNodeReady();
-        auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
-        if (pipeNodeDispatcherSp)
-        {
-            pipeNodeDispatcherSp->queueInDispacther(data);
-            pipeNodeDispatcherSp->notifyNotFinal(data, m_id);
-        }
+    }
+    else
+    {
+        data->markError();
+    }
+    auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
+    if (pipeNodeDispatcherSp)
+    {
+        pipeNodeDispatcherSp->queueInDispacther(data);
+        pipeNodeDispatcherSp->notifyNotFinal(data, m_id);
     }
     m_status = PipeNodeStatus::IDLE;
     return ret;
