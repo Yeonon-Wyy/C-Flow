@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-09-11 20:41:56
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-24 21:14:38
+ * @LastEditTime: 2022-10-07 16:30:50
  * @FilePath: /src/core/utils/thread/thread_utils.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -23,7 +23,7 @@ namespace cflow::utils::thread {
  * @param {int} priority  number of priority
  * @return {*}
  */
-static void setScheduling(std::thread &th, int policy, int priority)
+static inline void setScheduling(std::thread &th, int policy, int priority)
 {
     sched_param sch_params;
     sch_params.sched_priority = priority;
@@ -34,6 +34,6 @@ static void setScheduling(std::thread &th, int policy, int priority)
     }
 }
 #else
-static void setScheduling(std::thread &th, int policy, int priority) { return; }
+static inline void setScheduling(std::thread &th, int policy, int priority) { return; }
 #endif
 } // namespace cflow::utils::thread
