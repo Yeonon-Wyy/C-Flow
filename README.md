@@ -120,7 +120,7 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
                 .stopProgress = []() {
                     CFLOW_LOGD("pipeline_node_done_notifier - user define stop");
                 },
-                .type = cflow::NotifierType::task_LISTEN,
+                .type = cflow::NotifierType::TASK_LISTEN,
             },
             {
                 .id = 2,
@@ -180,7 +180,7 @@ ppl->stop();
    
    - configProgress，提供一个node初始化的回调函数，用户可以在这个函数里初始化一些参数之类的。当然如果不需要的话，不提供也行，一切看用户的想法。
 
-4. notifierCreatInfo，后处理函数，例如人脸检测完毕后统计一些信息等后处理操作。支持两种类似，一种是node后处理（task_LISTEN），一种是task执行完所有node之后的后处理（FINAL）。task_LISTEN是在单个node处理完毕后执行一次，FINAL则是在task执行完所有node之后执行一次。
+4. notifierCreatInfo，后处理函数，例如人脸检测完毕后统计一些信息等后处理操作。支持两种类似，一种是node后处理（TASK_LISTEN），一种是task执行完所有node之后的后处理（FINAL）。TASK_LISTEN是在单个node处理完毕后执行一次，FINAL则是在task执行完所有node之后执行一次。
 
 5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
 

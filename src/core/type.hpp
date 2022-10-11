@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-07 19:36:30
+ * @LastEditTime: 2022-10-11 23:01:54
  */
 #pragma once
 #include <memory>
@@ -21,7 +21,7 @@ using cflow_id_t = long;
 enum class NotifierType
 {
     NOTIFIER_TYPE_START,
-    task_LISTEN,
+    TASK_LISTEN,
     FINAL,
     NOTIFIER_TYPE_END
 };
@@ -34,20 +34,20 @@ enum class NotifyStatus
 
 enum class TaskType
 {
-    taskTYPE_START = 0,
-    taskTYPE_RT,
-    taskTYPE_NORMAL,
-    taskTYPE_IDEL,
-    taskTYPE_END
+    TASKTYPE_START = 0,
+    TASKTYPE_RT,
+    TASKTYPE_NORMAL,
+    TASKTYPE_IDEL,
+    TASKTYPE_END
 };
 
 enum class TaskPriority
 {
-    taskPRIORITY_START = 0,
-    taskPRIORITY_URGENT,
-    taskPRIORITY_NORMAL,
-    taskPRIORITY_IDEL,
-    taskPRIORITY_END
+    TASKPRIORITY_START = 0,
+    TASKPRIORITY_URGENT,
+    TASKPRIORITY_NORMAL,
+    TASKPRIORITY_IDEL,
+    TASKPRIORITY_END
 };
 
 enum class TaskStatus 
