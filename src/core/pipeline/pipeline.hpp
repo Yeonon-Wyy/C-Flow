@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:19:11
+ * @LastEditTime: 2022-10-11 22:24:55
  */
 
 #pragma once
@@ -35,7 +35,7 @@ const static int pplDefaultThreadPoolSize = sysconf(_SC_NPROCESSORS_CONF) + 1;
  * @name: class PipeLine
  * @Descripttion: unified entry as a business, manage all resource(include
  * dispatcher, node, notifier, etc..) and their life cycles use only need call
- * "submit" to submit a data, pipelien will auto construct denpendcy with
+ * "submit" to submit a task, pipelien will auto construct denpendcy with
  * scenurio. and run it until stop
  * @param {*}
  * @return {*}
@@ -70,8 +70,8 @@ public:
           m_pipeNodeDispatcher(
               std::make_shared<PipeNodeDispatcher<Item>>(threadPoolSize)),
           m_bufferMgrFactory(std::make_shared<BufferManagerFactory<void>>()),
-          m_processingDataCount(0),
-          m_processingMaxDataCount(maxProcessingSize)
+          m_processingTaskCount(0),
+          m_processingMaxTaskCount(maxProcessingSize)
     {
     }
 
@@ -140,12 +140,12 @@ public:
     void notifyDone(cflow_id_t id);
 
     /**
-     * @name: submit a data to pipeline
+     * @name: submit a task to pipeline
      * @Descripttion:
-     * @param {shared_ptr<Item>} data
+     * @param {shared_ptr<Item>} task
      * @return {*}
      */
-    bool submit(std::shared_ptr<Item> data);
+    bool submit(std::shared_ptr<Item> task);
 
     /**
      * @name: start
@@ -207,9 +207,9 @@ private:
     std::atomic_bool m_isStop = false;
     bool m_pipelineModified = false;
     std::shared_ptr<BufferManagerFactory<void>> m_bufferMgrFactory;
-    std::atomic_uint32_t m_processingDataCount;
-    std::atomic_uint32_t m_processingMaxDataCount;
-    std::condition_variable m_processingDataCV;
+    std::atomic_uint32_t m_processingTaskCount;
+    std::atomic_uint32_t m_processingMaxTaskCount;
+    std::condition_variable m_processingTaskCV;
     std::mutex m_mutex;
 };
 
@@ -243,7 +243,7 @@ bool PipeLine<Item>::checkValid()
 {
     if (m_isStop)
     {
-        CFLOW_LOGD("pipeline already stoped, can't submit any data, please "
+        CFLOW_LOGD("pipeline already stoped, can't submit any task, please "
                    "construct another pipeline obejct!!!!");
         return false;
     }
@@ -455,8 +455,8 @@ bool PipeLine<Item>::constructPipelinesByScenario()
 template <typename Item>
 void PipeLine<Item>::notifyDone(cflow_id_t id)
 {
-    m_processingDataCount--;
-    m_processingDataCV.notify_one();
+    m_processingTaskCount--;
+    m_processingTaskCV.notify_one();
 }
 
 template <typename Item>
@@ -478,21 +478,21 @@ std::vector<cflow_id_t> PipeLine<Item>::getPipelineWithScenario(
 }
 
 template <typename Item>
-bool PipeLine<Item>::submit(std::shared_ptr<Item> data)
+bool PipeLine<Item>::submit(std::shared_ptr<Item> task)
 {
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
-    CFLOW_LOGD("submit a data {0}", data->ID());
-    data->constructDependency(getPipelineWithScenario(data->scenario()),
+    CFLOW_LOGD("submit a task {0}", task->ID());
+    task->constructDependency(getPipelineWithScenario(task->scenario()),
                               m_bufferMgrFactory);
-    m_pipeNodeDispatcher->queueInDispacther(data);
-    if (m_processingDataCount >= m_processingMaxDataCount)
+    m_pipeNodeDispatcher->queueInDispacther(task);
+    if (m_processingTaskCount >= m_processingMaxTaskCount)
     {
-        m_processingDataCV.wait(lk, [&]() {
-            return m_processingDataCount < m_processingMaxDataCount;
+        m_processingTaskCV.wait(lk, [&]() {
+            return m_processingTaskCount < m_processingMaxTaskCount;
         });
     }
-    m_processingDataCount++;
+    m_processingTaskCount++;
     return true;
 }
 

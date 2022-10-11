@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 20:06:27
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-18 21:10:34
+ * @LastEditTime: 2022-10-11 22:27:53
  */
 #pragma once
 
@@ -19,8 +19,8 @@
 namespace cflow {
 /**
  * @name: class Scheduler
- * @Descripttion: Scheduler can schedule item according to priority(data type).
- *                1. dataType is both data's type and priority
+ * @Descripttion: Scheduler can schedule item according to priority(task type).
+ *                1. taskType is both task's type and priority
  *                2. when call schedule, it will foreach queue from low to high
  * according to priority.
  * @param {*}
@@ -69,24 +69,24 @@ private:
     template <typename Q = T>
     typename std::enable_if<std::is_pointer<Q>::value ||
                                 cflow::is_shared_ptr<Q>::value,
-                            DataType>::type
-    extractDataTypeFromItem(T item)
+                            TaskType>::type
+    extractTaskTypeFromItem(T item)
     {
-        return item->getDataType();
+        return item->getTaskType();
     }
 
     template <typename Q = T>
     typename std::enable_if<!std::is_pointer<Q>::value &&
                                 !cflow::is_shared_ptr<Q>::value,
-                            DataType>::type
-    extractDataTypeFromItem(T item)
+                            TaskType>::type
+    extractTaskTypeFromItem(T item)
     {
-        return item.getDataType();
+        return item.getTaskType();
     }
 
 private:
-    std::map<DataType, SchedulerQueue> m_dataTypeQueueMap;
-    std::unordered_map<DataType, size_t> m_dataTypeQueueCapMap;
+    std::map<TaskType, SchedulerQueue> m_taskTypeQueueMap;
+    std::unordered_map<TaskType, size_t> m_taskTypeQueueCapMap;
 };
 
 // ---------------- Scheduler begin----------------
@@ -94,26 +94,26 @@ private:
 template <typename T>
 Scheduler<T>::Scheduler()
 {
-    m_dataTypeQueueMap[DataType::DATATYPE_RT] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_RT] = RT_TASK_CAPCITY;
-    m_dataTypeQueueMap[DataType::DATATYPE_NORMAL] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_NORMAL] = NORMAL_TASK_CAPCITY;
-    m_dataTypeQueueMap[DataType::DATATYPE_IDEL] = SchedulerQueue();
-    m_dataTypeQueueCapMap[DataType::DATATYPE_IDEL] = IDEL_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::taskTYPE_RT] = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::taskTYPE_RT] = RT_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::taskTYPE_NORMAL] = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::taskTYPE_NORMAL] = NORMAL_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::taskTYPE_IDEL] = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::taskTYPE_IDEL] = IDEL_TASK_CAPCITY;
 }
 
 template <typename T>
 void Scheduler<T>::emplace(T item)
 {
-    auto curItemDataType = extractDataTypeFromItem(item);
-    if (curItemDataType <= DataType::DATATYPE_START ||
-        curItemDataType >= DataType::DATATYPE_END)
+    auto curItemTaskType = extractTaskTypeFromItem(item);
+    if (curItemTaskType <= TaskType::taskTYPE_START ||
+        curItemTaskType >= TaskType::taskTYPE_END)
     {
-        CFLOW_LOGE("please check current data's data type (%d)",
-                   curItemDataType);
+        CFLOW_LOGE("please check current task's task type (%d)",
+                   curItemTaskType);
         std::abort();
     }
-    m_dataTypeQueueMap[curItemDataType].push(item);
+    m_taskTypeQueueMap[curItemTaskType].push(item);
 }
 
 template <typename T>
@@ -122,11 +122,11 @@ T Scheduler<T>::schedule()
     T item;
 
     // has priority
-    for (auto& [dataType, dataQueue] : m_dataTypeQueueMap)
+    for (auto& [taskType, taskQueue] : m_taskTypeQueueMap)
     {
-        if (dataQueue.empty()) continue;
-        item = dataQueue.top();
-        dataQueue.pop();
+        if (taskQueue.empty()) continue;
+        item = taskQueue.top();
+        taskQueue.pop();
         break;
     }
     return item;
@@ -136,7 +136,7 @@ template <typename T>
 bool Scheduler<T>::empty()
 {
     size_t curSz = 0;
-    for (auto& [dataType, itemQueue] : m_dataTypeQueueMap)
+    for (auto& [taskType, itemQueue] : m_taskTypeQueueMap)
     {
         curSz += itemQueue.size();
     }
@@ -146,33 +146,33 @@ bool Scheduler<T>::empty()
 template <typename T>
 size_t Scheduler<T>::getQueueCapWithFromItem(T item)
 {
-    auto curItemDataType = extractDataTypeFromItem(item);
+    auto curItemTaskType = extractTaskTypeFromItem(item);
 
-    if (curItemDataType <= DataType::DATATYPE_START ||
-        curItemDataType >= DataType::DATATYPE_END ||
-        m_dataTypeQueueCapMap.count(curItemDataType) == 0)
+    if (curItemTaskType <= TaskType::taskTYPE_START ||
+        curItemTaskType >= TaskType::taskTYPE_END ||
+        m_taskTypeQueueCapMap.count(curItemTaskType) == 0)
     {
-        CFLOW_LOGE("please check current data's data type (%d)",
-                   curItemDataType);
+        CFLOW_LOGE("please check current task's task type (%d)",
+                   curItemTaskType);
         std::abort();
     }
-    return m_dataTypeQueueCapMap[curItemDataType];
+    return m_taskTypeQueueCapMap[curItemTaskType];
 }
 
 template <typename T>
 size_t Scheduler<T>::getQueueSizeWithFromItem(T item)
 {
-    auto curItemDataType = extractDataTypeFromItem(item);
+    auto curItemTaskType = extractTaskTypeFromItem(item);
 
-    if (curItemDataType <= DataType::DATATYPE_START ||
-        curItemDataType >= DataType::DATATYPE_END ||
-        m_dataTypeQueueMap.count(curItemDataType) == 0)
+    if (curItemTaskType <= TaskType::taskTYPE_START ||
+        curItemTaskType >= TaskType::taskTYPE_END ||
+        m_taskTypeQueueMap.count(curItemTaskType) == 0)
     {
-        CFLOW_LOGE("please check current data's data type (%d)",
-                   curItemDataType);
+        CFLOW_LOGE("please check current task's task type (%d)",
+                   curItemTaskType);
         std::abort();
     }
-    return m_dataTypeQueueMap[curItemDataType].size();
+    return m_taskTypeQueueMap[curItemTaskType].size();
 }
 // ---------------- Scheduler end----------------
 

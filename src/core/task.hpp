@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-07 19:36:25
+ * @LastEditTime: 2022-10-11 22:20:11
  */
 
 #pragma once
@@ -16,26 +16,26 @@
 
 namespace cflow {
 /**
- * @name: class Data
- * @Descripttion: it is a data object.
+ * @name: class Task
+ * @Descripttion: it is a task object.
  *                but this class just a pure virtual class. provider some
  * interface, users must implement these interfaces.
  *
  * @param {*}
  * @return {*}
  */
-class Data
+class Task
 {
 public:
-    Data() : m_id(m_idGenerator.generate()) {}
+    Task() : m_id(m_idGenerator.generate()) {}
 
-    virtual ~Data() {}
+    virtual ~Task() {}
 
     cflow_id_t ID() { return m_id; };
 
     /**
      * @name: constructDependency
-     * @Descripttion: construct dependency for current Data
+     * @Descripttion: construct dependency for current Task
      * @param {*}
      * @return {*}
      */
@@ -88,7 +88,7 @@ public:
 
     /**
      * @name: checkDependencyIsReady
-     * @Descripttion: check current data state, if is ready will return true, or
+     * @Descripttion: check current task state, if is ready will return true, or
      * else will return false
      * @param {*}
      * @return {*}
@@ -106,14 +106,14 @@ public:
 
     /**
      * @name: markError
-     * @description: mark current data is error
+     * @description: mark current task is error
      * @return {*}
      */    
     virtual void markError() = 0;
 
     /**
      * @name: scenario
-     * @Descripttion: get scenario of this data
+     * @Descripttion: get scenario of this task
      * @param {*}
      * @return {*}
      */
@@ -136,36 +136,36 @@ public:
     virtual NotifyStatus getNotifyStatus() = 0;
 
     /**
-     * @name: setDataType
-     * @Descripttion: set Data type for Data object
-     * @param {DataType&&} reference enum dataType
+     * @name: setTaskType
+     * @Descripttion: set Task type for Task object
+     * @param {TaskType&&} reference enum taskType
      * @return {*}
      */
-    virtual void setDataType(DataType&& dataType) = 0;
+    virtual void setTaskType(TaskType&& taskType) = 0;
 
     /**
-     * @name: getDataType
-     * @Descripttion: get Data type of Data object
+     * @name: getTaskType
+     * @Descripttion: get Task type of Task object
      * @param
-     * @return {*} reference enum dataType
+     * @return {*} reference enum taskType
      */
-    virtual DataType getDataType() = 0;
+    virtual TaskType getTaskType() = 0;
 
     /**
      * @name: setPriority
-     * @Descripttion: set priority for data
-     * @param {DataPriority&&} priority
+     * @Descripttion: set priority for task
+     * @param {TaskPriority&&} priority
      * @return {*}
      */
-    virtual void setPriority(DataPriority&& priority) = 0;
+    virtual void setPriority(TaskPriority&& priority) = 0;
 
     /**
      * @name: getPriority
-     * @Descripttion: get priority for data
+     * @Descripttion: get priority for task
      * @param {*}
      * @return {*} priority
      */
-    virtual DataPriority getPriority() = 0;
+    virtual TaskPriority getPriority() = 0;
 
     /**
      * @name: addNotifierForNode
@@ -188,15 +188,15 @@ public:
 
     /**
      * @name: getStatus
-     * @description: get data status, OK or ERROR, etc...
+     * @description: get task status, OK or ERROR, etc...
      * @return {*}
      */    
-    virtual DataStatus getStatus() = 0;
+    virtual TaskStatus getStatus() = 0;
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;
     cflow_id_t m_id;
 };
 
-cflow::utils::IDGenerator Data::m_idGenerator;
+cflow::utils::IDGenerator Task::m_idGenerator;
 } // namespace cflow

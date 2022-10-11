@@ -4,11 +4,11 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-07 19:54:38
+ * @LastEditTime: 2022-10-11 22:24:11
  */
 #pragma once
 
-#include "../data.hpp"
+#include "../task.hpp"
 #include "../utils/id_generator.hpp"
 #include "../utils/memory/buffer_manager.hpp"
 #include "../utils/memory/buffer_manager_factory.hpp"
@@ -20,15 +20,15 @@ using namespace cflow::utils::memory;
 
 namespace cflow::pipeline {
 /**
- * @name: class PipeData
+ * @name: class PipeTask
  * @Descripttion: it is a sample code for user. just default implementation for
- * Data class. users can use it directly, and if the user wants to do some
+ * Task class. users can use it directly, and if the user wants to do some
  * customization, can inherit it and override some interfaces. WARNING: user
  * can't change this class.
  * @param {*}
  * @return {*}
  */
-class PipeData : public Data
+class PipeTask : public Task
 {
 public:
     enum DependencyStatus
@@ -54,20 +54,20 @@ public:
         std::pair<cflow_id_t, DependencyNodeInfoSP> successors;
     };
 
-    using PipeDataBufferInfoSP =
+    using PipeTaskBufferInfoSP =
         std::shared_ptr<BufferManager<void>::BufferInfo>;
     struct NodeBufferInfo
     {
         cflow_id_t nodeId;
-        std::vector<PipeDataBufferInfoSP> input;
-        std::vector<PipeDataBufferInfoSP> output;
+        std::vector<PipeTaskBufferInfoSP> input;
+        std::vector<PipeTaskBufferInfoSP> output;
     };
     using NodeBufferInfoSP = std::shared_ptr<NodeBufferInfo>;
 
 public:
-    PipeData(PipelineScenario scenario, bool enableDebug = false);
+    PipeTask(PipelineScenario scenario, bool enableDebug = false);
 
-    virtual ~PipeData() {}
+    virtual ~PipeTask() {}
 
     bool constructDependency(
         const std::vector<cflow_id_t>& pipeline,
@@ -94,16 +94,16 @@ public:
 
     NotifyStatus getNotifyStatus() override { return m_notifyStatus; }
 
-    void setDataType(DataType&& dataType) override { m_dataType = std::move(dataType); }
+    void setTaskType(TaskType&& taskType) override { m_taskType = std::move(taskType); }
 
-    DataType getDataType() override { return m_dataType; }
+    TaskType getTaskType() override { return m_taskType; }
 
-    void setPriority(DataPriority&& priority) override
+    void setPriority(TaskPriority&& priority) override
     {
         m_priority = std::move(priority);
     }
 
-    DataPriority getPriority() override { return m_priority; }
+    TaskPriority getPriority() override { return m_priority; }
 
     void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) override;
 
@@ -115,23 +115,23 @@ public:
 
     bool setCurrentNodeIO();
 
-    std::vector<PipeDataBufferInfoSP> input() override
+    std::vector<PipeTaskBufferInfoSP> input() override
     {
         return m_nodeBufferInfoMap[m_currentProcessNodeId].input;
     }
-    std::vector<PipeDataBufferInfoSP> output() override
+    std::vector<PipeTaskBufferInfoSP> output() override
     {
         return m_nodeBufferInfoMap[m_currentProcessNodeId].output;
     }
 
-    DataStatus getStatus() override { return m_status; }
+    TaskStatus getStatus() override { return m_status; }
 
 private:
     bool checkDependencyValid();
 
     cflow_id_t findNextNode();
 
-    void dumpDataInfo();
+    void dumpTaskInfo();
 
     void releaseCurrentNodeBuffer(bool isInput);
 
@@ -143,32 +143,32 @@ private:
     std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> m_nodeNotifiers;
     PipelineScenario m_scenario;
     NotifyStatus m_notifyStatus;
-    DataType m_dataType;
-    DataPriority m_priority;
+    TaskType m_taskType;
+    TaskPriority m_priority;
     cflow_id_t m_currentProcessNodeId;
     int m_currentProcessNodeIdx;
     cflow_id_t m_nextNodeId;
     int m_nextNodeIdx;
     bool m_enableDebug;
-    DataStatus m_status;
+    TaskStatus m_status;
 };
 
-PipeData::PipeData(PipelineScenario scenario, bool enableDebug)
-    : Data(),
+PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
+    : Task(),
       m_scenario(scenario),
       m_notifyStatus(NotifyStatus::OK),
-      m_dataType(DataType::DATATYPE_NORMAL),
-      m_priority(DataPriority::DATAPRIORITY_NORMAL),
+      m_taskType(TaskType::taskTYPE_NORMAL),
+      m_priority(TaskPriority::taskPRIORITY_NORMAL),
       m_currentProcessNodeId(-1),
       m_currentProcessNodeIdx(-1),
       m_nextNodeId(-1),
       m_nextNodeIdx(-1),
       m_enableDebug(enableDebug),
-      m_status(DataStatus::OK)
+      m_status(TaskStatus::OK)
 {
 }
 
-bool PipeData::constructDependency(
+bool PipeTask::constructDependency(
     const std::vector<cflow_id_t>& pipeline,
     std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
 {
@@ -250,7 +250,7 @@ bool PipeData::constructDependency(
 
     if (m_dependencies.empty())
     {
-        CFLOW_LOGE("dependency size of pipe data can't be less than 1");
+        CFLOW_LOGE("dependency size of pipe task can't be less than 1");
         return false;
     }
 
@@ -264,18 +264,18 @@ bool PipeData::constructDependency(
     // construct input and output
     constructIO();
 
-    dumpDataInfo();
+    dumpTaskInfo();
 
     return true;
 }
 
-bool PipeData::constructIO()
+bool PipeTask::constructIO()
 {
     // noting need to do by default
     return true;
 }
 
-cflow_id_t PipeData::findNextNode()
+cflow_id_t PipeTask::findNextNode()
 {
     if (!checkDependencyValid()) return -1;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
@@ -289,7 +289,7 @@ cflow_id_t PipeData::findNextNode()
     return -1;
 }
 
-bool PipeData::checkDependencyIsReady()
+bool PipeTask::checkDependencyIsReady()
 {
     if (!checkDependencyValid()) return false;
     Dependency currentDependency = m_dependencies[m_currentProcessNodeIdx];
@@ -306,14 +306,14 @@ bool PipeData::checkDependencyIsReady()
     return false;
 }
 
-void PipeData::markCurrentNodeReady()
+void PipeTask::markCurrentNodeReady()
 {
     cflow_id_t nextNodeId = findNextNode();
     m_nextNodeIdx = m_currentProcessNodeIdx + 1;
     // last node
     if (nextNodeId == -1 || m_nextNodeIdx >= (int)m_dependencies.size())
     {
-        CFLOW_LOGD("data {0} node [{1}] have done.", ID(),
+        CFLOW_LOGD("task {0} node [{1}] have done.", ID(),
                    m_currentProcessNodeId);
         releaseCurrentNodeBuffer(true);
         releaseCurrentNodeBuffer(false);
@@ -321,7 +321,7 @@ void PipeData::markCurrentNodeReady()
         m_currentProcessNodeIdx++;
         m_nextNodeId = -1;
         m_nextNodeIdx = -1;
-        CFLOW_LOGD("data {0} all node already process done.", ID());
+        CFLOW_LOGD("task {0} all node already process done.", ID());
         return;
     }
 
@@ -338,34 +338,34 @@ void PipeData::markCurrentNodeReady()
     // mark next node denpendency's pre is done
     m_dependencies[m_nextNodeIdx].precursors.second->status =
         DependencyStatus::READY;
-    CFLOW_LOGD("data {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
+    CFLOW_LOGD("task {0} node [{1}] have done. ", ID(), m_currentProcessNodeId);
     releaseCurrentNodeBuffer(true);
     m_currentProcessNodeId = nextNodeId;
     m_currentProcessNodeIdx++;
     m_nextNodeId = findNextNode();
 }
 
-void PipeData::markError()
+void PipeTask::markError()
 {
     //release current node buffer, inlcude input and output
     releaseCurrentNodeBuffer(true);
     releaseCurrentNodeBuffer(false);
-    //reset data control info
+    //reset task control info
     m_currentProcessNodeId = -1;
     m_currentProcessNodeIdx++;
     m_nextNodeId = -1;
     m_nextNodeIdx = -1;
     //mark status is error
-    m_status = DataStatus::ERROR;
-    CFLOW_LOGD("data {0} is error.", ID());
+    m_status = TaskStatus::ERROR;
+    CFLOW_LOGD("task {0} is error.", ID());
 }
 
-void PipeData::addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId)
+void PipeTask::addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId)
 {
     m_nodeNotifiers[nodeId].push_back(notifierId);
 }
 
-std::vector<cflow_id_t> PipeData::getNotifiersByNodeId(cflow_id_t nodeId)
+std::vector<cflow_id_t> PipeTask::getNotifiersByNodeId(cflow_id_t nodeId)
 {
     if (m_nodeNotifiers.count(nodeId) > 0)
     {
@@ -375,7 +375,7 @@ std::vector<cflow_id_t> PipeData::getNotifiersByNodeId(cflow_id_t nodeId)
 }
 
 // private
-bool PipeData::checkDependencyValid()
+bool PipeTask::checkDependencyValid()
 {
     if (m_currentProcessNodeIdx < 0 ||
         m_currentProcessNodeIdx >= (int)m_dependencies.size())
@@ -395,12 +395,12 @@ bool PipeData::checkDependencyValid()
     return true;
 }
 
-void PipeData::addInputForNode(cflow_id_t nodeId,
+void PipeTask::addInputForNode(cflow_id_t nodeId,
                                const BufferSpecification& bfs)
 {
     if (m_dependenciesNodeInfo.count(nodeId) == 0)
     {
-        CFLOW_LOGE("can't find node{0} in data path", nodeId);
+        CFLOW_LOGE("can't find node{0} in task path", nodeId);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
     m_buffeManagerFactory->createBufferManager(bfs);
@@ -408,12 +408,12 @@ void PipeData::addInputForNode(cflow_id_t nodeId,
     CFLOW_LOGD("node{0} add input buffer{1} success!", nodeId, bfs.name);
 }
 
-void PipeData::addOutputForNode(cflow_id_t nodeId,
+void PipeTask::addOutputForNode(cflow_id_t nodeId,
                                 const BufferSpecification& bfs)
 {
     if (m_dependenciesNodeInfo.count(nodeId) == 0)
     {
-        CFLOW_LOGE("can't find node{0} in data path", nodeId, bfs.name);
+        CFLOW_LOGE("can't find node{0} in task path", nodeId, bfs.name);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
     m_buffeManagerFactory->createBufferManager(bfs);
@@ -421,7 +421,7 @@ void PipeData::addOutputForNode(cflow_id_t nodeId,
     CFLOW_LOGD("node{0} add output buffer{1} success!", nodeId, bfs.name);
 }
 
-bool PipeData::setCurrentNodeIO()
+bool PipeTask::setCurrentNodeIO()
 {
     bool ret = true;
 
@@ -439,14 +439,14 @@ bool PipeData::setCurrentNodeIO()
         }
         auto bufInfo = bufMgr->popBuffer();
         currentNodeBufferInfo->second.output.push_back(bufInfo);
-        CFLOW_LOGD("set data {0} output buffer {1} for current node {2}", ID(),
+        CFLOW_LOGD("set task {0} output buffer {1} for current node {2}", ID(),
                    bufInfo->name, m_currentProcessNodeId);
         // not last
         if (m_nextNodeId > 0)
         {
             // input of current node is same as output of next node.
             m_nodeBufferInfoMap[m_nextNodeId].input.push_back(bufInfo);
-            CFLOW_LOGD("set data {0} input buffer {1} for next node {2}", ID(),
+            CFLOW_LOGD("set task {0} input buffer {1} for next node {2}", ID(),
                        bufInfo->name, m_nextNodeId);
         }
     }
@@ -454,7 +454,7 @@ bool PipeData::setCurrentNodeIO()
     return ret;
 }
 
-void PipeData::releaseCurrentNodeBuffer(bool isInput)
+void PipeTask::releaseCurrentNodeBuffer(bool isInput)
 {
     auto currentDependency = m_dependenciesNodeInfo[m_currentProcessNodeId];
     auto currentNodeBufferInfo = m_nodeBufferInfoMap[m_currentProcessNodeId];
@@ -474,7 +474,7 @@ void PipeData::releaseCurrentNodeBuffer(bool isInput)
 
             auto it = std::find_if(currentNodeBufferInfo.input.begin(),
                                    currentNodeBufferInfo.input.end(),
-                                   [&inputBFS](PipeDataBufferInfoSP& bufInfo) {
+                                   [&inputBFS](PipeTaskBufferInfoSP& bufInfo) {
                                        return bufInfo->name == inputBFS.name;
                                    });
             CFLOW_LOGD("[weiyanyu] currentNodeBufferInfo input size() = {0}",
@@ -505,7 +505,7 @@ void PipeData::releaseCurrentNodeBuffer(bool isInput)
 
             auto it = std::find_if(currentNodeBufferInfo.output.begin(),
                                    currentNodeBufferInfo.output.end(),
-                                   [&outputBFS](PipeDataBufferInfoSP& bufInfo) {
+                                   [&outputBFS](PipeTaskBufferInfoSP& bufInfo) {
                                        return bufInfo->name == outputBFS.name;
                                    });
             if (it == currentNodeBufferInfo.output.end())
@@ -521,7 +521,7 @@ void PipeData::releaseCurrentNodeBuffer(bool isInput)
     }
 }
 
-void PipeData::dumpDataInfo()
+void PipeTask::dumpTaskInfo()
 {
     // dump
     std::string str = "";

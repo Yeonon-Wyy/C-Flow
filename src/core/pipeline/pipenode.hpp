@@ -22,7 +22,7 @@ constexpr int defaultPipeNodeThreadPoolSize = 8;
 /**
  * @name: class PipeNode
  * @Descripttion: pipeNode as business processing unit, user only need provide a
- * processCallback, our framework will dispatch some data and call it.
+ * processCallback, our framework will dispatch some task and call it.
  * @param {*}
  * @return {*}
  */
@@ -178,25 +178,25 @@ private:
  * Implementation of class PipeNode
  */
 template <typename Item>
-bool PipeNode<Item>::process(std::shared_ptr<Item> data)
+bool PipeNode<Item>::process(std::shared_ptr<Item> task)
 {
     bool ret = true;
     m_status = PipeNodeStatus::PROCESSING;
-    data->setCurrentNodeIO();
-    ret = m_processCallback(data);
+    task->setCurrentNodeIO();
+    ret = m_processCallback(task);
     if (ret)
     {
-        data->markCurrentNodeReady();
+        task->markCurrentNodeReady();
     }
     else
     {
-        data->markError();
+        task->markError();
     }
     auto pipeNodeDispatcherSp = m_pipeNodeDispatcher.lock();
     if (pipeNodeDispatcherSp)
     {
-        pipeNodeDispatcherSp->queueInDispacther(data);
-        pipeNodeDispatcherSp->notifyNotFinal(data, m_id);
+        pipeNodeDispatcherSp->queueInDispacther(task);
+        pipeNodeDispatcherSp->notifyNotFinal(task, m_id);
     }
     m_status = PipeNodeStatus::IDLE;
     return ret;

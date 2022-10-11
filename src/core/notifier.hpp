@@ -31,8 +31,8 @@ constexpr cflow_id_t initExpectItemId = 1;
  * @Descripttion: Notifier is a common class. user can inheriting this class for
  * user requirement. Notifier don't lock any function, so if user need lock,
  * user should lock self. Note: if notifier type is NotifierType::FINAL, it will
- * start a thread for loop. And if notier type is DATA_LISTEN or is other
- * "data-feedback-like" will not start a thread, because it's no need for
+ * start a thread for loop. And if notier type is task_LISTEN or is other
+ * "task-feedback-like" will not start a thread, because it's no need for
  * thread, so you shouln only put some light logic in callback.
  */
 using namespace cflow::utils::thread;
@@ -239,7 +239,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
 template <typename Item>
 void Notifier<Item>::notify(std::shared_ptr<Item> item)
 {
-    if (m_type == NotifierType::DATA_LISTEN)
+    if (m_type == NotifierType::task_LISTEN)
     {
         // just call directly, please ensure the process callback don't need a
         // lot of time, or else will effect performance

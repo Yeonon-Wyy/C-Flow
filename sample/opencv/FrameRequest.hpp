@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-28 20:27:52
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-03 19:33:55
+ * @LastEditTime: 2022-10-11 22:23:49
  */
 #pragma once
 
@@ -12,12 +12,12 @@
 #include <opencv4/opencv2/opencv.hpp>
 #include <vector>
 
-#include "../../src/core/pipeline/pipedata.hpp"
+#include "../../src/core/pipeline/pipe_task.hpp"
 
 using namespace cv;
 using namespace cflow::pipeline;
 
-class FrameRequest : public PipeData
+class FrameRequest : public PipeTask
 {
 public:
     FrameRequest(PipelineScenario scenario, Mat mat);
@@ -39,7 +39,7 @@ private:
 };
 
 FrameRequest::FrameRequest(PipelineScenario scenario, Mat mat)
-    : PipeData(scenario, true),
+    : PipeTask(scenario, true),
       m_frame(std::make_shared<Mat>(mat))
 {
 }

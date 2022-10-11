@@ -58,8 +58,8 @@ flowCtl.start();
 #### 2.2 pipeline
 
 ```c++
-//用户自定义类型，需要继承框架的PipeData类
-class FrameRequest : public PipeData {
+//用户自定义类型，需要继承框架的PipeTask类
+class FrameRequest : public PipeTask {
 public:
 	FrameRequest(PipelineScenario scenario, Mat mat);
 
@@ -120,7 +120,7 @@ const static PipeLine<FrameRequest>::ConfigureTable configTable =
                 .stopProgress = []() {
                     CFLOW_LOGD("pipeline_node_done_notifier - user define stop");
                 },
-                .type = cflow::NotifierType::DATA_LISTEN,
+                .type = cflow::NotifierType::task_LISTEN,
             },
             {
                 .id = 2,
@@ -147,11 +147,11 @@ auto ppl = PipeLine<PipelineRequest>::generatePipeLineByConfigureTable(table);
 //启动pipeline
 ppl->start();
 
-//构造一个request，这里FrameRequest也是用户自定义的，但必须继承cflow::pipeline::Data
-//VYF提供了一个cflow::pipeline::Data的默认实现cflow::pipeline::PipeData，实现了构建依赖等必须的接口，用户可选择继承cflow::pipeline::Data之后加上自己的逻辑即可，也可以直接继承cflow::pipeline::Data，但必须实现cflow::pipeline::Data的接口
+//构造一个request，这里FrameRequest也是用户自定义的，但必须继承cflow::pipeline::Task
+//VYF提供了一个cflow::pipeline::Task的默认实现cflow::pipeline::PipeTask，实现了构建依赖等必须的接口，用户可选择继承cflow::pipeline::Task之后加上自己的逻辑即可，也可以直接继承cflow::pipeline::Task，但必须实现cflow::pipeline::Task的接口
 std::shared_ptr<FrameRequest> request = std::make_shared<FrameRequest>(curScenario, frame);
 
-//PipeData还提供了addNotifierForNode接口可为当前data path中的某个node指定notifier
+//PipeTask还提供了addNotifierForNode接口可为当前task path中的某个node指定notifier
 //参数为nodeId和notifierID
 req->addNotifierForNode(1, 1);
 
@@ -180,7 +180,7 @@ ppl->stop();
    
    - configProgress，提供一个node初始化的回调函数，用户可以在这个函数里初始化一些参数之类的。当然如果不需要的话，不提供也行，一切看用户的想法。
 
-4. notifierCreatInfo，后处理函数，例如人脸检测完毕后统计一些信息等后处理操作。支持两种类似，一种是node后处理（DATA_LISTEN），一种是data执行完所有node之后的后处理（FINAL）。DATA_LISTEN是在单个node处理完毕后执行一次，FINAL则是在data执行完所有node之后执行一次。
+4. notifierCreatInfo，后处理函数，例如人脸检测完毕后统计一些信息等后处理操作。支持两种类似，一种是node后处理（task_LISTEN），一种是task执行完所有node之后的后处理（FINAL）。task_LISTEN是在单个node处理完毕后执行一次，FINAL则是在task执行完所有node之后执行一次。
 
 5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
 

@@ -4,10 +4,10 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:01:40
+ * @LastEditTime: 2022-10-11 22:23:55
  */
 #include "../src/core/notifier.hpp"
-#include "../src/core/pipeline/pipedata.hpp"
+#include "../src/core/pipeline/pipe_task.hpp"
 #include "../src/core/pipeline/pipeline.hpp"
 #include "../src/core/pipeline/pipenode_dispatcher.hpp"
 #include "../src/core/utils/log/trace_log.hpp"
@@ -38,11 +38,11 @@ void testDispatch() {
 
 using namespace cflow::utils::memory;
 
-class MypipeData : public cflow::pipeline::PipeData {
+class MypipeTask : public cflow::pipeline::PipeTask {
 
 public:
-  MypipeData(PipelineScenario scenario, int d)
-      : cflow::pipeline::PipeData(scenario, true), data(d) {}
+  MypipeTask(PipelineScenario scenario, int d)
+      : cflow::pipeline::PipeTask(scenario, true), task(d) {}
 
   bool constructIO() override {
     if (scenario() == MyScenario::Scenario2) {
@@ -70,14 +70,14 @@ public:
     return true;
   }
 
-  int outputD() { return data; }
+  int outputD() { return task; }
 
 private:
-  int data;
+  int task;
 };
 
 void testPipeline() {
-  using PipelineRequest = MypipeData;
+  using PipelineRequest = MypipeTask;
 
   PipeLine<PipelineRequest>::ConfigureTable table =
       {.threadPoolSize = 8,
@@ -91,7 +91,12 @@ void testPipeline() {
                  [](std::shared_ptr<PipelineRequest> request) -> bool {
                TRACE_FUNC_ID_START("P1NodeProcess", request->ID());
                CFLOW_LOGD("request {0} process P1 node", request->ID());
-               if (request->getDataType() == cflow::DataType::DATATYPE_RT)
+               if (request->ID() % 2 == 0)
+               {
+                 CFLOW_LOGD("return error");
+                 return false;
+               }
+               if (request->getTaskType() == cflow::TaskType::taskTYPE_RT)
                  std::this_thread::sleep_until(
                      cflow::utils::TimeUtil::awake_time(1));
                else
@@ -134,7 +139,7 @@ void testPipeline() {
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
                CFLOW_LOGD("request {0} process MDP node", request->ID());
-               if (request->getDataType() == cflow::DataType::DATATYPE_RT)
+               if (request->getTaskType() == cflow::TaskType::taskTYPE_RT)
                  std::this_thread::sleep_until(
                      cflow::utils::TimeUtil::awake_time(1));
                else
@@ -185,7 +190,7 @@ void testPipeline() {
                       CFLOW_LOGD(
                           "pipeline_node_done_notifier - user define stop");
                     },
-                .type = cflow::NotifierType::DATA_LISTEN,
+                .type = cflow::NotifierType::task_LISTEN,
             },
             {
                 .id = 2,
@@ -226,7 +231,7 @@ void testPipeline() {
         auto req =
             std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
         // if (req->ID() % 2 == 0) {
-        req->setDataType(cflow::DataType::DATATYPE_RT);
+        req->setTaskType(cflow::TaskType::taskTYPE_RT);
         // }
         req->addNotifierForNode(P1NODE, 1);
         req->addNotifierForNode(P3NODE, 1);
@@ -253,7 +258,7 @@ void testPipeline() {
   //             auto req =
   //             std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
   //             // if (req->ID() % 2 == 0) {
-  //                 req->setDataType(cflow::DataType::DATATYPE_RT);
+  //                 req->setTaskType(cflow::TaskType::taskTYPE_RT);
   //             // }
   //             req->addNotifierForNode(P1NODE, 1);
   //             req->addNotifierForNode(P3NODE, 1);

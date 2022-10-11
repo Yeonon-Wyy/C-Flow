@@ -21,7 +21,7 @@ using cflow_id_t = long;
 enum class NotifierType
 {
     NOTIFIER_TYPE_START,
-    DATA_LISTEN,
+    task_LISTEN,
     FINAL,
     NOTIFIER_TYPE_END
 };
@@ -32,25 +32,25 @@ enum class NotifyStatus
     ERROR
 };
 
-enum class DataType
+enum class TaskType
 {
-    DATATYPE_START = 0,
-    DATATYPE_RT,
-    DATATYPE_NORMAL,
-    DATATYPE_IDEL,
-    DATATYPE_END
+    taskTYPE_START = 0,
+    taskTYPE_RT,
+    taskTYPE_NORMAL,
+    taskTYPE_IDEL,
+    taskTYPE_END
 };
 
-enum class DataPriority
+enum class TaskPriority
 {
-    DATAPRIORITY_START = 0,
-    DATAPRIORITY_URGENT,
-    DATAPRIORITY_NORMAL,
-    DATAPRIORITY_IDEL,
-    DATAPRIORITY_END
+    taskPRIORITY_START = 0,
+    taskPRIORITY_URGENT,
+    taskPRIORITY_NORMAL,
+    taskPRIORITY_IDEL,
+    taskPRIORITY_END
 };
 
-enum class DataStatus 
+enum class TaskStatus 
 {
     OK     = 0,
     ERROR  = 1,

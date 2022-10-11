@@ -20,7 +20,7 @@
 namespace cflow::pipeline {
 /**
  * @name: class PipeNodeDispatcher
- * @Descripttion: a dispatcher, will auto dispatch data in pipeline by data
+ * @Descripttion: a dispatcher, will auto dispatch task in pipeline by task
  * dependency.
  */
 template <typename Item>
@@ -39,28 +39,28 @@ public:
 
     /**
      * @name: dispatch
-     * @Descripttion: dispatch data
-     * @param {shared_ptr<Item>} data
+     * @Descripttion: dispatch task
+     * @param {shared_ptr<Item>} task
      * @return {*}
      */
-    bool dispatch(std::shared_ptr<Item> data) override;
+    bool dispatch(std::shared_ptr<Item> task) override;
 
     /**
      * @name: queueInDispacther
-     * @Descripttion: queue a data to dispatcher
-     * @param {shared_ptr<Item>} data
+     * @Descripttion: queue a task to dispatcher
+     * @param {shared_ptr<Item>} task
      * @return {*}
      */
-    void queueInDispacther(std::shared_ptr<Item> data) override;
+    void queueInDispacther(std::shared_ptr<Item> task) override;
 
     /**
      * @name: threadLoop
      * @Descripttion: thread loop will loop run process function until receive
      * stop flag
-     * @param {shared_ptr<Item>} data
+     * @param {shared_ptr<Item>} task
      * @return {*}
      */
-    bool threadLoop(std::shared_ptr<Item> data) override;
+    bool threadLoop(std::shared_ptr<Item> task) override;
 
     /**
      * @name: addPipeNode
@@ -123,29 +123,29 @@ private:
 };
 
 template <typename Item>
-bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
+bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> task)
 {
-    CFLOW_LOGD("dispatch data id({0}) nextNodeId {1}", data->ID(),
-               data->getCurrentNode());
+    CFLOW_LOGD("dispatch task id({0}) nextNodeId {1}", task->ID(),
+               task->getCurrentNode());
     // final or pipeline is stoped, will call notifier
-    if (data->getCurrentNode() == -1 || m_threadPool.isStoped())
+    if (task->getCurrentNode() == -1 || m_threadPool.isStoped())
     {
         // just call final notifier
-        if (data->getCurrentNode() == -1 && data->getStatus() == DataStatus::OK)
+        if (task->getCurrentNode() == -1 && task->getStatus() == TaskStatus::OK)
         {
-            notifyFinal(data, NotifyStatus::OK);
+            notifyFinal(task, NotifyStatus::OK);
         }
         else
         {
-            CFLOW_LOGD("data process is occur some error? notify error");
-            notifyFinal(data, NotifyStatus::ERROR);
+            CFLOW_LOGD("task process is occur some error? notify error");
+            notifyFinal(task, NotifyStatus::ERROR);
         }
         return true;
     }
 
-    if (data->checkDependencyIsReady())
+    if (task->checkDependencyIsReady())
     {
-        cflow_id_t currentProcessNodeId = data->getCurrentNode();
+        cflow_id_t currentProcessNodeId = task->getCurrentNode();
         if (currentProcessNodeId < 0)
         {
             // finish
@@ -162,30 +162,30 @@ bool PipeNodeDispatcher<Item>::dispatch(std::shared_ptr<Item> data)
         if (currentNodeSp && !m_threadPool.isStoped() &&
             !currentNodeSp->isStop())
         {
-            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, data);
-            // currentNodeSp->submit(data);
+            m_threadPool.emplace(&PipeNode<Item>::process, currentNodeSp, task);
+            // currentNodeSp->submit(task);
         }
         else
         {
             // if node already stop or destory, should notify error
-            notifyFinal(data, NotifyStatus::ERROR);
+            notifyFinal(task, NotifyStatus::ERROR);
         }
     }
     return true;
 }
 template <typename Item>
-void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> data)
+void PipeNodeDispatcher<Item>::queueInDispacther(std::shared_ptr<Item> task)
 {
-    ThreadLoop<std::shared_ptr<Item>, Scheduler>::queueItem(data);
-    CFLOW_LOGD("queue data id({0})", data->ID());
+    ThreadLoop<std::shared_ptr<Item>, Scheduler>::queueItem(task);
+    CFLOW_LOGD("queue task id({0})", task->ID());
     return;
 }
 
 template <typename Item>
-bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> data)
+bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> task)
 {
     bool ret = true;
-    ret = dispatch(data);
+    ret = dispatch(task);
     return ret;
 }
 
@@ -224,7 +224,7 @@ void PipeNodeDispatcher<Item>::stop()
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data,
+void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> task,
                                            NotifyStatus status)
 {
     if (m_notifierMaps.count(NotifierType::FINAL))
@@ -233,21 +233,21 @@ void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> data,
         for (auto notifier : notfiers)
         {
             auto notifierSp = notifier.lock();
-            data->setNotifyStatus(std::move(status));
+            task->setNotifyStatus(std::move(status));
             if (notifierSp)
             {
-                notifierSp->notify(data);
+                notifierSp->notify(task);
             }
         }
     }
 }
 
 template <typename Item>
-void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data,
+void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> task,
                                               cflow_id_t callerNodeId)
 {
     std::vector<cflow_id_t> notifierIdsForCurrentItem =
-        data->getNotifiersByNodeId(callerNodeId);
+        task->getNotifiersByNodeId(callerNodeId);
     for (auto [notifierType, notifiers] : m_notifierMaps)
     {
         // foreach all notifiers
@@ -258,20 +258,20 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> data,
             {
                 // foreach notifiers of someone type
                 auto notifierSp = notifier.lock();
-                if (m_threadPool.isStoped() || data->getStatus() == DataStatus::ERROR)
+                if (m_threadPool.isStoped() || task->getStatus() == TaskStatus::ERROR)
                 {
-                    data->setNotifyStatus(NotifyStatus::ERROR);
+                    task->setNotifyStatus(NotifyStatus::ERROR);
                 }
                 if (notifierSp)
                 {
                     cflow_id_t notifierId = notifierSp->ID();
-                    // find current data and node notifier
+                    // find current task and node notifier
                     auto it =
                         std::find(notifierIdsForCurrentItem.begin(),
                                   notifierIdsForCurrentItem.end(), notifierId);
                     if (it != notifierIdsForCurrentItem.end())
                     {
-                        notifierSp->notify(data);
+                        notifierSp->notify(task);
                     }
                 }
             }
