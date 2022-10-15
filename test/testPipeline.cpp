@@ -96,7 +96,7 @@ void testPipeline() {
                  CFLOW_LOGD("return error");
                  return false;
                }
-               if (request->getTaskType() == cflow::TaskType::TASKTYPE_RT)
+               if (request->getTaskType() == cflow::TaskType::RT)
                  std::this_thread::sleep_until(
                      cflow::utils::TimeUtil::awake_time(1));
                else
@@ -139,7 +139,7 @@ void testPipeline() {
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
                CFLOW_LOGD("request {0} process MDP node", request->ID());
-               if (request->getTaskType() == cflow::TaskType::TASKTYPE_RT)
+               if (request->getTaskType() == cflow::TaskType::RT)
                  std::this_thread::sleep_until(
                      cflow::utils::TimeUtil::awake_time(1));
                else
@@ -231,7 +231,7 @@ void testPipeline() {
         auto req =
             std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
         // if (req->ID() % 2 == 0) {
-        req->setTaskType(cflow::TaskType::TASKTYPE_RT);
+        req->setTaskType(cflow::TaskType::RT);
         // }
         req->addNotifierForNode(P1NODE, 1);
         req->addNotifierForNode(P3NODE, 1);
@@ -258,7 +258,7 @@ void testPipeline() {
   //             auto req =
   //             std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
   //             // if (req->ID() % 2 == 0) {
-  //                 req->setTaskType(cflow::TaskType::TASKTYPE_RT);
+  //                 req->setTaskType(cflow::TaskType::RT);
   //             // }
   //             req->addNotifierForNode(P1NODE, 1);
   //             req->addNotifierForNode(P3NODE, 1);

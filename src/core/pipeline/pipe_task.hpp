@@ -160,7 +160,7 @@ PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
     : Task(),
       m_scenario(scenario),
       m_notifyStatus(NotifyStatus::OK),
-      m_taskType(TaskType::TASKTYPE_NORMAL),
+      m_taskType(TaskType::NORMAL),
       m_priority(TaskPriority::TASKPRIORITY_NORMAL),
       m_currentProcessNodeId(-1),
       m_currentProcessNodeIdx(-1),

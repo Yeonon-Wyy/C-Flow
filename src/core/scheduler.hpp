@@ -94,20 +94,20 @@ private:
 template <typename T>
 Scheduler<T>::Scheduler()
 {
-    m_taskTypeQueueMap[TaskType::TASKTYPE_RT]        = SchedulerQueue();
-    m_taskTypeQueueCapMap[TaskType::TASKTYPE_RT]     = RT_TASK_CAPCITY;
-    m_taskTypeQueueMap[TaskType::TASKTYPE_NORMAL]    = SchedulerQueue();
-    m_taskTypeQueueCapMap[TaskType::TASKTYPE_NORMAL] = NORMAL_TASK_CAPCITY;
-    m_taskTypeQueueMap[TaskType::TASKTYPE_IDEL]      = SchedulerQueue();
-    m_taskTypeQueueCapMap[TaskType::TASKTYPE_IDEL]   = IDEL_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::RT]        = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::RT]     = RT_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::NORMAL]    = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::NORMAL] = NORMAL_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::IDEL]      = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::IDEL]   = IDEL_TASK_CAPCITY;
 }
 
 template <typename T>
 void Scheduler<T>::emplace(T item)
 {
     auto curItemTaskType = extractTaskTypeFromItem(item);
-    if (curItemTaskType <= TaskType::TASKTYPE_START ||
-        curItemTaskType >= TaskType::TASKTYPE_END)
+    if (curItemTaskType <= TaskType::START ||
+        curItemTaskType >= TaskType::END)
     {
         CFLOW_LOGE("please check current task's task type (%d)",
                    curItemTaskType);
@@ -148,8 +148,8 @@ size_t Scheduler<T>::getQueueCapWithFromItem(T item)
 {
     auto curItemTaskType = extractTaskTypeFromItem(item);
 
-    if (curItemTaskType <= TaskType::TASKTYPE_START ||
-        curItemTaskType >= TaskType::TASKTYPE_END ||
+    if (curItemTaskType <= TaskType::START ||
+        curItemTaskType >= TaskType::END ||
         m_taskTypeQueueCapMap.count(curItemTaskType) == 0)
     {
         CFLOW_LOGE("please check current task's task type (%d)",
@@ -164,8 +164,8 @@ size_t Scheduler<T>::getQueueSizeWithFromItem(T item)
 {
     auto curItemTaskType = extractTaskTypeFromItem(item);
 
-    if (curItemTaskType <= TaskType::TASKTYPE_START ||
-        curItemTaskType >= TaskType::TASKTYPE_END ||
+    if (curItemTaskType <= TaskType::START ||
+        curItemTaskType >= TaskType::END ||
         m_taskTypeQueueMap.count(curItemTaskType) == 0)
     {
         CFLOW_LOGE("please check current task's task type (%d)",
