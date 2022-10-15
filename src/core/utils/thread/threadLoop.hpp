@@ -81,13 +81,13 @@ private:
     void _threadLoop();
 
 private:
-    std::atomic_bool m_isStop;
-    std::atomic_bool m_isNeedLoop;
-    std::thread m_thread;
-    std::mutex m_mutex;
+    std::atomic_bool        m_isStop;
+    std::atomic_bool        m_isNeedLoop;
+    std::thread             m_thread;
+    std::mutex              m_mutex;
     std::condition_variable m_condition;
     std::condition_variable m_not_full_cv;
-    Scheduler<T> m_scheduler;
+    Scheduler<T>            m_scheduler;
 };
 
 template <typename T, template <typename> typename Scheduler>
@@ -140,7 +140,7 @@ template <typename T, template <typename> typename Scheduler>
 void ThreadLoop<T, Scheduler>::start()
 {
     m_isNeedLoop = true;
-    m_thread = std::thread(&ThreadLoop::_threadLoop, this);
+    m_thread     = std::thread(&ThreadLoop::_threadLoop, this);
     setScheduling(m_thread, SCHED_FIFO, 30);
 }
 

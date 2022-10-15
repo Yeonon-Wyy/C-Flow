@@ -63,7 +63,7 @@ public:
         rhs.m_capacity = 0;
         rhs.m_items.reserve(0);
         rhs.m_startIdx = 0;
-        rhs.m_endIdx = 0;
+        rhs.m_endIdx   = 0;
     }
 
     void swap(BlockingQueue& rhs) noexcept
@@ -76,7 +76,7 @@ public:
     }
 
     void push(T item);
-    T pop();
+    T    pop();
 
     bool isEmpty() { return m_startIdx == m_endIdx; }
     bool isFull()
@@ -88,13 +88,13 @@ public:
     void stop();
 
 private:
-    int m_capacity;
+    int            m_capacity;
     std::vector<T> m_items;
-    int m_startIdx;
-    int m_endIdx;
-    bool m_stop;
+    int            m_startIdx;
+    int            m_endIdx;
+    bool           m_stop;
 
-    std::mutex m_mutex;
+    std::mutex              m_mutex;
     std::condition_variable m_not_full;
     std::condition_variable m_not_empty;
 };
@@ -138,7 +138,7 @@ void BlockingQueue<T>::clear()
 {
     std::unique_lock<std::mutex> lock(m_mutex);
     m_startIdx = 0;
-    m_endIdx = 0;
+    m_endIdx   = 0;
     m_items.clear();
 }
 

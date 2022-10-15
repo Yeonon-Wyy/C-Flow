@@ -40,19 +40,19 @@ public:
     /**
      * @description: start timer
      * @return {*}
-     */    
+     */
     void start();
 
     /**
      * @description: stop timer
      * @return {*} return a duration of start
-     */    
+     */
     auto stop() -> std::chrono::milliseconds;
 
 private:
-    std::string m_functionName;
-    int32_t m_dataId;
-    bool m_isStop;
+    std::string                                        m_functionName;
+    int32_t                                            m_dataId;
+    bool                                               m_isStop;
     std::chrono::time_point<std::chrono::steady_clock> m_start;
     std::chrono::time_point<std::chrono::steady_clock> m_end;
 };
@@ -73,7 +73,7 @@ TraceLog::TraceLog(const std::string& functionName, uint32_t dataId)
 
 void TraceLog::start()
 {
-    m_start = std::chrono::steady_clock::now();
+    m_start  = std::chrono::steady_clock::now();
     m_isStop = false;
 }
 
@@ -81,7 +81,7 @@ auto TraceLog::stop() -> std::chrono::milliseconds
 {
     if (m_isStop) return std::chrono::milliseconds(0);
     m_isStop = true;
-    m_end = std::chrono::steady_clock::now();
+    m_end    = std::chrono::steady_clock::now();
     auto elapsed_ms =
         cflow::utils::TimeUtil::convertTime<std::chrono::milliseconds>(m_end -
                                                                        m_start);

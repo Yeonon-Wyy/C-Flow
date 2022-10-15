@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-07-17 15:08:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:08:05
+ * @LastEditTime: 2022-10-15 18:10:52
  * @FilePath: /src/core/utils/thread/CFlowPrimaryThread.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -70,9 +70,10 @@ private:
 
 private:
     cflow::utils::queue::LockFreeQueue<std::function<void(void)>> m_tasks;
-    std::thread m_thread;
-    bool m_stop;
+    std::thread                                                   m_thread;
+    bool                                                          m_stop;
     int32_t m_totalTaskNum;
+
     friend class ThreadPool;
 };
 

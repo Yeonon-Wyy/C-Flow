@@ -5,8 +5,8 @@ Language: Cpp
 AccessModifierOffset: -4
 # AlignAfterOpenBracket: Align
 # AlignConsecutiveMacros: false
-# AlignConsecutiveAssignments: false
-# AlignConsecutiveDeclarations: false
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
 # AlignEscapedNewlines: Left
 # AlignOperands: true
 # AlignTrailingComments: true
@@ -105,7 +105,7 @@ IndentWidth: 4
 # PenaltyBreakFirstLessLess: 120
 # PenaltyBreakString: 1000
 # PenaltyBreakTemplateDeclaration: 10
-# PenaltyExcessCharacter: 1000000
+PenaltyExcessCharacter: 1000000
 # PenaltyReturnTypeOnItsOwnLine: 200
 PointerAlignment: Right
 # RawStringFormats:

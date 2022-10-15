@@ -49,11 +49,11 @@ public:
     struct ConfigureTable
     {
         int maxProcessingSize = pplDefaultMaxProcessingSize;
-        int threadPoolSize = pplDefaultThreadPoolSize;
+        int threadPoolSize    = pplDefaultThreadPoolSize;
         std::vector<typename PipeNode<Item>::PipeNodeCreateInfo>
             pipeNodeCreateInfos;
         std::vector<typename Notifier<Item>::NotifierCreateInfo>
-            notifierCreateInfos;
+                                                       notifierCreateInfos;
         std::vector<std::pair<cflow_id_t, cflow_id_t>> nodeConnections;
     };
 
@@ -192,25 +192,25 @@ private:
     void connectNode(cflow_id_t src, cflow_id_t dst);
 
 private:
-    DAG m_dag;
+    DAG                                       m_dag;
     std::shared_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
     std::unordered_map<cflow_id_t, std::shared_ptr<PipeNode<Item>>>
-        m_pipeNodeMaps;
+                                         m_pipeNodeMaps;
     std::vector<std::vector<cflow_id_t>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<cflow_id_t>>
-        m_scenario2PipelineMaps;
+                                              m_scenario2PipelineMaps;
     std::unordered_map<PipelineScenario, int> m_pipelineScenarioMap;
     //<notifierType, notfiers>
     std::unordered_map<NotifierType,
                        std::vector<std::shared_ptr<Notifier<Item>>>>
-        m_notifierMaps;
-    std::atomic_bool m_isStop = false;
-    bool m_pipelineModified = false;
+                                                m_notifierMaps;
+    std::atomic_bool                            m_isStop           = false;
+    bool                                        m_pipelineModified = false;
     std::shared_ptr<BufferManagerFactory<void>> m_bufferMgrFactory;
-    std::atomic_uint32_t m_processingTaskCount;
-    std::atomic_uint32_t m_processingMaxTaskCount;
-    std::condition_variable m_processingTaskCV;
-    std::mutex m_mutex;
+    std::atomic_uint32_t                        m_processingTaskCount;
+    std::atomic_uint32_t                        m_processingMaxTaskCount;
+    std::condition_variable                     m_processingTaskCV;
+    std::mutex                                  m_mutex;
 };
 
 template <typename Item>
@@ -395,13 +395,13 @@ bool PipeLine<Item>::constructPipelinesByScenario()
     for (auto it = m_pipelineScenarioMap.begin();
          it != m_pipelineScenarioMap.end(); it++)
     {
-        PipelineScenario scenario = it->first;
-        size_t scenarioNodeSize = it->second;
+        PipelineScenario scenario         = it->first;
+        size_t           scenarioNodeSize = it->second;
         CFLOW_LOGD("current construct pipeline for scenario {0} ", scenario);
         for (auto pipelineIter = pipelines.begin();
              pipelineIter != pipelines.end(); pipelineIter++)
         {
-            auto pipeline = *pipelineIter;
+            auto                    pipeline = *pipelineIter;
             std::vector<cflow_id_t> nodeConnections;
             for (cflow_id_t& nodeID : pipeline)
             {

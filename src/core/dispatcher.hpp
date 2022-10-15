@@ -72,8 +72,8 @@ public:
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;
-    cflow_id_t m_id;
-    std::string m_name;
+    cflow_id_t                       m_id;
+    std::string                      m_name;
 };
 
 template <typename Item>

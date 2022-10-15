@@ -34,8 +34,8 @@ enum TaskPriority
 
 struct TaskCreateInfo
 {
-    int priority = TaskPriority::NORMAL;
-    std::string name = "";
+    int         priority = TaskPriority::NORMAL;
+    std::string name     = "";
 };
 
 class Task : public DAGNode
@@ -134,10 +134,10 @@ public:
 
 private:
     static utils::IDGenerator m_idGenerator;
-    std::string m_name;               // task name
-    long m_ID;                        // task id
+    std::string               m_name; // task name
+    long                      m_ID;   // task id
     std::function<void()> m_taskFunc; // task function, will execute user task
-    int m_priority;                   // priority
+    int                   m_priority; // priority
     std::function<void()> m_runable;  // runable function, only for threadPool
 };
 

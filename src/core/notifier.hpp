@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-11-14 22:58:29
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-05 17:19:28
+ * @LastEditTime: 2022-10-15 18:07:11
  */
 #pragma once
 
@@ -42,19 +42,19 @@ class Notifier : public ThreadLoop<std::shared_ptr<Item>, Scheduler>
 {
 public:
     using NotifierProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
-    using ConfigProgress = std::function<void()>;
-    using StopProgress = std::function<void()>;
-    using NotifyDoneCallback = std::function<void(cflow_id_t)>;
+    using ConfigProgress          = std::function<void()>;
+    using StopProgress            = std::function<void()>;
+    using NotifyDoneCallback      = std::function<void(cflow_id_t)>;
 
     struct NotifierCreateInfo
     {
-        cflow_id_t id = -1;
-        std::string name;
+        cflow_id_t              id = -1;
+        std::string             name;
         NotifierProcessCallback processCallback;
-        ConfigProgress configProgress;
-        StopProgress stopProgress;
-        NotifierType type;
-        int readyQueueSize;
+        ConfigProgress          configProgress;
+        StopProgress            stopProgress;
+        NotifierType            type;
+        int                     readyQueueSize;
     };
 
     class NotifierBuilder
@@ -72,13 +72,13 @@ public:
         std::shared_ptr<Notifier<Item>> build();
 
     private:
-        cflow_id_t m_id;
-        std::string m_name;
+        cflow_id_t              m_id;
+        std::string             m_name;
         NotifierProcessCallback m_processCallback;
-        NotifyDoneCallback m_notifyDoneCallback;
-        ConfigProgress m_configProgress;
-        StopProgress m_stopProgress;
-        NotifierType m_type;
+        NotifyDoneCallback      m_notifyDoneCallback;
+        ConfigProgress          m_configProgress;
+        StopProgress            m_stopProgress;
+        NotifierType            m_type;
     };
 
 public:
@@ -151,17 +151,15 @@ public:
     void stop();
 
 private:
-    cflow_id_t m_id;
-    std::string m_name;
-    NotifierProcessCallback m_processCallback;
-    NotifyDoneCallback m_notifyDoneCallback;
-    ConfigProgress m_configProgress;
-    StopProgress m_stopProgress;
-    std::map<cflow_id_t, std::shared_ptr<Item>> m_pendingItemMap;
-    cflow_id_t m_expectItemId = initExpectItemId;
-    NotifierType m_type;
-
-    // debug
+    cflow_id_t                                         m_id;
+    std::string                                        m_name;
+    NotifierProcessCallback                            m_processCallback;
+    NotifyDoneCallback                                 m_notifyDoneCallback;
+    ConfigProgress                                     m_configProgress;
+    StopProgress                                       m_stopProgress;
+    std::map<cflow_id_t, std::shared_ptr<Item>>        m_pendingItemMap;
+    cflow_id_t                                         m_expectItemId;
+    NotifierType                                       m_type;
     std::chrono::time_point<std::chrono::steady_clock> m_lastNotifierTimePoint;
 };
 
@@ -211,7 +209,7 @@ bool Notifier<Item>::threadLoop(std::shared_ptr<Item> item)
                 // update m_expectItemId
                 m_expectItemId = it->second->ID() + 1;
                 // for debug
-                curTimePoint = std::chrono::steady_clock::now();
+                curTimePoint    = std::chrono::steady_clock::now();
                 auto elapsed_ms = cflow::utils::TimeUtil::convertTime<
                     std::chrono::milliseconds>(curTimePoint -
                                                m_lastNotifierTimePoint);

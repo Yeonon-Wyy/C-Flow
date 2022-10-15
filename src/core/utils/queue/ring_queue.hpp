@@ -62,7 +62,7 @@ public:
     E real()
     {
         if (empty()) return E();
-        int k = m_capcity + 1;
+        int k       = m_capcity + 1;
         int realIdx = (((m_realIdx - 1) % k) + k) % k;
         return m_elements[realIdx];
     }
@@ -114,10 +114,10 @@ public:
     }
 
 private:
-    int m_capcity;
+    int            m_capcity;
     std::vector<E> m_elements;
-    int m_realIdx;
-    int m_frontIdx;
+    int            m_realIdx;
+    int            m_frontIdx;
 };
 
 } // namespace cflow::utils::queue

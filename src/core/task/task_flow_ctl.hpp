@@ -79,9 +79,9 @@ private:
 
 private:
     std::unordered_map<cflow_id_t, std::shared_ptr<Task>> m_taskIdMap;
-    std::vector<std::vector<cflow_id_t>> m_taskOrder;
-    TaskThreadPool m_threadPool;
-    DAG m_dag;
+    std::vector<std::vector<cflow_id_t>>                  m_taskOrder;
+    TaskThreadPool                                        m_threadPool;
+    DAG                                                   m_dag;
 
     bool m_debugEnable;
 };

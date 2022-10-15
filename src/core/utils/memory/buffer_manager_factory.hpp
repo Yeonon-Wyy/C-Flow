@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-05-29 15:24:00
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-09-04 19:21:51
+ * @LastEditTime: 2022-10-15 18:10:09
  * @FilePath: /src/core/utils/memory/buffer_manager_factory.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -53,7 +53,7 @@ public:
 private:
     std::unordered_map<BufferSpecification, BufferManagerSp,
                        hash_of_bufferSpecification>
-        m_bufferManagerMap;
+               m_bufferManagerMap;
     std::mutex m_bufferManagerMapLock;
 };
 
@@ -68,7 +68,7 @@ BufferManagerFactory<E>::createBufferManager(const BufferSpecification& bfs)
         return m_bufferManagerMap[bfs];
     }
 
-    auto bmsp = std::make_shared<BufferManager<E>>(bfs);
+    auto bmsp               = std::make_shared<BufferManager<E>>(bfs);
     m_bufferManagerMap[bfs] = bmsp;
     CFLOW_LOGD("create a buffer manager {0} success", bfs.name);
     return bmsp;

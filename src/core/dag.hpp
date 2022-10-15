@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-08-14 20:09:31
+ * @LastEditTime: 2022-10-15 18:06:11
  */
 #pragma once
 
@@ -58,7 +58,7 @@ public:
     std::vector<cflow_id_t> getOutNodes() { return m_outNodes; }
 
 private:
-    cflow_id_t m_nodeId;                // node-id
+    cflow_id_t              m_nodeId;   // node-id
     std::vector<cflow_id_t> m_outNodes; // out-degree
 };
 
@@ -153,21 +153,21 @@ private:
      */
     void findAllTopologicalSort(std::vector<std::vector<cflow_id_t>>& nodeOrder,
                                 std::set<std::vector<cflow_id_t>>& allTopoOrder,
-                                std::vector<cflow_id_t>& topoOrder,
-                                int startIdx);
+                                std::vector<cflow_id_t>&           topoOrder,
+                                int                                startIdx);
 
 private:
     std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> m_graph;
-    std::unordered_map<cflow_id_t, std::weak_ptr<DAGNode>> m_nodeIdMap;
-    std::unordered_map<cflow_id_t, cflow_id_t> m_nodeIndegreeMap;
-    bool m_graphModified = false;
-    std::vector<std::vector<cflow_id_t>> m_nodeOrderCache;
+    std::unordered_map<cflow_id_t, std::weak_ptr<DAGNode>>  m_nodeIdMap;
+    std::unordered_map<cflow_id_t, cflow_id_t>              m_nodeIndegreeMap;
+    bool                                                    m_graphModified;
+    std::vector<std::vector<cflow_id_t>>                    m_nodeOrderCache;
 };
 
 /*
  * class DAGNode
  */
-DAGNode::DAGNode(cflow_id_t id) : m_nodeId(id) {}
+DAGNode::DAGNode(cflow_id_t id) : m_nodeId(id), m_graphModified(false) {}
 
 void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
 {
@@ -179,7 +179,7 @@ void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
  */
 void DAG::addNode(std::shared_ptr<DAGNode> node)
 {
-    cflow_id_t nodeId = node->getNodeId();
+    cflow_id_t nodeId   = node->getNodeId();
     m_nodeIdMap[nodeId] = node;
 
     // set flag for grpah is modified
@@ -209,7 +209,7 @@ std::vector<std::vector<cflow_id_t>> DAG::topologicalSort()
     rebuildGraphIfNeed();
 
     std::vector<std::vector<cflow_id_t>> nodeOrder;
-    std::vector<cflow_id_t> sameLevelNodes;
+    std::vector<cflow_id_t>              sameLevelNodes;
 
     std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy = m_graph;
     std::unordered_map<cflow_id_t, cflow_id_t> nodeIndegreeMapCopy =
@@ -260,7 +260,7 @@ std::set<std::vector<cflow_id_t>> DAG::multiTopologicalSort()
 {
     rebuildGraphIfNeed();
     std::vector<std::vector<cflow_id_t>> nodeOrder;
-    std::vector<cflow_id_t> sameLevelNodes;
+    std::vector<cflow_id_t>              sameLevelNodes;
 
     std::unordered_map<cflow_id_t, std::vector<cflow_id_t>> graphCopy = m_graph;
     std::unordered_map<cflow_id_t, cflow_id_t> nodeIndegreeMapCopy =
@@ -303,14 +303,14 @@ std::set<std::vector<cflow_id_t>> DAG::multiTopologicalSort()
         }
     }
     std::set<std::vector<cflow_id_t>> allTopoOrder;
-    std::vector<cflow_id_t> topoOrder;
+    std::vector<cflow_id_t>           topoOrder;
     findAllTopologicalSort(nodeOrder, allTopoOrder, topoOrder, 0);
     return allTopoOrder;
 }
 
 void DAG::findAllTopologicalSort(
     std::vector<std::vector<cflow_id_t>>& nodeOrder,
-    std::set<std::vector<cflow_id_t>>& allTopoOrder,
+    std::set<std::vector<cflow_id_t>>&    allTopoOrder,
     std::vector<cflow_id_t>& topoOrder, int startIdx)
 {
     if (topoOrder.size() == nodeOrder.size())
@@ -348,7 +348,7 @@ bool DAG::checkDependency(cflow_id_t srcNodeId, cflow_id_t dstNodeId)
     }
 
     auto connectionsIter = m_graph.find(srcNodeId);
-    auto resultIter = std::find(connectionsIter->second.cbegin(),
+    auto resultIter      = std::find(connectionsIter->second.cbegin(),
                                 connectionsIter->second.cend(), dstNodeId);
     if (resultIter == connectionsIter->second.cend())
     {

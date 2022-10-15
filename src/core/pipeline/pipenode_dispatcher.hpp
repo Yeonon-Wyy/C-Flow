@@ -118,7 +118,7 @@ public:
 private:
     PipeNodeMap m_pipeNodeMaps;
     std::unordered_map<NotifierType, std::vector<std::weak_ptr<Notifier<Item>>>>
-        m_notifierMaps;
+                                     m_notifierMaps;
     cflow::utils::thread::ThreadPool m_threadPool;
 };
 
@@ -185,7 +185,7 @@ template <typename Item>
 bool PipeNodeDispatcher<Item>::threadLoop(std::shared_ptr<Item> task)
 {
     bool ret = true;
-    ret = dispatch(task);
+    ret      = dispatch(task);
     return ret;
 }
 
@@ -225,7 +225,7 @@ void PipeNodeDispatcher<Item>::stop()
 
 template <typename Item>
 void PipeNodeDispatcher<Item>::notifyFinal(std::shared_ptr<Item> task,
-                                           NotifyStatus status)
+                                           NotifyStatus          status)
 {
     if (m_notifierMaps.count(NotifierType::FINAL))
     {
@@ -258,7 +258,8 @@ void PipeNodeDispatcher<Item>::notifyNotFinal(std::shared_ptr<Item> task,
             {
                 // foreach notifiers of someone type
                 auto notifierSp = notifier.lock();
-                if (m_threadPool.isStoped() || task->getStatus() == TaskStatus::ERROR)
+                if (m_threadPool.isStoped() ||
+                    task->getStatus() == TaskStatus::ERROR)
                 {
                     task->setNotifyStatus(NotifyStatus::ERROR);
                 }

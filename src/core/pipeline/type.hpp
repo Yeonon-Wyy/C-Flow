@@ -15,7 +15,7 @@
 
 namespace cflow::pipeline {
 using PipelineScenario = uint32_t;
-using PipeNodeId = cflow_id_t;
+using PipeNodeId       = cflow_id_t;
 
 enum PipeNodeStatus
 {

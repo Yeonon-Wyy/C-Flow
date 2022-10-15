@@ -59,9 +59,9 @@ public:
     Scheduler();
 
     void emplace(T item);
-    T schedule();
+    T    schedule();
 
-    bool empty();
+    bool   empty();
     size_t getQueueCapWithFromItem(T item);
     size_t getQueueSizeWithFromItem(T item);
 
@@ -85,7 +85,7 @@ private:
     }
 
 private:
-    std::map<TaskType, SchedulerQueue> m_taskTypeQueueMap;
+    std::map<TaskType, SchedulerQueue>   m_taskTypeQueueMap;
     std::unordered_map<TaskType, size_t> m_taskTypeQueueCapMap;
 };
 
@@ -94,12 +94,12 @@ private:
 template <typename T>
 Scheduler<T>::Scheduler()
 {
-    m_taskTypeQueueMap[TaskType::TASKTYPE_RT] = SchedulerQueue();
-    m_taskTypeQueueCapMap[TaskType::TASKTYPE_RT] = RT_TASK_CAPCITY;
-    m_taskTypeQueueMap[TaskType::TASKTYPE_NORMAL] = SchedulerQueue();
+    m_taskTypeQueueMap[TaskType::TASKTYPE_RT]        = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::TASKTYPE_RT]     = RT_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::TASKTYPE_NORMAL]    = SchedulerQueue();
     m_taskTypeQueueCapMap[TaskType::TASKTYPE_NORMAL] = NORMAL_TASK_CAPCITY;
-    m_taskTypeQueueMap[TaskType::TASKTYPE_IDEL] = SchedulerQueue();
-    m_taskTypeQueueCapMap[TaskType::TASKTYPE_IDEL] = IDEL_TASK_CAPCITY;
+    m_taskTypeQueueMap[TaskType::TASKTYPE_IDEL]      = SchedulerQueue();
+    m_taskTypeQueueCapMap[TaskType::TASKTYPE_IDEL]   = IDEL_TASK_CAPCITY;
 }
 
 template <typename T>

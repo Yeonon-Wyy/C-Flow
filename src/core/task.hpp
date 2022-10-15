@@ -108,7 +108,7 @@ public:
      * @name: markError
      * @description: mark current task is error
      * @return {*}
-     */    
+     */
     virtual void markError() = 0;
 
     /**
@@ -190,12 +190,12 @@ public:
      * @name: getStatus
      * @description: get task status, OK or ERROR, etc...
      * @return {*}
-     */    
+     */
     virtual TaskStatus getStatus() = 0;
 
 private:
     static cflow::utils::IDGenerator m_idGenerator;
-    cflow_id_t m_id;
+    cflow_id_t                       m_id;
 };
 
 cflow::utils::IDGenerator Task::m_idGenerator;

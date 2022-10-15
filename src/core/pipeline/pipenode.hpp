@@ -31,21 +31,21 @@ class PipeNodeDispatcher;
 
 template <typename Item>
 class PipeNode final : public cflow::DAGNode,
-                 public std::enable_shared_from_this<PipeNode<Item>>
+                       public std::enable_shared_from_this<PipeNode<Item>>
 {
 public:
     using ProcessCallback = std::function<bool(std::shared_ptr<Item>)>;
-    using ConfigProgress = std::function<void()>;
-    using StopProgress = std::function<void()>;
+    using ConfigProgress  = std::function<void()>;
+    using StopProgress    = std::function<void()>;
 
     struct PipeNodeCreateInfo
     {
-        PipeNodeId id;
-        std::string name;
+        PipeNodeId                    id;
+        std::string                   name;
         std::vector<PipelineScenario> pipelineScenarios;
-        ProcessCallback processCallback;
-        ConfigProgress configProgress;
-        StopProgress stopProgress;
+        ProcessCallback               processCallback;
+        ConfigProgress                configProgress;
+        StopProgress                  stopProgress;
     };
 
     class PipeNodeBuilder
@@ -64,12 +64,12 @@ public:
             std::shared_ptr<PipeNodeDispatcher<Item>>);
 
     private:
-        PipeNodeId id;
-        std::string name;
+        PipeNodeId                    id;
+        std::string                   name;
         std::vector<PipelineScenario> pipelineScenarios;
-        ProcessCallback processCallback;
-        ConfigProgress configProgress;
-        StopProgress stopProgress;
+        ProcessCallback               processCallback;
+        ConfigProgress                configProgress;
+        StopProgress                  stopProgress;
     };
 
 public:
@@ -162,15 +162,15 @@ public:
 
 private:
 private:
-    PipeNodeId m_id;
-    std::string m_name;
-    PipeNodeStatus m_status;
-    std::vector<PipelineScenario> m_pipelineScenarios;
-    ProcessCallback m_processCallback;
-    ConfigProgress m_configProgress;
-    StopProgress m_stopProgress;
+    PipeNodeId                              m_id;
+    std::string                             m_name;
+    PipeNodeStatus                          m_status;
+    std::vector<PipelineScenario>           m_pipelineScenarios;
+    ProcessCallback                         m_processCallback;
+    ConfigProgress                          m_configProgress;
+    StopProgress                            m_stopProgress;
     std::weak_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
-    std::atomic_bool m_isStop = false;
+    std::atomic_bool                        m_isStop = false;
 };
 
 /*
@@ -328,8 +328,8 @@ std::shared_ptr<PipeNode<Item>> PipeNode<Item>::PipeNodeBuilder::build(
 
     std::shared_ptr<PipeNode<Item>> pipeNode =
         std::make_shared<PipeNode<Item>>(id);
-    pipeNode->m_name = name;
-    pipeNode->m_pipelineScenarios = pipelineScenarios;
+    pipeNode->m_name               = name;
+    pipeNode->m_pipelineScenarios  = pipelineScenarios;
     pipeNode->m_pipeNodeDispatcher = dispatcher;
     if (processCallback)
     {

@@ -17,7 +17,7 @@ namespace cflow::utils::thread {
 #ifdef __linux__
 
 /**
- * @description: 
+ * @description:
  * @param {thread} &th    thread object
  * @param {int} policy    thread policy, like RR,FIFO,etc....
  * @param {int} priority  number of priority
@@ -34,6 +34,9 @@ static inline void setScheduling(std::thread &th, int policy, int priority)
     }
 }
 #else
-static inline void setScheduling(std::thread &th, int policy, int priority) { return; }
+static inline void setScheduling(std::thread &th, int policy, int priority)
+{
+    return;
+}
 #endif
 } // namespace cflow::utils::thread

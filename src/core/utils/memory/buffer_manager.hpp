@@ -13,9 +13,9 @@ namespace cflow::utils::memory {
 struct BufferSpecification
 {
     const unsigned long sizeOfBytes;
-    const unsigned int minQueueSize; // cache queue size
-    const unsigned int maxQueueSize; // max queue size
-    const std::string name;
+    const unsigned int  minQueueSize; // cache queue size
+    const unsigned int  maxQueueSize; // max queue size
+    const std::string   name;
 
     /**
      * @description:  calc hash value
@@ -53,12 +53,12 @@ public:
     struct BufferInfo
     {
         unsigned long sizeOfBytes;
-        bool isTempAlloctBuffer = false;
-        E* ptr;
-        bool isValid;
-        std::size_t owner;
-        std::string name = "None";
-        unsigned int numOfUser;
+        bool          isTempAlloctBuffer = false;
+        E*            ptr;
+        bool          isValid;
+        std::size_t   owner;
+        std::string   name = "None";
+        unsigned int  numOfUser;
     };
 
 public:
@@ -208,7 +208,7 @@ private:
     }
 
 private:
-    const BufferSpecification m_bfs;
+    const BufferSpecification                                   m_bfs;
     cflow::utils::queue::RingQueue<std::shared_ptr<BufferInfo>> m_bufferQueue;
 
     // Note: Q: why need tempBufferQueue?
@@ -220,9 +220,9 @@ private:
         m_tempBufferQueue;
 
     std::atomic<unsigned int> m_alloctBufferCount;
-    std::mutex m_bufferLock;
-    std::condition_variable m_bufferReadyCV;
-    bool m_exit = false;
+    std::mutex                m_bufferLock;
+    std::condition_variable   m_bufferReadyCV;
+    bool                      m_exit = false;
 
     std::string m_name;
 };
@@ -234,7 +234,7 @@ BufferManager<E>::popBuffer()
     std::unique_lock<std::mutex> lk(m_bufferLock);
 
     m_bufferReadyCV.wait(lk, [this]() {
-        bool hasCacheBuffer = !m_bufferQueue.empty();
+        bool hasCacheBuffer   = !m_bufferQueue.empty();
         bool hasNoAllocBuffer = noAlloctCountWithoutLock() > 0;
         CFLOW_LOGD("hasCacheBuffer: {0}, hasNoAllocBuffer: {1}", hasCacheBuffer,
                    hasNoAllocBuffer);
@@ -302,12 +302,12 @@ BufferManager<E>::alloctBuffer(bool isTempBuffer)
     if (m_bufferQueue.full())
         return std::make_shared<BufferInfo>(BufferInfo{.isValid = false});
     BufferInfo bf = {
-        .sizeOfBytes = m_bfs.sizeOfBytes,
+        .sizeOfBytes        = m_bfs.sizeOfBytes,
         .isTempAlloctBuffer = isTempBuffer,
-        .isValid = true,
-        .owner = m_bfs.hash(),
-        .name = m_bfs.name,
-        .numOfUser = 0,
+        .isValid            = true,
+        .owner              = m_bfs.hash(),
+        .name               = m_bfs.name,
+        .numOfUser          = 0,
     };
 
     // if constexpr statment can instead of std::enable_if
@@ -351,7 +351,7 @@ void BufferManager<E>::freeBuffer(std::shared_ptr<BufferInfo>& bf)
         {
             free(bf->ptr);
         }
-        bf->ptr = nullptr;
+        bf->ptr     = nullptr;
         bf->isValid = false;
         m_alloctBufferCount--;
         CFLOW_LOGD("buffer was free, now alloct buffer count : {0}",

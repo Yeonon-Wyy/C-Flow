@@ -30,7 +30,7 @@ private:
      */
     struct Node
     {
-        T data;
+        T     data;
         Node* next;
         Node(const T& _data) : data(_data), next(nullptr) {}
     };
@@ -76,8 +76,8 @@ template <typename T>
 LockFreeQueue<T>::LockFreeQueue()
 {
     Node* dummy = new Node(T());
-    m_head = dummy;
-    m_tail = dummy;
+    m_head      = dummy;
+    m_tail      = dummy;
 }
 
 template <typename T>
@@ -86,7 +86,7 @@ LockFreeQueue<T>::~LockFreeQueue()
     while (m_head)
     {
         Node* tempHead = m_head;
-        m_head = m_head->next;
+        m_head         = m_head->next;
         delete tempHead;
     }
 }
@@ -96,7 +96,7 @@ void LockFreeQueue<T>::push(T data)
 {
     Node* newNode = new Node(data);
 
-    Node* p = m_tail;
+    Node* p    = m_tail;
     Node* oldp = m_tail;
 
     // use GCC/G++ Build-in CAS function

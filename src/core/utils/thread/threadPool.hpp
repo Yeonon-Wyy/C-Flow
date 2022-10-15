@@ -46,7 +46,7 @@ private:
     std::queue<std::function<void()>> m_tasks;
 
     // for synchronization
-    std::mutex m_taskMutex;
+    std::mutex              m_taskMutex;
     std::condition_variable m_taskCV;
 
     // stop flag

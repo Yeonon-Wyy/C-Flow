@@ -39,7 +39,7 @@ public:
     static digitType string2digit(std::string str)
     {
         std::istringstream iss(str);
-        digitType digit;
+        digitType          digit;
         iss >> digit;
         return digit;
     }

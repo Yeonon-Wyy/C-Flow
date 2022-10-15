@@ -14,7 +14,6 @@
 #define NORMAL_TASK_CAPCITY 16
 #define IDEL_TASK_CAPCITY 32
 
-
 namespace cflow {
 using cflow_id_t = long;
 
@@ -50,10 +49,10 @@ enum class TaskPriority
     TASKPRIORITY_END
 };
 
-enum class TaskStatus 
+enum class TaskStatus
 {
-    OK     = 0,
-    ERROR  = 1,
+    OK    = 0,
+    ERROR = 1,
 };
 
 // utils

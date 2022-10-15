@@ -42,7 +42,7 @@ private:
     // thread list, we need keep fixed number of threads
     std::vector<CFlowPrimaryThreadPtr> m_workers;
     // stop flag
-    bool isStop;
+    bool   isStop;
     size_t m_curIdx;
 };
 
