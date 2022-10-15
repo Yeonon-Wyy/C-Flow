@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-15 18:06:11
+ * @LastEditTime: 2022-10-15 18:15:27
  */
 #pragma once
 
@@ -65,6 +65,8 @@ private:
 class DAG
 {
 public:
+    DAG() : m_graphModified(false) {}
+
     ~DAG() { CFLOW_LOGD("dag destory"); }
 
     /**
@@ -167,7 +169,7 @@ private:
 /*
  * class DAGNode
  */
-DAGNode::DAGNode(cflow_id_t id) : m_nodeId(id), m_graphModified(false) {}
+DAGNode::DAGNode(cflow_id_t id) : m_nodeId(id) {}
 
 void DAGNode::connect(std::shared_ptr<DAGNode> succsorNode)
 {
