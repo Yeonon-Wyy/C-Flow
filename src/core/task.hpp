@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-11 22:20:11
+ * @LastEditTime: 2022-10-15 19:59:28
  */
 
 #pragma once
@@ -40,7 +40,7 @@ public:
      * @return {*}
      */
     virtual bool constructDependency(
-        const std::vector<cflow_id_t>&,
+        std::vector<cflow_id_t>&,
         std::shared_ptr<utils::memory::BufferManagerFactory<void>>) = 0;
 
     /**

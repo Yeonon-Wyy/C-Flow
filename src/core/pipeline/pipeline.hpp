@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-11 22:24:55
+ * @LastEditTime: 2022-10-15 20:00:40
  */
 
 #pragma once
@@ -483,8 +483,8 @@ bool PipeLine<Item>::submit(std::shared_ptr<Item> task)
     std::unique_lock<std::mutex> lk(m_mutex);
     if (!checkValid()) return false;
     CFLOW_LOGD("submit a task {0}", task->ID());
-    task->constructDependency(getPipelineWithScenario(task->scenario()),
-                              m_bufferMgrFactory);
+    auto pipeline = getPipelineWithScenario(task->scenario());
+    task->constructDependency(pipeline,m_bufferMgrFactory);
     m_pipeNodeDispatcher->queueInDispacther(task);
     if (m_processingTaskCount >= m_processingMaxTaskCount)
     {

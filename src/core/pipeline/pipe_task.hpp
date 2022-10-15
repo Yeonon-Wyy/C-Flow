@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-15 18:12:14
+ * @LastEditTime: 2022-10-15 19:59:37
  */
 #pragma once
 
@@ -70,7 +70,7 @@ public:
     virtual ~PipeTask() {}
 
     bool constructDependency(
-        const std::vector<cflow_id_t>&              pipeline,
+        std::vector<cflow_id_t>&              pipeline,
         std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory) override;
 
     virtual bool constructIO() override;
@@ -129,6 +129,8 @@ public:
 
     TaskStatus getStatus() override { return m_status; }
 
+    void skipPipeNode(cflow_id_t nodeId) { m_skipNodeIds.insert(nodeId); }
+
 private:
     bool checkDependencyValid();
 
@@ -154,6 +156,7 @@ private:
     int        m_nextNodeIdx;
     bool       m_enableDebug;
     TaskStatus m_status;
+    std::unordered_set<cflow_id_t> m_skipNodeIds;
 };
 
 PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
@@ -161,7 +164,7 @@ PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
       m_scenario(scenario),
       m_notifyStatus(NotifyStatus::OK),
       m_taskType(TaskType::NORMAL),
-      m_priority(TaskPriority::TASKPRIORITY_NORMAL),
+      m_priority(TaskPriority::NORMAL),
       m_currentProcessNodeId(-1),
       m_currentProcessNodeIdx(-1),
       m_nextNodeId(-1),
@@ -172,10 +175,24 @@ PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
 }
 
 bool PipeTask::constructDependency(
-    const std::vector<cflow_id_t>&              pipeline,
+    std::vector<cflow_id_t>&              pipeline,
     std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
 {
     m_dependencies.clear();
+
+    // skip nodes, if need
+    for (std::vector<cflow_id_t>::iterator it = pipeline.begin(); it != pipeline.end(); )
+    {
+        if (m_skipNodeIds.count(*it))
+        {
+            it = pipeline.erase(it);
+        }
+        else
+        {
+            it++;
+        }
+    }
+
 
     auto constructDependencyNodeInfo = [&](cflow_id_t       nodeId,
                                            DependencyStatus status) {
