@@ -188,8 +188,8 @@ ppl->stop();
 
 ### 3. 整体架构设计
 
-![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/C-Flow%E6%9E%B6%E6%9E%84%E5%9B%BE.png)
-![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline%E6%B5%81%E7%A8%8B%E5%9B%BE.jpg)
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/cflow.png)
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_flow.jpg)
 
 ### 4. 如何编译
 
