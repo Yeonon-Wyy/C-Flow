@@ -9,9 +9,18 @@
 1. taskflow，即以小任务为基本单位构建的一个大任务，小任务之间可能存在依赖关系，存在前置依赖的任务需要等到前置任务完成之后才能执行，而不存在依赖关系的任务则可并行执行。使用CFlow，用户仅需要定义任务处理逻辑以及任务之间的一个依赖关系，CFlow即可帮助用户完成上述流程。
 2. pipeline，即“流水线模型”（在图形学领域也被叫做“管线”）。该模型主要用于处理流式数据，输入源像水流一样源源不断。通过将数据处理逻辑拆分为多个不同的子逻辑，数据流过某一个子逻辑不会block其他子逻辑。从而使得无论有多少个子流程，数据都能以与输入相近的速率进行输出，提升整体效率。在CFlow中，用户也可以通过定义子逻辑以及子逻辑之间的依赖关系（即子流程的处理顺序）来实现流水线模型。
 
-### 2. 简单使用
+### 2. 整体架构设计
 
-#### 2.1 taskflow
+#### 2.1 架构
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/cflow.png)
+#### 2.2 DAG
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/DAG.jpg)
+#### 2.3 pipeline flow
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/piepline_flow.jpg)
+
+### 3. 简单使用
+
+#### 3.1 taskflow
 
 ```c++
 //声明定义一个TaskFlowCtl对象
@@ -55,7 +64,7 @@ task1->connect(task3);
 flowCtl.start();
 ```
 
-#### 2.2 pipeline
+#### 3.2 pipeline
 
 ```c++
 //用户自定义类型，需要继承框架的PipeTask类
@@ -185,11 +194,6 @@ ppl->stop();
 5. nodeConnections，表示node的连接关系。框架会通过连接关系，执行拓扑排序结合node scenarios信息得到若干个pipeline，在Pipeline::submit中根据用户指定的scenarios选择对应的pipeline来执行。nodeConnecions的连接信息得到的图必须是有向无环图，否则框架将会终止，这是框架为数不多的强制性限制之一。
 
 > 更详细的例子请查看/sample/opencv/，这个demo实现了读取视频流数据，对每一帧做人脸检测，水印等处理，最终合成新的视频。
-
-### 3. 整体架构设计
-
-![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/cflow.png)
-![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/piepline_flow.jpg)
 
 ### 4. 如何编译
 
