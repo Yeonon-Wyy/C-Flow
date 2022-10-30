@@ -219,10 +219,26 @@ cmake ..
 make -j
 ```
 
-### 4. 支持的功能
+### 5. dump graph with graphviz
+#### 5.1 Dump whole graph
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/all_pipeline.png)
+
+#### 5.2 Dump Scenario 100
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_100.png)
+
+#### 5.3 Dump Scenario 101
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_100.png)
+
+#### 5.4 Dump Scenario 102
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_100.png)
+
+#### 5.5 Dump Scenario 103
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_100.png)
+
+### 6. 支持的功能
 > 待补充
 
 
-### 5. 后续计划
+### 7. 后续计划
 
 //正在思考中
