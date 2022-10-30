@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-10-30 15:51:28
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 19:42:50
+ * @LastEditTime: 2022-10-30 19:53:03
  * @FilePath: /src/core/utils/dumper.hpp
  * @Description: 
  * Copyright 2022 Yeonon, All Rights Reserved. 
@@ -58,7 +58,6 @@ void Dumper::dumpDOT(std::ostream& output)
 {
     output << "digraph " << m_graphName << " {\n";
     output << "\tlabel=\"" << m_graphName << "\"\n";
-    output << "\tsplines=curved" << "\n";
     output << "\trankdir=LR\n";
 
     std::unordered_set<std::string> pipelineNodeNames;

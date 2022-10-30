@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 19:45:32
+ * @LastEditTime: 2022-10-30 19:59:01
  */
 
 #pragma once
@@ -68,13 +68,14 @@ public:
      * @param {int} threadPoolSize
      * @return {*}
      */
-    PipeLine(int maxProcessingSize, int threadPoolSize)
+    PipeLine(int maxProcessingSize, int threadPoolSize, bool dumpGraph = false)
         : m_dag(),
           m_pipeNodeDispatcher(
               std::make_shared<PipeNodeDispatcher<Item>>(threadPoolSize)),
           m_bufferMgrFactory(std::make_shared<BufferManagerFactory<void>>()),
           m_processingTaskCount(0),
-          m_processingMaxTaskCount(maxProcessingSize)
+          m_processingMaxTaskCount(maxProcessingSize),
+          m_dumpGraph(dumpGraph)
     {
     }
 
@@ -213,6 +214,9 @@ private:
     std::atomic_uint32_t                        m_processingMaxTaskCount;
     std::condition_variable                     m_processingTaskCV;
     std::mutex                                  m_mutex;
+
+    // for debug
+    bool                                        m_dumpGraph = false;
 };
 
 template <typename Item>
@@ -539,7 +543,7 @@ void PipeLine<Item>::stop()
 template <typename Item>
 void PipeLine<Item>::dumpPipelines()
 {
-    if (!checkValid()) return;
+    if (!checkValid() || !m_dumpGraph) return;
 
     // dump all
     {
