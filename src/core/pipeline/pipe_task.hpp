@@ -70,7 +70,7 @@ public:
     virtual ~PipeTask() {}
 
     bool constructDependency(
-        std::vector<cflow_id_t>&              pipeline,
+        std::vector<cflow_id_t>&                    pipeline,
         std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory) override;
 
     virtual bool constructIO() override;
@@ -150,12 +150,12 @@ private:
     NotifyStatus                                            m_notifyStatus;
     TaskType                                                m_taskType;
     TaskPriority                                            m_priority;
-    cflow_id_t m_currentProcessNodeId;
-    int        m_currentProcessNodeIdx;
-    cflow_id_t m_nextNodeId;
-    int        m_nextNodeIdx;
-    bool       m_enableDebug;
-    TaskStatus m_status;
+    cflow_id_t                     m_currentProcessNodeId;
+    int                            m_currentProcessNodeIdx;
+    cflow_id_t                     m_nextNodeId;
+    int                            m_nextNodeIdx;
+    bool                           m_enableDebug;
+    TaskStatus                     m_status;
     std::unordered_set<cflow_id_t> m_skipNodeIds;
 };
 
@@ -175,13 +175,14 @@ PipeTask::PipeTask(PipelineScenario scenario, bool enableDebug)
 }
 
 bool PipeTask::constructDependency(
-    std::vector<cflow_id_t>&              pipeline,
+    std::vector<cflow_id_t>&                    pipeline,
     std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
 {
     m_dependencies.clear();
 
     // skip nodes, if need
-    for (std::vector<cflow_id_t>::iterator it = pipeline.begin(); it != pipeline.end(); )
+    for (std::vector<cflow_id_t>::iterator it = pipeline.begin();
+         it != pipeline.end();)
     {
         if (m_skipNodeIds.count(*it))
         {
@@ -192,7 +193,6 @@ bool PipeTask::constructDependency(
             it++;
         }
     }
-
 
     auto constructDependencyNodeInfo = [&](cflow_id_t       nodeId,
                                            DependencyStatus status) {

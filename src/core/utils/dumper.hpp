@@ -2,10 +2,10 @@
  * @Author: Yeonon
  * @Date: 2022-10-30 15:51:28
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 19:53:03
+ * @LastEditTime: 2022-10-30 21:01:30
  * @FilePath: /src/core/utils/dumper.hpp
- * @Description: 
- * Copyright 2022 Yeonon, All Rights Reserved. 
+ * @Description:
+ * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-10-30 15:51:28
  */
 #pragma once
@@ -18,40 +18,44 @@
 #include <vector>
 #include "../type.hpp"
 
-namespace cflow::utils
-{
+namespace cflow::utils {
 
 class Dumper
 {
 private:
     using ScenarioType = uint32_t;
-    using PipelineType = std::unordered_map<ScenarioType, std::vector<std::string>>;
+    using PipelineType =
+        std::unordered_map<ScenarioType, std::vector<std::string>>;
 
 public:
-    Dumper(const std::string& graphName, PipelineType& pipelines, DUMPTYPE dumpType = DUMPTYPE::EACH);
+    Dumper(const std::string& graphName, PipelineType& pipelines,
+           DUMPTYPE dumpType = DUMPTYPE::EACH);
+
 private:
-    Dumper(Dumper&&) = delete;
+    Dumper(Dumper&&)      = delete;
     Dumper(const Dumper&) = delete;
     Dumper& operator=(const Dumper&) = delete;
+
 public:
     void dumpDOT(std::ostream& ostream);
+
 private:
     void addDOTNode(std::ostream& output, const std::string& nodeName);
-    void addDOTEdge(std::ostream& output, const std::string& srcNode, const std::string& dstNode, const std::string& label);
+    void addDOTEdge(std::ostream& output, const std::string& srcNode,
+                    const std::string& dstNode, const std::string& label);
 
 private:
-    std::string m_graphName;
+    std::string  m_graphName;
     PipelineType m_pipelines;
-    DUMPTYPE m_dumpType;
+    DUMPTYPE     m_dumpType;
 };
 
-
-Dumper::Dumper(const std::string& graphName, PipelineType& nodeNames, DUMPTYPE dumpType)
-     :m_graphName(graphName),
+Dumper::Dumper(const std::string& graphName, PipelineType& nodeNames,
+               DUMPTYPE dumpType)
+    : m_graphName(graphName),
       m_pipelines(nodeNames),
       m_dumpType(dumpType)
 {
-
 }
 
 void Dumper::dumpDOT(std::ostream& output)
@@ -70,13 +74,12 @@ void Dumper::dumpDOT(std::ostream& output)
         }
     }
 
-
     // add node
     for (auto&& nodeName : pipelineNodeNames)
     {
         addDOTNode(output, nodeName);
     }
-    
+
     // add dummy end node
     addDOTNode(output, "End");
 
@@ -91,22 +94,25 @@ void Dumper::dumpDOT(std::ostream& output)
             {
                 edgeLabel = "Scenario_" + std::to_string(curScenario);
             }
-            addDOTEdge(output, pipeline[i-1], pipeline[i], edgeLabel);
+            addDOTEdge(output, pipeline[i - 1], pipeline[i], edgeLabel);
         }
     }
 
     output << "}\n";
-
 }
 
 void Dumper::addDOTNode(std::ostream& output, const std::string& nodeName)
 {
-    output << "\t" << nodeName << "[" << "label=\"" << nodeName << "\",shape=\"box\"" << "]\n";
+    output << "\t" << nodeName << "["
+           << "label=\"" << nodeName << "\",shape=\"box\""
+           << "]\n";
 }
 
-void Dumper::addDOTEdge(std::ostream& output, const std::string& srcNode, const std::string& dstNode, const std::string& label)
+void Dumper::addDOTEdge(std::ostream& output, const std::string& srcNode,
+                        const std::string& dstNode, const std::string& label)
 {
-    output << "\t" << srcNode << "->" << dstNode << "[label=\"" << label << "\"]\n";
+    output << "\t" << srcNode << "->" << dstNode << "[label=\"" << label
+           << "\"]\n";
 }
 
-} //namespace cflow::utils
+} // namespace cflow::utils

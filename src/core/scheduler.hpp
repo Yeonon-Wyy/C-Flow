@@ -106,8 +106,7 @@ template <typename T>
 void Scheduler<T>::emplace(T item)
 {
     auto curItemTaskType = extractTaskTypeFromItem(item);
-    if (curItemTaskType <= TaskType::START ||
-        curItemTaskType >= TaskType::END)
+    if (curItemTaskType <= TaskType::START || curItemTaskType >= TaskType::END)
     {
         CFLOW_LOGE("please check current task's task type (%d)",
                    curItemTaskType);
