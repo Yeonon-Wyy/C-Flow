@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-11 22:23:55
+ * @LastEditTime: 2022-10-30 15:45:34
  */
 #include "../src/core/notifier.hpp"
 #include "../src/core/pipeline/pipe_task.hpp"
@@ -83,7 +83,7 @@ void testPipeline() {
       {.threadPoolSize = 8,
        .pipeNodeCreateInfos =
            {{.id = NodeId::P1NODE,
-             .name = "P1Node",
+             .name = "FirstNode",
              .pipelineScenarios = {MyScenario::Scenario1, MyScenario::Scenario2,
                                    MyScenario::Scenario3,
                                    MyScenario::Scenario4},
@@ -108,7 +108,7 @@ void testPipeline() {
                return true;
              }},
             {.id = NodeId::P2NODE,
-             .name = "P2Node",
+             .name = "FDNode",
              .pipelineScenarios = {MyScenario::Scenario1,
                                    MyScenario::Scenario3},
              .processCallback =
@@ -119,7 +119,7 @@ void testPipeline() {
                return true;
              }},
             {.id = NodeId::P3NODE,
-             .name = "P3Node",
+             .name = "WaterMarkNode",
              .pipelineScenarios = {MyScenario::Scenario2},
              .processCallback =
                  [](std::shared_ptr<PipelineRequest> request) -> bool {
@@ -135,7 +135,7 @@ void testPipeline() {
                return true;
              }},
             {NodeId::MDPNODE,
-             "MDPNode",
+             "ScaleNode",
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
                CFLOW_LOGD("request {0} process MDP node", request->ID());
@@ -158,7 +158,7 @@ void testPipeline() {
                return true;
              }},
             {NodeId::WPENODE,
-             "WPENode",
+             "AlgoNode",
              {MyScenario::Scenario1, MyScenario::Scenario2},
              [](std::shared_ptr<PipelineRequest> request) -> bool {
                CFLOW_LOGD("request {0} process WPE node", request->ID());

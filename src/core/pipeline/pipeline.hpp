@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-15 20:00:40
+ * @LastEditTime: 2022-10-30 19:45:32
  */
 
 #pragma once
@@ -13,12 +13,15 @@
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
+
 
 #include "../dag.hpp"
 #include "../notifier.hpp"
 #include "../utils/log/log.hpp"
 #include "../utils/memory/buffer_manager.hpp"
 #include "../utils/memory/buffer_manager_factory.hpp"
+#include "../utils/dumper.hpp"
 #include "pipenode.hpp"
 #include "pipenode_dispatcher.hpp"
 
@@ -196,7 +199,6 @@ private:
     std::shared_ptr<PipeNodeDispatcher<Item>> m_pipeNodeDispatcher;
     std::unordered_map<cflow_id_t, std::shared_ptr<PipeNode<Item>>>
                                          m_pipeNodeMaps;
-    std::vector<std::vector<cflow_id_t>> m_pipelines;
     std::unordered_map<PipelineScenario, std::vector<cflow_id_t>>
                                               m_scenario2PipelineMaps;
     std::unordered_map<PipelineScenario, int> m_pipelineScenarioMap;
@@ -538,17 +540,42 @@ template <typename Item>
 void PipeLine<Item>::dumpPipelines()
 {
     if (!checkValid()) return;
-    // dump
+
+    // dump all
+    {
+        std::unordered_map<PipelineScenario, std::vector<std::string>> scenario2PipelineWithNameMaps;
+        std::set<std::vector<std::string>> pipelineWithNameSet;
+        for (auto& [scenario, pipeline] : m_scenario2PipelineMaps)
+        {
+            std::vector<std::string> pipelineWithName;
+            for (auto&& nodeId : pipeline)
+            {
+                pipelineWithName.push_back(m_pipeNodeMaps[nodeId]->name());
+            }
+            scenario2PipelineWithNameMaps[scenario] = pipelineWithName;
+        }
+        cflow::utils::Dumper dumper("All_Pipeline", scenario2PipelineWithNameMaps, DUMPTYPE::ALL);
+        std::string filename = "all_pipeline.dot";
+        std::fstream fs(filename, std::ios::out | std::ios::trunc);
+        dumper.dumpDOT(fs);
+    }
+
+    
+
+    // dump each pipeline
     for (auto& [scenario, pipeline] : m_scenario2PipelineMaps)
     {
-        std::stringstream ss;
-        ss << scenario << ": [";
-        for (cflow_id_t& nodeId : pipeline)
+        std::unordered_map<PipelineScenario, std::vector<std::string>> scenario2PipelineWithNameMaps;
+        std::vector<std::string> pipelineWithName;
+        for (auto&& nodeId : pipeline)
         {
-            ss << nodeId << " ";
+            pipelineWithName.push_back(m_pipeNodeMaps[nodeId]->name());
         }
-        ss << "]";
-        CFLOW_LOGD(ss.str());
+        scenario2PipelineWithNameMaps[scenario] = (pipelineWithName);
+        cflow::utils::Dumper dumper("Scenario_" + std::to_string(scenario), scenario2PipelineWithNameMaps);
+        std::string filename = "pipeline_" + std::to_string(scenario) + ".dot";
+        std::fstream fs(filename, std::ios::out | std::ios::trunc);
+        dumper.dumpDOT(fs);
     }
 }
 } // namespace cflow::pipeline

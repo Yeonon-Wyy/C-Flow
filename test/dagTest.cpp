@@ -3,6 +3,7 @@
 #include "../src/core/utils/thread/threadPool.hpp"
 
 #include <chrono>
+#include <sstream>
 
 #include <any>
 
@@ -46,6 +47,20 @@ void testDAGbasic()
     dag.dumpGraph();
 
     auto order = dag.multiTopologicalSort();
+    std::stringstream ss;
+    ss << "[";
+    
+    for (auto&& pipeline : order)
+    {
+        ss << "[";
+        for (auto&& nodeId : pipeline)
+        {
+            ss << nodeId << ",";
+        }
+        ss << "]";
+    }
+    ss << "]";
+    std::cout << ss.str() << std::endl;
 }
 
 void testTaskDag()

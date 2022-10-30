@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-15 18:29:26
+ * @LastEditTime: 2022-10-30 19:30:52
  */
 #pragma once
 #include <memory>
@@ -53,6 +53,12 @@ enum class TaskStatus
 {
     OK    = 0,
     ERROR = 1,
+};
+
+enum class DUMPTYPE
+{
+    EACH,
+    ALL,
 };
 
 // utils
