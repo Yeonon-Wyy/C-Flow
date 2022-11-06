@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-25 20:35:55
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 18:47:24
+ * @LastEditTime: 2022-11-06 20:59:03
  */
 #pragma once
 
@@ -31,6 +31,8 @@ public:
      * @return {*}
      */
     DAGNode(cflow_id_t id);
+
+    virtual ~DAGNode() {}
 
     /**
      * @name: connect

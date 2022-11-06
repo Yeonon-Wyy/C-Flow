@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 19:10:59
+ * @LastEditTime: 2022-11-06 21:33:26
  */
 #pragma once
 #include <memory>
@@ -59,8 +59,9 @@ enum class TaskStatus
 
 enum class DUMPTYPE
 {
-    EACH,
-    ALL,
+    PIPELINE_EACH,
+    PIPELINE_ALL,
+    TASKFLOW,
 };
 
 // utils

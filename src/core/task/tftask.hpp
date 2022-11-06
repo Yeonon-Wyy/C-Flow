@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 20:07:55
+ * @LastEditTime: 2022-11-06 20:48:23
  */
 #pragma once
 
@@ -32,21 +32,24 @@ namespace cflow::task {
 class TFTask : public cflow::Task, public DAGNode
 {
 public:
-    TFTask()
+    TFTask(std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
         : Task(),
           DAGNode(ID()),
           m_priority(TaskPriority::NORMAL),
-          m_taskType(TaskType::NORMAL)
+          m_taskType(TaskType::NORMAL),
+          m_buffeManagerFactory(bufferMgrFactory)
     {
         m_name = TASK_NAME_PREFIX + utils::StringConvetor::digit2String(ID());
     }
 
-    TFTask(TaskCreateInfo&& createInfo)
+    TFTask(TaskCreateInfo&&                            createInfo,
+           std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory)
         : Task(),
           DAGNode(ID()),
           m_processFunc(createInfo.processFunc),
           m_priority(createInfo.priority),
-          m_taskType(createInfo.taskType)
+          m_taskType(createInfo.taskType),
+          m_buffeManagerFactory(bufferMgrFactory)
     {
         if (createInfo.name == "")
         {
@@ -66,7 +69,7 @@ public:
         std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory) override
     {
         UNUSED(taskOrder);
-        m_buffeManagerFactory = bufferMgrFactory;
+        UNUSED(bufferMgrFactory);
         return false;
     }
     virtual bool constructIO() override { return false; }

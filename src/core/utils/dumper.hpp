@@ -2,7 +2,7 @@
  * @Author: Yeonon
  * @Date: 2022-10-30 15:51:28
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 21:01:30
+ * @LastEditTime: 2022-11-06 22:03:37
  * @FilePath: /src/core/utils/dumper.hpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
@@ -14,6 +14,8 @@
 #include <ostream>
 #include <unordered_map>
 #include <unordered_set>
+#include <iterator>
+#include <map>
 #include <set>
 #include <vector>
 #include "../type.hpp"
@@ -29,7 +31,7 @@ private:
 
 public:
     Dumper(const std::string& graphName, PipelineType& pipelines,
-           DUMPTYPE dumpType = DUMPTYPE::EACH);
+           DUMPTYPE dumpType = DUMPTYPE::PIPELINE_EACH);
 
 private:
     Dumper(Dumper&&)      = delete;
@@ -43,6 +45,9 @@ private:
     void addDOTNode(std::ostream& output, const std::string& nodeName);
     void addDOTEdge(std::ostream& output, const std::string& srcNode,
                     const std::string& dstNode, const std::string& label);
+
+    void addEdgeForTaskFlow(std::ostream& output);
+    void addEdgeForPipeline(std::ostream& output);
 
 private:
     std::string  m_graphName;
@@ -84,18 +89,14 @@ void Dumper::dumpDOT(std::ostream& output)
     addDOTNode(output, "End");
 
     // add edge
-    for (auto&& [curScenario, pipeline] : m_pipelines)
+    if (m_dumpType == DUMPTYPE::PIPELINE_ALL ||
+        m_dumpType == DUMPTYPE::PIPELINE_EACH)
     {
-        pipeline.push_back("End");
-        for (int i = 1; i < pipeline.size(); i++)
-        {
-            std::string edgeLabel = " ";
-            if (m_dumpType == DUMPTYPE::ALL)
-            {
-                edgeLabel = "Scenario_" + std::to_string(curScenario);
-            }
-            addDOTEdge(output, pipeline[i - 1], pipeline[i], edgeLabel);
-        }
+        addEdgeForPipeline(output);
+    }
+    else if (m_dumpType == DUMPTYPE::TASKFLOW)
+    {
+        addEdgeForTaskFlow(output);
     }
 
     output << "}\n";
@@ -113,6 +114,53 @@ void Dumper::addDOTEdge(std::ostream& output, const std::string& srcNode,
 {
     output << "\t" << srcNode << "->" << dstNode << "[label=\"" << label
            << "\"]\n";
+}
+
+void Dumper::addEdgeForTaskFlow(std::ostream& output)
+{
+    // [[1],[2,3],[4]]
+    std::map<ScenarioType, std::vector<std::string>> taskOrders(
+        m_pipelines.begin(), m_pipelines.end());
+    auto preIt = taskOrders.begin();
+    auto curIt = std::next(taskOrders.begin(), 1);
+    while (curIt != taskOrders.end())
+    {
+        auto preTasks = preIt->second;
+        auto curTasks = curIt->second;
+        for (auto&& preTask : preTasks)
+        {
+            for (auto&& curTask : curTasks)
+            {
+                addDOTEdge(output, preTask, curTask, "");
+            }
+        }
+        preIt = curIt;
+        curIt = std::next(curIt, 1);
+        if (curIt == taskOrders.end())
+        {
+            for (auto&& curTask : curTasks)
+            {
+                addDOTEdge(output, curTask, "End", "");
+            }
+        }
+    }
+}
+
+void Dumper::addEdgeForPipeline(std::ostream& output)
+{
+    for (auto&& [curScenario, pipeline] : m_pipelines)
+    {
+        pipeline.push_back("End");
+        for (int i = 1; i < pipeline.size(); i++)
+        {
+            std::string edgeLabel = " ";
+            if (m_dumpType == DUMPTYPE::PIPELINE_ALL)
+            {
+                edgeLabel = "Scenario_" + std::to_string(curScenario);
+            }
+            addDOTEdge(output, pipeline[i - 1], pipeline[i], edgeLabel);
+        }
+    }
 }
 
 } // namespace cflow::utils

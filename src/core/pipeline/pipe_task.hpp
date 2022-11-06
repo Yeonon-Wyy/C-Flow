@@ -108,7 +108,8 @@ public:
 
     TaskPriority getPriority() override { return m_priority; }
 
-    void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId = -1) override;
+    void addNotifierForNode(cflow_id_t nodeId,
+                            cflow_id_t notifierId = -1) override;
 
     std::vector<cflow_id_t> getNotifiersByNodeId(cflow_id_t nodeId) override;
 

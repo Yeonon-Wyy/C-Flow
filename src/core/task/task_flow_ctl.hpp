@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 19:55:02
+ * @LastEditTime: 2022-11-06 21:49:02
  */
 
 #pragma once
@@ -14,10 +14,12 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 
 #include "../dag.hpp"
 #include "../type.hpp"
 #include "../utils/log/log.hpp"
+#include "../utils/dumper.hpp"
 #include "tftask.hpp"
 #include "task_threadPool.hpp"
 
@@ -29,6 +31,7 @@ public:
     TaskFlowCtl(bool enableDebug = false)
         : m_threadPool(TASKFLOWCTL_THREADPOOL_MAX_THREAD),
           m_dag(),
+          m_bufferMgrFactory(std::make_shared<BufferManagerFactory<void>>()),
           m_debugEnable(enableDebug)
     {
     }
@@ -50,7 +53,7 @@ public:
      */
     template <typename Function, typename... Args>
     std::shared_ptr<TFTask> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo,
-                                              Function&& f, Args&&... args);
+                                                Function&& f, Args&&... args);
 
     /**
      * @name: start
@@ -79,9 +82,10 @@ private:
 
 private:
     std::unordered_map<cflow_id_t, std::shared_ptr<TFTask>> m_taskIdMap;
-    std::vector<std::vector<cflow_id_t>>                  m_taskOrder;
-    TaskThreadPool                                        m_threadPool;
-    DAG                                                   m_dag;
+    std::vector<std::vector<cflow_id_t>>                    m_taskOrder;
+    TaskThreadPool                                          m_threadPool;
+    DAG                                                     m_dag;
+    std::shared_ptr<BufferManagerFactory<void>>             m_bufferMgrFactory;
 
     bool m_debugEnable;
 };
@@ -89,8 +93,9 @@ private:
 template <typename Function, typename... Args>
 std::shared_ptr<TFTask> TaskFlowCtl::addTask(Function&& f, Args&&... args)
 {
-    std::shared_ptr<TFTask> task = std::make_shared<TFTask>();
-    task->setProcessFunc(std::forward<Function>(f), std::forward<Args>(args)...);
+    std::shared_ptr<TFTask> task = std::make_shared<TFTask>(m_bufferMgrFactory);
+    task->setProcessFunc(std::forward<Function>(f),
+                         std::forward<Args>(args)...);
     commonSetting(task);
     return task;
 }
@@ -99,8 +104,10 @@ template <typename Function, typename... Args>
 std::shared_ptr<TFTask> TaskFlowCtl::addTaskWithTaskInfo(
     TaskCreateInfo&& taskInfo, Function&& f, Args&&... args)
 {
-    std::shared_ptr<TFTask> task = std::make_shared<TFTask>(std::move(taskInfo));
-    task->setProcessFunc(std::forward<Function>(f), std::forward<Args>(args)...);
+    std::shared_ptr<TFTask> task =
+        std::make_shared<TFTask>(std::move(taskInfo), m_bufferMgrFactory);
+    task->setProcessFunc(std::forward<Function>(f),
+                         std::forward<Args>(args)...);
     commonSetting(task);
     return task;
 }
@@ -108,20 +115,30 @@ std::shared_ptr<TFTask> TaskFlowCtl::addTaskWithTaskInfo(
 void TaskFlowCtl::reorganizeTaskOrder()
 {
     m_taskOrder = m_dag.topologicalSort();
-
-    if (m_debugEnable)
+    if (!m_debugEnable) return;
     {
-        CFLOW_LOGE("dump task order: ");
-        std::stringstream ss;
-        for (auto& curLevelTask : m_taskOrder)
+        uint32_t curSceneraio = 0;
+        std::unordered_map<uint32_t, std::vector<std::string>>
+                                           scenario2TaskOrderWithNameMap;
+        std::set<std::vector<std::string>> pipelineWithNameSet;
+        for (auto&& order : m_taskOrder)
         {
-            ss << "[";
-            for (cflow_id_t taskId : curLevelTask)
+            std::vector<std::string> taskOrderWithName;
+            for (auto&& taskID : order)
             {
-                ss << m_taskIdMap[taskId]->name() << ",";
+                std::cout << taskID << " ";
+                taskOrderWithName.push_back(m_taskIdMap[taskID]->name());
             }
-            CFLOW_LOGE("{0}]", ss.str());
+            std::cout << std::endl;
+            scenario2TaskOrderWithNameMap[curSceneraio] = taskOrderWithName;
+            curSceneraio++;
         }
+        cflow::utils::Dumper dumper("Task_flow_control",
+                                    scenario2TaskOrderWithNameMap,
+                                    DUMPTYPE::TASKFLOW);
+        std::string          filename = "Task flow control.dot";
+        std::fstream         fs(filename, std::ios::out | std::ios::trunc);
+        dumper.dumpDOT(fs);
     }
 }
 

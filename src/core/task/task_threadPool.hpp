@@ -19,7 +19,8 @@ public:
     // Task Compare, with task priority
     struct TaskComp
     {
-        bool operator()(std::shared_ptr<TFTask> lhs, std::shared_ptr<TFTask> rhs)
+        bool operator()(std::shared_ptr<TFTask> lhs,
+                        std::shared_ptr<TFTask> rhs)
         {
             return lhs->getPriority() > rhs->getPriority();
         }
@@ -88,7 +89,8 @@ TaskThreadPool::TaskThreadPool(size_t threadSize) : isStop(false)
 auto TaskThreadPool::emplaceTask(std::shared_ptr<TFTask> task)
     -> std::future<void>
 {
-    auto pt = std::make_shared<std::packaged_task<void()>>(task->getProcessFunc());
+    auto pt =
+        std::make_shared<std::packaged_task<void()>>(task->getProcessFunc());
 
     // set runable, threadPool will execute this function
     task->setProcessFunc([pt]() { (*pt)(); });

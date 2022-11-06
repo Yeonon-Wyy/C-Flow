@@ -175,7 +175,8 @@ public:
      * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    virtual void addNotifierForNode(cflow_id_t notifierId, cflow_id_t nodeId = -1) = 0;
+    virtual void addNotifierForNode(cflow_id_t notifierId,
+                                    cflow_id_t nodeId = -1) = 0;
 
     /**
      * @name: getNotifiersByNodeId

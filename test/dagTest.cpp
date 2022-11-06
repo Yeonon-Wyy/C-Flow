@@ -1,11 +1,16 @@
 #include "../src/core/dag.hpp"
 #include "../src/core/task/tftask.hpp"
 #include "../src/core/utils/thread/threadPool.hpp"
+#include "../src/core/type.hpp"
+#include "../src/core/utils/memory/buffer_manager.hpp"
+#include "../src/core/utils/memory/buffer_manager_factory.hpp"
 
 #include <chrono>
 #include <sstream>
 
 #include <any>
+
+using namespace cflow::utils::memory;
 
 void testDAGbasic()
 {
@@ -65,41 +70,42 @@ void testDAGbasic()
 
 void testTaskDag()
 {
+    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory = std::make_shared<BufferManagerFactory<void>>();
 
     // cflow::task::TFTask task1("task_1");
-    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task1->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task2->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task3->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task4->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task5->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
     task5->setPriority(cflow::TaskPriority::NORMAL);
 
-    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
 
      task6->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
      task7->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
@@ -151,40 +157,41 @@ constexpr T convertTime(std::chrono::duration<double> originTime)
 
 void testTaskExecute()
 {
+    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory = std::make_shared<BufferManagerFactory<void>>();
 
-    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task1->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task2->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task3->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task4->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task5->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
     task5->setPriority(cflow::TaskPriority::URGENCY);
 
-    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
 
     task6->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>();
+    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
     task7->setProcessFunc([](int a, int b) {
         return a + b;
     }, 1, 2);

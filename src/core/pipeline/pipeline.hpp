@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 18:48:53
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 19:59:01
+ * @LastEditTime: 2022-11-06 21:33:50
  */
 
 #pragma once
@@ -558,10 +558,11 @@ void PipeLine<Item>::dumpPipelines()
             }
             scenario2PipelineWithNameMaps[scenario] = pipelineWithName;
         }
-        cflow::utils::Dumper dumper(
-            "All_Pipeline", scenario2PipelineWithNameMaps, DUMPTYPE::ALL);
-        std::string  filename = "all_pipeline.dot";
-        std::fstream fs(filename, std::ios::out | std::ios::trunc);
+        cflow::utils::Dumper dumper("All_Pipeline",
+                                    scenario2PipelineWithNameMaps,
+                                    DUMPTYPE::PIPELINE_ALL);
+        std::string          filename = "all_pipeline.dot";
+        std::fstream         fs(filename, std::ios::out | std::ios::trunc);
         dumper.dumpDOT(fs);
     }
 
