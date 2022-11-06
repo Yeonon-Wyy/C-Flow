@@ -19,7 +19,7 @@ public:
     // Task Compare, with task priority
     struct TaskComp
     {
-        bool operator()(std::shared_ptr<Task> lhs, std::shared_ptr<Task> rhs)
+        bool operator()(std::shared_ptr<TFTask> lhs, std::shared_ptr<TFTask> rhs)
         {
             return lhs->getPriority() > rhs->getPriority();
         }
@@ -33,7 +33,7 @@ public:
      * @param {shared_ptr<Task>} task
      * @return {*}
      */
-    auto emplaceTask(std::shared_ptr<Task> task) -> std::future<void>;
+    auto emplaceTask(std::shared_ptr<TFTask> task) -> std::future<void>;
 
     ~TaskThreadPool();
 
@@ -42,8 +42,8 @@ private:
     std::vector<std::thread> m_workers;
 
     // task queue
-    std::priority_queue<std::shared_ptr<Task>,
-                        std::vector<std::shared_ptr<Task>>, TaskComp>
+    std::priority_queue<std::shared_ptr<TFTask>,
+                        std::vector<std::shared_ptr<TFTask>>, TaskComp>
         m_tasks;
 
     // for synchronization
@@ -61,7 +61,7 @@ TaskThreadPool::TaskThreadPool(size_t threadSize) : isStop(false)
         m_workers.emplace_back([this]() {
             while (true)
             {
-                std::shared_ptr<Task> task;
+                std::shared_ptr<TFTask> task;
 
                 {
                     std::unique_lock<std::mutex> lk(this->m_taskMutex);
@@ -85,13 +85,13 @@ TaskThreadPool::TaskThreadPool(size_t threadSize) : isStop(false)
     }
 }
 
-auto TaskThreadPool::emplaceTask(std::shared_ptr<Task> task)
+auto TaskThreadPool::emplaceTask(std::shared_ptr<TFTask> task)
     -> std::future<void>
 {
-    auto pt = std::make_shared<std::packaged_task<void()>>(task->getTaskFunc());
+    auto pt = std::make_shared<std::packaged_task<void()>>(task->getProcessFunc());
 
     // set runable, threadPool will execute this function
-    task->setRunable([pt]() { (*pt)(); });
+    task->setProcessFunc([pt]() { (*pt)(); });
 
     std::future<void> taskFuture = pt->get_future();
     {
@@ -99,7 +99,6 @@ auto TaskThreadPool::emplaceTask(std::shared_ptr<Task> task)
         if (isStop)
         {
             throw std::runtime_error("emplace on stopped ThreadPool");
-            ;
         }
         this->m_tasks.emplace(task);
     }

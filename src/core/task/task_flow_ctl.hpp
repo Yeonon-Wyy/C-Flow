@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-02 18:15:32
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 18:16:24
+ * @LastEditTime: 2022-11-06 19:55:02
  */
 
 #pragma once
@@ -40,7 +40,7 @@ public:
      * @return {*} a task object
      */
     template <typename Function, typename... Args>
-    std::shared_ptr<Task> addTask(Function&& f, Args&&... args);
+    std::shared_ptr<TFTask> addTask(Function&& f, Args&&... args);
 
     /**
      * @name: addTaskWithTaskInfo
@@ -49,7 +49,7 @@ public:
      * @return {*} a task object
      */
     template <typename Function, typename... Args>
-    std::shared_ptr<Task> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo,
+    std::shared_ptr<TFTask> addTaskWithTaskInfo(TaskCreateInfo&& taskInfo,
                                               Function&& f, Args&&... args);
 
     /**
@@ -75,10 +75,10 @@ private:
      * @param {shared_ptr<Task>} task
      * @return {*}
      */
-    void commonSetting(std::shared_ptr<Task> task);
+    void commonSetting(std::shared_ptr<TFTask> task);
 
 private:
-    std::unordered_map<cflow_id_t, std::shared_ptr<Task>> m_taskIdMap;
+    std::unordered_map<cflow_id_t, std::shared_ptr<TFTask>> m_taskIdMap;
     std::vector<std::vector<cflow_id_t>>                  m_taskOrder;
     TaskThreadPool                                        m_threadPool;
     DAG                                                   m_dag;
@@ -87,20 +87,20 @@ private:
 };
 
 template <typename Function, typename... Args>
-std::shared_ptr<Task> TaskFlowCtl::addTask(Function&& f, Args&&... args)
+std::shared_ptr<TFTask> TaskFlowCtl::addTask(Function&& f, Args&&... args)
 {
-    std::shared_ptr<Task> task = std::make_shared<Task>();
-    task->commit(std::forward<Function>(f), std::forward<Args>(args)...);
+    std::shared_ptr<TFTask> task = std::make_shared<TFTask>();
+    task->setProcessFunc(std::forward<Function>(f), std::forward<Args>(args)...);
     commonSetting(task);
     return task;
 }
 
 template <typename Function, typename... Args>
-std::shared_ptr<Task> TaskFlowCtl::addTaskWithTaskInfo(
+std::shared_ptr<TFTask> TaskFlowCtl::addTaskWithTaskInfo(
     TaskCreateInfo&& taskInfo, Function&& f, Args&&... args)
 {
-    std::shared_ptr<Task> task = std::make_shared<Task>(std::move(taskInfo));
-    task->commit(std::forward<Function>(f), std::forward<Args>(args)...);
+    std::shared_ptr<TFTask> task = std::make_shared<TFTask>(std::move(taskInfo));
+    task->setProcessFunc(std::forward<Function>(f), std::forward<Args>(args)...);
     commonSetting(task);
     return task;
 }
@@ -118,16 +118,16 @@ void TaskFlowCtl::reorganizeTaskOrder()
             ss << "[";
             for (cflow_id_t taskId : curLevelTask)
             {
-                ss << m_taskIdMap[taskId]->getName() << ",";
+                ss << m_taskIdMap[taskId]->name() << ",";
             }
             CFLOW_LOGE("{0}]", ss.str());
         }
     }
 }
 
-void TaskFlowCtl::commonSetting(std::shared_ptr<Task> task)
+void TaskFlowCtl::commonSetting(std::shared_ptr<TFTask> task)
 {
-    m_taskIdMap.emplace(task->getID(), task);
+    m_taskIdMap.emplace(task->ID(), task);
     m_dag.addNode(task);
 }
 
@@ -145,8 +145,8 @@ void TaskFlowCtl::start()
                           << ") in taskIdMap, please check it." << std::endl;
                 return;
             }
-            std::shared_ptr<Task> task = m_taskIdMap[taskId];
-            taskfutureList.emplace_back(task->getName(),
+            std::shared_ptr<TFTask> task = m_taskIdMap[taskId];
+            taskfutureList.emplace_back(task->name(),
                                         m_threadPool.emplaceTask(task));
         }
 

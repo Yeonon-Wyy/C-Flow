@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-09-22 21:36:41
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 19:41:26
+ * @LastEditTime: 2022-11-06 20:07:55
  */
 #pragma once
 
@@ -99,7 +99,7 @@ public:
 
     TaskPriority getPriority() override { return m_priority; }
 
-    void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) override
+    void addNotifierForNode(cflow_id_t notifierId, cflow_id_t nodeId) override
     {
         UNUSED(nodeId);
         m_notifiers.push_back(notifierId);
@@ -134,6 +134,8 @@ public:
     void setProcessFunc(Function&& f, Args&&... args);
 
     TFTaskFunc getProcessFunc() { return m_processFunc; }
+
+    std::string name() { return m_name; }
 
     /**
      * @name: will execute runanble function, must be set

@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-22 21:41:15
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-15 19:59:28
+ * @LastEditTime: 2022-11-06 20:08:21
  */
 
 #pragma once
@@ -175,8 +175,7 @@ public:
      * @param {cflow_id_t} nodeId
      * @return {*}
      */
-    virtual void addNotifierForNode(cflow_id_t nodeId,
-                                    cflow_id_t notifierId) = 0;
+    virtual void addNotifierForNode(cflow_id_t notifierId, cflow_id_t nodeId = -1) = 0;
 
     /**
      * @name: getNotifiersByNodeId

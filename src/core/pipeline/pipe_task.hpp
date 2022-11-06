@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 19:26:52
+ * @LastEditTime: 2022-11-06 20:08:41
  */
 #pragma once
 
@@ -108,7 +108,7 @@ public:
 
     TaskPriority getPriority() override { return m_priority; }
 
-    void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId) override;
+    void addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId = -1) override;
 
     std::vector<cflow_id_t> getNotifiersByNodeId(cflow_id_t nodeId) override;
 
@@ -380,7 +380,7 @@ void PipeTask::markError()
     CFLOW_LOGD("task {0} is error.", ID());
 }
 
-void PipeTask::addNotifierForNode(cflow_id_t nodeId, cflow_id_t notifierId)
+void PipeTask::addNotifierForNode(cflow_id_t notifierId, cflow_id_t nodeId)
 {
     m_nodeNotifiers[nodeId].push_back(notifierId);
 }

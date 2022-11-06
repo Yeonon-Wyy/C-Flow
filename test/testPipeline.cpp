@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 15:45:34
+ * @LastEditTime: 2022-11-06 20:15:41
  */
 #include "../src/core/notifier.hpp"
 #include "../src/core/pipeline/pipe_task.hpp"
@@ -229,44 +229,17 @@ void testPipeline() {
       std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(33));
       if (!isSTop) {
         auto req =
-            std::make_shared<PipelineRequest>(MyScenario::Scenario1, cnt);
+            std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
         // if (req->ID() % 2 == 0) {
         req->setTaskType(cflow::TaskType::RT);
         // }
-        req->addNotifierForNode(P1NODE, 1);
-        req->addNotifierForNode(P3NODE, 1);
+        req->addNotifierForNode(1, P1NODE);
+        req->addNotifierForNode(1, P3NODE);
         ppl->submit(req);
       }
     }
     cnt++;
   }
-
-  // bool isSTop = false;
-  // int cnt = 0;
-  // while (true) {
-  //     if (cnt == 100) {
-  //         // ppl->stop();
-
-  //         CFLOW_LOGD("start stop");
-  //         isSTop = true;
-  //         CFLOW_LOGD("end stop");
-
-  //         break;
-  //     } else {
-  //         std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(1));
-  //         if (!isSTop) {
-  //             auto req =
-  //             std::make_shared<PipelineRequest>(MyScenario::Scenario2, cnt);
-  //             // if (req->ID() % 2 == 0) {
-  //                 req->setTaskType(cflow::TaskType::RT);
-  //             // }
-  //             req->addNotifierForNode(P1NODE, 1);
-  //             req->addNotifierForNode(P3NODE, 1);
-  //             ppl->submit(req);
-  //         }
-  //     }
-  //     cnt++;
-  // }
 
   CFLOW_LOGD("test pipeline stop");
 }
