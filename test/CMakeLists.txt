@@ -26,14 +26,14 @@ target_link_libraries(testBlockingQueue PUBLIC Threads::Threads)
 add_executable(testDag "../dagTest.cpp")
 target_link_libraries(testDag PUBLIC Threads::Threads)
 
-add_executable(testTaskFlowCtl "../taskFlowCtlTest.cpp")
-target_link_libraries(testTaskFlowCtl PUBLIC Threads::Threads)
+# add_executable(testTaskFlowCtl "../taskFlowCtlTest.cpp")
+# target_link_libraries(testTaskFlowCtl PUBLIC Threads::Threads)
 
 add_executable(testTask "../taskTest.cpp")
 target_link_libraries(testTask PUBLIC Threads::Threads)
 
-add_executable(testTaskThreadPool "../taskThreadPoolTest.cpp")
-target_link_libraries(testTaskThreadPool PUBLIC Threads::Threads)
+# add_executable(testTaskThreadPool "../taskThreadPoolTest.cpp")
+# target_link_libraries(testTaskThreadPool PUBLIC Threads::Threads)
 
 add_executable(testThreadPool "../threadPoolTest.cpp")
 target_link_libraries(testThreadPool PUBLIC Threads::Threads)

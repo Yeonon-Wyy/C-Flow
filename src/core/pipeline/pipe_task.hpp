@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:45:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 15:25:09
+ * @LastEditTime: 2022-11-06 19:26:52
  */
 #pragma once
 
@@ -423,7 +423,10 @@ void PipeTask::addInputForNode(cflow_id_t                 nodeId,
         CFLOW_LOGE("can't find node{0} in task path", nodeId);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
-    m_buffeManagerFactory->createBufferManager(bfs);
+    if (!m_buffeManagerFactory->getBufferManager(bfs))
+    {
+        m_buffeManagerFactory->createBufferManager(bfs);
+    }
     nodeInfo->input.push_back(bfs);
     CFLOW_LOGD("node{0} add input buffer{1} success!", nodeId, bfs.name);
 }
@@ -436,7 +439,10 @@ void PipeTask::addOutputForNode(cflow_id_t                 nodeId,
         CFLOW_LOGE("can't find node{0} in task path", nodeId, bfs.name);
     }
     auto nodeInfo = m_dependenciesNodeInfo[nodeId];
-    m_buffeManagerFactory->createBufferManager(bfs);
+    if (!m_buffeManagerFactory->getBufferManager(bfs))
+    {
+        m_buffeManagerFactory->createBufferManager(bfs);
+    }
     nodeInfo->output.push_back(bfs);
     CFLOW_LOGD("node{0} add output buffer{1} success!", nodeId, bfs.name);
 }
@@ -497,7 +503,7 @@ void PipeTask::releaseCurrentNodeBuffer(bool isInput)
                                    [&inputBFS](PipeTaskBufferInfoSP& bufInfo) {
                                        return bufInfo->name == inputBFS.name;
                                    });
-            CFLOW_LOGD("[weiyanyu] currentNodeBufferInfo input size() = {0}",
+            CFLOW_LOGD("currentNodeBufferInfo input size() = {0}",
                        currentNodeBufferInfo.input.size());
             if (it == currentNodeBufferInfo.input.end())
             {

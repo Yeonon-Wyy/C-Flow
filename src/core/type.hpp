@@ -4,7 +4,7 @@
  * @Author: yeonon
  * @Date: 2022-01-23 19:32:20
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-30 19:30:52
+ * @LastEditTime: 2022-11-06 19:10:59
  */
 #pragma once
 #include <memory>
@@ -13,6 +13,8 @@
 #define RT_TASK_CAPCITY 8
 #define NORMAL_TASK_CAPCITY 16
 #define IDEL_TASK_CAPCITY 32
+
+#define UNUSED(x) (void)(x)
 
 namespace cflow {
 using cflow_id_t = long;
@@ -43,7 +45,7 @@ enum class TaskType
 enum class TaskPriority
 {
     START = 0,
-    URGENT,
+    URGENCY,
     NORMAL,
     IDEL,
     END
