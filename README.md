@@ -235,6 +235,10 @@ make -j
 #### 5.5 Dump Scenario 103
 ![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/pipeline_103.png)
 
+#### 5.6 dump task flow
+![image](https://github.com/Weiyanyu/C-Flow/blob/main/doc/Task_flow_control.png)
+
+
 ### 6. 支持的功能
 > 待补充
 
