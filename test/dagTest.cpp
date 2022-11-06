@@ -14,8 +14,6 @@ using namespace cflow::utils::memory;
 
 void testDAGbasic()
 {
-
-    
     std::shared_ptr<cflow::DAGNode> node1 = std::make_shared<cflow::DAGNode>(1);
     std::shared_ptr<cflow::DAGNode> node2 = std::make_shared<cflow::DAGNode>(2);
     std::shared_ptr<cflow::DAGNode> node3 = std::make_shared<cflow::DAGNode>(3);
@@ -24,14 +22,13 @@ void testDAGbasic()
     std::shared_ptr<cflow::DAGNode> node6 = std::make_shared<cflow::DAGNode>(6);
     std::shared_ptr<cflow::DAGNode> node7 = std::make_shared<cflow::DAGNode>(7);
 
-
     node1->connect(node2);
     node1->connect(node3);
     node2->connect(node4);
     // node3->connect(node4);
     node4->connect(node5);
     node4->connect(node6);
-    
+
     // node1->connect(node2);
     // node1->connect(node3);
     // node2->connect(node4);
@@ -46,15 +43,14 @@ void testDAGbasic()
     dag.addNode(node6);
     // dag.addNode(node7);
 
-
     dag.buildGraph();
 
     dag.dumpGraph();
 
-    auto order = dag.multiTopologicalSort();
+    auto              order = dag.multiTopologicalSort();
     std::stringstream ss;
     ss << "[";
-    
+
     for (auto&& pipeline : order)
     {
         ss << "[";
@@ -70,45 +66,39 @@ void testDAGbasic()
 
 void testTaskDag()
 {
-    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory = std::make_shared<BufferManagerFactory<void>>();
+    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory =
+        std::make_shared<BufferManagerFactory<void>>();
 
     // cflow::task::TFTask task1("task_1");
-    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task1->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task1 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task1->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task2->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task2 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task2->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task3->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task3 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task3->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task4->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task4 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task4->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task5->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task5 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task5->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
     task5->setPriority(cflow::TaskPriority::NORMAL);
 
-    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    std::shared_ptr<cflow::task::TFTask> task6 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
 
-     task6->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    task6->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-     task7->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task7 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task7->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
     task4->connect(task3);
     task4->connect(task6);
@@ -117,10 +107,9 @@ void testTaskDag()
     task6->connect(task5);
     task6->connect(task1);
     task1->connect(task2);
-    task5->connect(task7);  
+    task5->connect(task7);
     task1->connect(task7);
     task2->connect(task7);
-
 
     cflow::DAG dag;
     dag.addNode(task1);
@@ -138,18 +127,17 @@ void testTaskDag()
     dag.rebuildGraphIfNeed();
     dag.dumpGraph();
     dag.topologicalSort();
-    
-
 }
 
 auto now() { return std::chrono::steady_clock::now(); }
- 
-auto awake_time() {
+
+auto awake_time()
+{
     using std::chrono::operator""ms;
     return now() + 200ms;
 }
 
-template<typename T>
+template <typename T>
 constexpr T convertTime(std::chrono::duration<double> originTime)
 {
     return std::chrono::duration_cast<T>(originTime);
@@ -157,44 +145,38 @@ constexpr T convertTime(std::chrono::duration<double> originTime)
 
 void testTaskExecute()
 {
-    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory = std::make_shared<BufferManagerFactory<void>>();
+    std::shared_ptr<BufferManagerFactory<void>> bufferMgrFactory =
+        std::make_shared<BufferManagerFactory<void>>();
 
-    std::shared_ptr<cflow::task::TFTask> task1 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task1->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task1 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task1->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task2 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task2->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task2 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task2->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task3 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task3->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task3 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task3->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task4 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task4->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task4 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task4->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task5 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task5->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task5 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task5->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
     task5->setPriority(cflow::TaskPriority::URGENCY);
 
-    std::shared_ptr<cflow::task::TFTask> task6 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    std::shared_ptr<cflow::task::TFTask> task6 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
 
-    task6->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    task6->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
-    std::shared_ptr<cflow::task::TFTask> task7 = std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
-    task7->setProcessFunc([](int a, int b) {
-        return a + b;
-    }, 1, 2);
+    std::shared_ptr<cflow::task::TFTask> task7 =
+        std::make_shared<cflow::task::TFTask>(bufferMgrFactory);
+    task7->setProcessFunc([](int a, int b) { return a + b; }, 1, 2);
 
     task4->connect(task3);
     task4->connect(task6);
@@ -203,10 +185,9 @@ void testTaskExecute()
     task6->connect(task5);
     task6->connect(task1);
     task1->connect(task2);
-    task5->connect(task7);  
+    task5->connect(task7);
     task1->connect(task7);
     task2->connect(task7);
-
 
     cflow::DAG dag;
     dag.addNode(task1);
@@ -226,29 +207,30 @@ void testTaskExecute()
     taskMap[task6->ID()] = task6;
     taskMap[task7->ID()] = task7;
 
-
     dag.buildGraph();
 
     cflow::utils::thread::ThreadPool pool(4);
 
-
-    auto start = std::chrono::system_clock::now();
+    auto                           start     = std::chrono::system_clock::now();
     std::vector<std::vector<long>> topoOrder = dag.topologicalSort();
-    for (auto& order : topoOrder) {
+    for (auto& order : topoOrder)
+    {
         std::vector<std::future<void>> futureList;
-        for (long taskId : order) {
-            futureList.push_back(pool.emplace(taskMap[taskId]->getProcessFunc()));
+        for (long taskId : order)
+        {
+            futureList.push_back(
+                pool.emplace(taskMap[taskId]->getProcessFunc()));
         }
 
-        for (std::future<void> &future : futureList) {
+        for (std::future<void>& future : futureList)
+        {
             future.get();
         }
     }
-    auto end = std::chrono::system_clock::now();
+    auto                          end     = std::chrono::system_clock::now();
     std::chrono::duration<double> runTime = end - start;
-    CFLOW_LOGE("all task need: {0}ms", convertTime<std::chrono::milliseconds>(runTime).count());
-
-
+    CFLOW_LOGE("all task need: {0}ms",
+               convertTime<std::chrono::milliseconds>(runTime).count());
 }
 
 int main()
@@ -256,7 +238,4 @@ int main()
     testDAGbasic();
     testTaskDag();
     testTaskExecute();
-
-
-
 }

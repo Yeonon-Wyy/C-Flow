@@ -11,14 +11,15 @@
 #include "../src/core/task/tftask.hpp"
 #include <iostream>
 
-void testThreadPool() {
-  std::future<void> f;
-  {
-    std::packaged_task<void()> pt([]() {});
-    f = pt.get_future();
-    pt();
-  }
-  f.get();
+void testThreadPool()
+{
+    std::future<void> f;
+    {
+        std::packaged_task<void()> pt([]() {});
+        f = pt.get_future();
+        pt();
+    }
+    f.get();
 }
 
 int main() { testThreadPool(); }

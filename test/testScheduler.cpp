@@ -9,13 +9,14 @@
 #include "../src/core/pipeline/pipe_task.hpp"
 #include "../src/core/scheduler.hpp"
 
-int main() {
-
-  cflow::Scheduler<std::shared_ptr<cflow::pipeline::PipeTask>> scheduler;
-  int cnt = 0;
-  while (cnt < 33) {
-    std::shared_ptr<cflow::pipeline::PipeTask> task =
-        std::make_shared<cflow::pipeline::PipeTask>(0, false);
-    scheduler.emplace(task);
-  }
+int main()
+{
+    cflow::Scheduler<std::shared_ptr<cflow::pipeline::PipeTask>> scheduler;
+    int                                                          cnt = 0;
+    while (cnt < 33)
+    {
+        std::shared_ptr<cflow::pipeline::PipeTask> task =
+            std::make_shared<cflow::pipeline::PipeTask>(0, false);
+        scheduler.emplace(task);
+    }
 }

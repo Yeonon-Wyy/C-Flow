@@ -8,8 +8,9 @@
  */
 #include <thread>
 
-int main() {
-
-  while (true) {
-  }
+int main()
+{
+    while (true)
+    {
+    }
 }

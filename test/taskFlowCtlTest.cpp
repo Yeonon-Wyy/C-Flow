@@ -15,16 +15,16 @@
 using namespace cflow::utils::memory;
 using namespace cflow::task;
 
-int main() {
+int main()
+{
     TaskFlowCtl tf(true);
-    auto add = [](int a, int b) {
+    auto        add = [](int a, int b) {
         std::cout << a << " + " << b << std::endl;
         return a + b;
     };
 
     auto minus = [](int a, int b) {
-        std::this_thread::sleep_until(
-            cflow::utils::TimeUtil::awake_time(30));
+        std::this_thread::sleep_until(cflow::utils::TimeUtil::awake_time(30));
         std::cout << a << " - " << b << std::endl;
         return a - b;
     };

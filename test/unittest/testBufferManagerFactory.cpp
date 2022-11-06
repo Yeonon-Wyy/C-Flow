@@ -16,51 +16,64 @@
 
 using namespace cflow::utils::memory;
 
-void testBufferMnaagerInterface() {
-  BufferManagerFactory<int> bmf;
+void testBufferMnaagerInterface()
+{
+    BufferManagerFactory<int> bmf;
 
-  BufferSpecification bfs1 = {
-      .sizeOfBytes = 0, .minQueueSize = 8, .maxQueueSize = 10, .name = "bfs1"};
+    BufferSpecification bfs1 = {.sizeOfBytes  = 0,
+                                .minQueueSize = 8,
+                                .maxQueueSize = 10,
+                                .name         = "bfs1"};
 
-  BufferSpecification bfs2 = {
-      .sizeOfBytes = 0, .minQueueSize = 8, .maxQueueSize = 10, .name = "bfs2"};
+    BufferSpecification bfs2 = {.sizeOfBytes  = 0,
+                                .minQueueSize = 8,
+                                .maxQueueSize = 10,
+                                .name         = "bfs2"};
 
-  BufferSpecification bfs3 = {
-      .sizeOfBytes = 0, .minQueueSize = 8, .maxQueueSize = 10, .name = "bfs3"};
+    BufferSpecification bfs3 = {.sizeOfBytes  = 0,
+                                .minQueueSize = 8,
+                                .maxQueueSize = 10,
+                                .name         = "bfs3"};
 
-  BufferSpecification bfs4 = {
-      .sizeOfBytes = 0, .minQueueSize = 8, .maxQueueSize = 10, .name = "bfs4"};
+    BufferSpecification bfs4 = {.sizeOfBytes  = 0,
+                                .minQueueSize = 8,
+                                .maxQueueSize = 10,
+                                .name         = "bfs4"};
 
-  auto bm1 = bmf.createBufferManager(bfs1);
-  auto bm2 = bmf.createBufferManager(bfs2);
-  auto bm3 = bmf.createBufferManager(bfs3);
+    auto bm1 = bmf.createBufferManager(bfs1);
+    auto bm2 = bmf.createBufferManager(bfs2);
+    auto bm3 = bmf.createBufferManager(bfs3);
 
-  ASSERT_EQ((int)bm1->availableCount(), 8);
-  ASSERT_EQ((int)bm2->availableCount(), 8);
-  ASSERT_EQ((int)bm3->availableCount(), 8);
+    ASSERT_EQ((int)bm1->availableCount(), 8);
+    ASSERT_EQ((int)bm2->availableCount(), 8);
+    ASSERT_EQ((int)bm3->availableCount(), 8);
 
-  ASSERT_EQ(bmf.getBufferManager(bfs1)->name(), bm1->name());
-  ASSERT_EQ(bmf.getBufferManager(bfs2)->name(), bm2->name());
-  ASSERT_EQ(bmf.getBufferManager(bfs3)->name(), bm3->name());
+    ASSERT_EQ(bmf.getBufferManager(bfs1)->name(), bm1->name());
+    ASSERT_EQ(bmf.getBufferManager(bfs2)->name(), bm2->name());
+    ASSERT_EQ(bmf.getBufferManager(bfs3)->name(), bm3->name());
 
-  auto bm5 = bmf.getBufferManager(bfs4);
-  ASSERT_NULL(bm5);
+    auto bm5 = bmf.getBufferManager(bfs4);
+    ASSERT_NULL(bm5);
 
-  bmf.releaseBufferManager(bfs1);
+    bmf.releaseBufferManager(bfs1);
 
-  ASSERT_NULL(bmf.getBufferManager(bfs1));
+    ASSERT_NULL(bmf.getBufferManager(bfs1));
 
-  PRINT_RESULT();
+    PRINT_RESULT();
 }
 
-void testEmptyBufferManager() {
-  BufferManagerFactory<int> bmf;
-  BufferSpecification bfs1 = {
-      .sizeOfBytes = 0, .minQueueSize = 8, .maxQueueSize = 10, .name = "bfs1"};
-  auto bm1 = bmf.createBufferManager(bfs1);
+void testEmptyBufferManager()
+{
+    BufferManagerFactory<int> bmf;
+    BufferSpecification       bfs1 = {.sizeOfBytes  = 0,
+                                .minQueueSize = 8,
+                                .maxQueueSize = 10,
+                                .name         = "bfs1"};
+    auto                      bm1  = bmf.createBufferManager(bfs1);
 }
 
-int main() {
-  testBufferMnaagerInterface();
-  testEmptyBufferManager();
+int main()
+{
+    testBufferMnaagerInterface();
+    testEmptyBufferManager();
 }
