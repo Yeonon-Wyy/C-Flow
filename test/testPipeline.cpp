@@ -4,14 +4,22 @@
  * @Author: yeonon
  * @Date: 2021-10-30 17:56:49
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 22:10:25
+ * @LastEditTime: 2022-12-25 19:03:44
  */
-#include "../src/core/notifier.hpp"
-#include "../src/core/pipeline/pipe_task.hpp"
-#include "../src/core/pipeline/pipeline.hpp"
-#include "../src/core/pipeline/pipenode_dispatcher.hpp"
-#include "../src/core/utils/log/trace_log.hpp"
-#include "../src/core/utils/time_util.hpp"
+// #include "../src/core/notifier.hpp"
+// #include "../src/core/pipeline/pipe_task.hpp"
+// #include "../src/core/pipeline/pipeline.hpp"
+// #include "../src/core/pipeline/pipenode_dispatcher.hpp"
+// #include "../src/core/utils/log/trace_log.hpp"
+// #include "../src/core/utils/time_util.hpp"
+
+#include <cflow/core/notifier.hpp>
+#include <cflow/core/pipeline/pipe_task.hpp>
+#include <cflow/core/pipeline/pipeline.hpp>
+#include <cflow/core/pipeline/pipenode_dispatcher.hpp>
+#include <cflow/core/utils/log/trace_log.hpp>
+#include <cflow/core/utils/time_util.hpp>
+
 
 using namespace cflow::pipeline;
 
@@ -108,6 +116,7 @@ void testPipeline()
                                      MyScenario::Scenario4},
                 .processCallback = [](std::shared_ptr<PipelineRequest> request) -> bool 
                 {
+                    std::string profileStr = "P1NodeProcess_" + std::to_string(request->ID());
                    TRACE_FUNC_ID_START("P1NodeProcess", request->ID());
                    CFLOW_LOGD("request {0} process P1 node", request->ID());
                    if (request->ID() % 2 == 0)

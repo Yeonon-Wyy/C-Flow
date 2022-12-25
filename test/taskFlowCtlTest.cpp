@@ -4,12 +4,12 @@
  * @Author: yeonon
  * @Date: 2021-10-13 21:16:36
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-11-06 22:00:44
+ * @LastEditTime: 2022-12-25 19:08:30
  */
-#include "../src/core/task/task_flow_ctl.hpp"
-#include "../src/core/utils/queue/blocking_queue.hpp"
-#include "../src/core/utils/time_util.hpp"
-#include "../src/core/type.hpp"
+#include <cflow/core/task/task_flow_ctl.hpp>
+#include <cflow/core/utils/queue/blocking_queue.hpp>
+#include <cflow/core/utils/time_util.hpp>
+#include <cflow/core/type.hpp>
 #include <chrono>
 
 using namespace cflow::utils::memory;

@@ -4,9 +4,9 @@
  * @Author: yeonon
  * @Date: 2021-10-20 21:12:25
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-29 16:12:25
+ * @LastEditTime: 2022-12-25 19:06:54
  */
-#include "../src/core/utils/queue/blocking_queue.hpp"
+#include <cflow/core/utils/queue/blocking_queue.hpp>
 #include <iostream>
 #include <random>
 #include <thread>

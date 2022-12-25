@@ -2,14 +2,14 @@
  * @Author: Yeonon
  * @Date: 2022-05-28 15:48:33
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-05-29 15:27:50
+ * @LastEditTime: 2022-12-25 19:09:04
  * @FilePath: /test/testBuffeManagerFlow.cpp
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-05-28 15:48:33
  */
-#include "../src/core/utils/memory/buffer_manager.hpp"
-#include "../src/core/utils/queue/blocking_queue.hpp"
+#include <cflow/core/utils/memory/buffer_manager.hpp>
+#include <cflow/core/utils/queue/blocking_queue.hpp>
 #include <mutex>
 #include <queue>
 #include <thread>

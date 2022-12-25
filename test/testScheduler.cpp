@@ -4,10 +4,10 @@
  * @Author: yeonon
  * @Date: 2022-01-26 00:01:32
  * @LastEditors: Yeonon
- * @LastEditTime: 2022-10-11 22:23:59
+ * @LastEditTime: 2022-12-25 19:09:22
  */
-#include "../src/core/pipeline/pipe_task.hpp"
-#include "../src/core/scheduler.hpp"
+#include <cflow/core/pipeline/pipe_task.hpp>
+#include <cflow/core/scheduler.hpp>
 
 int main()
 {
