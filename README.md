@@ -242,7 +242,7 @@ make -j
 以下依赖的三方库由于构建方式不同，所以cflow的集成方式也有些不同，请注意。
 
 1. spdlog，强大的日志系统，按照spdlog推荐的方式将spdlog install到usr/local/include下
-2. tracy，强大的profiler，其提供的frameMark功能适合cflow的数据流模型，按照tracy推荐的方式直接集成到项目的code base中。并放入了/src/3rdparty目录下，但git ignore忽略了它，如果需要构建cflow，则需要下载tracy源码并放入/src/3rdparty中。
+2. tracy，强大的profiler，其提供的frameMark功能适合cflow的数据流模型，按照tracy推荐的方式直接集成到项目的code base中。并放入了/src/3rdparty目录下，但git ignore忽略了它，如果需要构建cflow，则需要下载tracy源码并放入/src/3rdparty中
 
 
 ### 6. 支持的功能

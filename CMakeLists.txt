@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.15)
 
 project(cflow VERSION 1.0.0 LANGUAGES CXX)
 
+
 # make cache variables for install destinations
 include(GNUInstallDirs)
 
@@ -10,6 +11,8 @@ message( STATUS "CMAKE_CURRENT_BINARY_DIR = ${CMAKE_CURRENT_BINARY_DIR}" )
 message( STATUS "CMAKE_INSTALL_INCLUDEDIR = ${CMAKE_INSTALL_INCLUDEDIR}" )
 message( STATUS "CMAKE_INSTALL_LIBDIR = ${CMAKE_INSTALL_LIBDIR}" )
 message( STATUS "CMAKE_INSTALL_BINDIR = ${CMAKE_INSTALL_BINDIR}" )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/tracy/public/)
 
 # create library
 add_library(${PROJECT_NAME} INTERFACE)
