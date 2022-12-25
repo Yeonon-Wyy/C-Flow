@@ -201,22 +201,70 @@ ppl->stop();
 
 ### 4. 如何编译
 
+#### 4.1 下载源码后直接include头文件
 C-Flow使用Header-only风格进行编写，只需要获取/src目录下的源码，并在项目中include需要的头文件即可。当前不支持编译成独立的静态库或者共享库。
 
-对于C-Flow提供的Test实例，可以按如下方式编译：
+#### 4.2 通过cmake
+另一种方式则是将cflow的头文件install到本地，在项目根目录下执行：
 ```shell
-cd test && mkdir build
-cd build
+mkdir build & cd build
 cmake ..
-make -j
+cmake --build . & make install
 ```
+默认会把项目文件放入/usr/local/include目录下，后续直接使用即可。
 
-对于C-Flow提供的sample实例，可以按如下方式编译：
+下面是一个以cmake的方式使用的例子，以供参考：
 ```shell
-cd sample && mkdir build
-cd build
-cmake ..
-make -j
+cmake_minimum_required(VERSION 2.6)
+project(cflow_test)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_COMPILER             "/usr/bin/g++")
+set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb -DCFlow_DEBUG_MODE")
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -DNDEBUG")
+
+# user-define log file path
+add_definitions( -DLOGFILENAME="/tmp/cflow_log/cflow_log.txt")
+
+# include cflow
+find_package(cflow CONFIG REQUIRED)
+include_directories(${cflow_INCLUDE_DIR})
+
+# include /usr/include
+include_directories("/usr/include/")
+
+# include thread
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
+SET(EXECUTABLE_OUTPUT_PATH "../bin/")
+
+
+# if need tracy profiler
+if(DEFINED ENV{NEED_TRACY_PROFILER})
+    # include tracy
+    add_subdirectory(${cflow_INCLUDE_DIR}/cflow/3rdparty/tracy .)
+
+    # set dependency
+    
+    set(TARGET_DEPENDCY 
+        PUBLIC Threads::Threads
+        cflow::cflow
+        Tracy::TracyClient
+    )
+else()
+    # set dependency
+    set(TARGET_DEPENDCY 
+        PUBLIC Threads::Threads
+        cflow::cflow
+    )
+endif()
+
+
+# add executable
+add_executable(testPipeline "../testPipeline.cpp")
+target_link_libraries(testPipeline ${TARGET_DEPENDCY})
 ```
 
 ### 5. dump graph with graphviz
