@@ -9,10 +9,10 @@
 #pragma once
 
 #include <opencv2/imgproc/types_c.h>
-#include <opencv4/opencv2/opencv.hpp>
+#include <opencv4/opencv2/opencv.h>
 #include <vector>
 
-#include "../../src/core/pipeline/pipe_task.hpp"
+#include "../../src/core/pipeline/pipe_task.h"
 
 using namespace cv;
 using namespace cflow::pipeline;

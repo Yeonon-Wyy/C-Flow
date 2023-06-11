@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.22)
 project(cflow_test)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -23,6 +23,39 @@ find_package(Threads REQUIRED)
 
 SET(EXECUTABLE_OUTPUT_PATH "../bin/")
 
+# include cflow
+set(CMAKE_PREFIX_PATH /usr/local/lib/cmake/cflow)
+
+message("CMAKE_PREFIX_PATH " ${CMAKE_PREFIX_PATH})
+find_package(cflow_utils REQUIRED)
+if(cflow_utils_FOUND)
+	message(STATUS "cflow_utils_FOUND = ${cflow_utils_FOUND}")
+	message(STATUS "cflow_utils_INCLUDE_DIRS = ${cflow_utils_INCLUDE_DIRS}")
+	message(STATUS "cflow_utils_LIBRARIES = ${cflow_utils_LIBRARIES}")
+	message(STATUS "cflow_utils_LIBRARY_DIRS = ${cflow_utils_LIBRARY_DIRS}")
+endif()
+find_package(cflow_common REQUIRED)
+if(cflow_common_FOUND)
+	message(STATUS "cflow_common_FOUND = ${cflow_common_FOUND}")
+	message(STATUS "cflow_common_INCLUDE_DIRS = ${cflow_common_INCLUDE_DIRS}")
+	message(STATUS "cflow_common_LIBRARIES = ${cflow_common_LIBRARIES}")
+	message(STATUS "cflow_common_LIBRARY_DIRS = ${cflow_common_LIBRARY_DIRS}")
+endif()
+find_package(cflow_task REQUIRED)
+if(cflow_task_FOUND)
+	message(STATUS "cflow_task_FOUND = ${cflow_task_FOUND}")
+	message(STATUS "cflow_task_INCLUDE_DIRS = ${cflow_task_INCLUDE_DIRS}")
+	message(STATUS "cflow_task_LIBRARIES = ${cflow_task_LIBRARIES}")
+	message(STATUS "cflow_task_LIBRARY_DIRS = ${cflow_task_LIBRARY_DIRS}")
+endif()
+find_package(cflow_pipeline REQUIRED)
+if(cflow_pipeline_FOUND)
+	message(STATUS "cflow_pipeline_FOUND = ${cflow_pipeline_FOUND}")
+	message(STATUS "cflow_pipeline_INCLUDE_DIRS = ${cflow_pipeline_INCLUDE_DIRS}")
+	message(STATUS "cflow_pipeline_LIBRARIES = ${cflow_pipeline_LIBRARIES}")
+	message(STATUS "cflow_pipeline_LIBRARY_DIRS = ${cflow_pipeline_LIBRARY_DIRS}")
+endif()
+link_directories(${cflow_task_LIBRARY_DIRS}/cflow)
 
 # if need tracy profiler
 if(DEFINED ENV{NEED_TRACY_PROFILER})
@@ -40,12 +73,15 @@ else()
     # set dependency
     set(TARGET_DEPENDCY 
         PUBLIC Threads::Threads
-        cflow::cflow
+        ${cflow_common_LIBRARIES}
+        ${cflow_utils_LIBRARIES}
+        ${cflow_task_LIBRARIES}
+        ${cflow_pipeline_LIBRARIES}
     )
 endif()
 
 
-# add executable
+# # add executable
 add_executable(testBlockingQueue "../blockingQueueTest.cpp")
 target_link_libraries(testBlockingQueue ${TARGET_DEPENDCY})
 

@@ -1,9 +1,9 @@
-#include <cflow/core/dag.hpp>
-#include <cflow/core/task/tftask.hpp>
-#include <cflow/core/utils/thread/threadPool.hpp>
-#include <cflow/core/type.hpp>
-#include <cflow/core/utils/memory/buffer_manager.hpp>
-#include <cflow/core/utils/memory/buffer_manager_factory.hpp>
+#include <cflow/common/dag.h>
+#include <cflow/task/tftask.h>
+#include <cflow/utils/threadPool.h>
+#include <cflow/common/type.h>
+#include <cflow/utils/buffer_manager.h>
+#include <cflow/utils/buffer_manager_factory.h>
 
 #include <chrono>
 #include <sstream>

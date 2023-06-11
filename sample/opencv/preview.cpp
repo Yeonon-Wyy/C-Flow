@@ -7,11 +7,11 @@
  * @LastEditTime: 2022-10-15 20:02:20
  */
 #include <mutex>
-#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.h>
 #include <pthread.h>
 
-#include "configTable.hpp"
-#include "../../src/core/utils/thread/thread_utils.hpp"
+#include "configTable.h"
+#include "../../src/core/utils/thread/thread_utils.h"
 
 using namespace cv;
 using namespace std;

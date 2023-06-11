@@ -6,19 +6,14 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-12-25 20:31:12
  */
-// #include "../src/core/notifier.hpp"
-// #include "../src/core/pipeline/pipe_task.hpp"
-// #include "../src/core/pipeline/pipeline.hpp"
-// #include "../src/core/pipeline/pipenode_dispatcher.hpp"
-// #include "../src/core/utils/log/trace_log.hpp"
-// #include "../src/core/utils/time_util.hpp"
 
-#include <cflow/core/notifier.hpp>
-#include <cflow/core/pipeline/pipe_task.hpp>
-#include <cflow/core/pipeline/pipeline.hpp>
-#include <cflow/core/pipeline/pipenode_dispatcher.hpp>
-#include <cflow/core/utils/log/trace_log.hpp>
-#include <cflow/core/utils/time_util.hpp>
+
+#include <cflow/common/notifier.h>
+#include <cflow/pipeline/pipe_task.h>
+#include <cflow/pipeline/pipeline.h>
+#include <cflow/pipeline/pipenode_dispatcher.h>
+#include <cflow/utils/trace_log.h>
+#include <cflow/utils/time_util.h>
 
 
 using namespace cflow::pipeline;

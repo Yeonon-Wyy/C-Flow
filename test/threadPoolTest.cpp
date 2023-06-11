@@ -7,8 +7,8 @@
  * @LastEditTime: 2022-12-25 19:09:48
  */
 
-#include <cflow/core/utils/thread/threadPool.hpp>
-#include <cflow/core/task/tftask.hpp>
+#include <cflow/utils/threadPool.h>
+#include <cflow/task/tftask.h>
 #include <iostream>
 
 void testThreadPool()

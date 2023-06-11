@@ -8,8 +8,8 @@
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-05-28 15:48:33
  */
-#include <cflow/core/utils/memory/buffer_manager.hpp>
-#include <cflow/core/utils/queue/blocking_queue.hpp>
+#include <cflow/utils/buffer_manager.h>
+#include <cflow/utils/blocking_queue.h>
 #include <mutex>
 #include <queue>
 #include <thread>

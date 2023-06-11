@@ -3,7 +3,7 @@
  * @Date: 2022-09-03 19:06:49
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-09-03 21:03:48
- * @FilePath: /sample/opencv/watermark.hpp
+ * @FilePath: /sample/opencv/watermark.h
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-09-03 19:06:49
@@ -11,9 +11,9 @@
 #pragma once
 
 #include <memory>
-#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.h>
 
-#include "FrameRequest.hpp"
+#include "FrameRequest.h"
 
 using namespace cv;
 

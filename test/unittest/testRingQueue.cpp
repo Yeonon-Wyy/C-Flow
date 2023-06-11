@@ -8,8 +8,8 @@
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-05-21 17:27:07
  */
-#include "../../src/core/utils/queue/ring_queue.hpp"
-#include "testUtils.hpp"
+#include <cflow/utils/ring_queue.h>
+#include "testUtils.h"
 
 int main()
 {

@@ -4,3 +4,4 @@ build/
 html/
 latex/
 src/3rdparty/tracy
+lib/

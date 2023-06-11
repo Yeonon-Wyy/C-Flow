@@ -6,7 +6,7 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-12-25 19:06:54
  */
-#include <cflow/core/utils/queue/blocking_queue.hpp>
+#include <cflow/utils/blocking_queue.h>
 #include <iostream>
 #include <random>
 #include <thread>

@@ -6,8 +6,8 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-12-25 19:08:42
  */
-#include <cflow/core/task/tftask.hpp>
-#include <cflow/core/utils/thread/threadPool.hpp>
+#include <cflow/task/tftask.h>
+#include <cflow/utils/threadPool.h>
 
 #include <iostream>
 #include <functional>

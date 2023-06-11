@@ -3,7 +3,7 @@
  * @Date: 2022-09-03 20:59:39
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-09-12 17:47:47
- * @FilePath: /sample/opencv/resultProcess.hpp
+ * @FilePath: /sample/opencv/resultProcess.h
  * @Description:
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-09-03 20:59:39
@@ -13,10 +13,10 @@
 
 #include <memory>
 #include <mutex>
-#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.h>
 
-#include "FrameRequest.hpp"
-#include "baseConfig.hpp"
+#include "FrameRequest.h"
+#include "baseConfig.h"
 
 cv::VideoWriter w_cap;
 std::mutex m_mutex;

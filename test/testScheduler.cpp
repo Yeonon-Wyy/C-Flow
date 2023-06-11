@@ -6,8 +6,8 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-12-25 19:09:22
  */
-#include <cflow/core/pipeline/pipe_task.hpp>
-#include <cflow/core/scheduler.hpp>
+#include <cflow/pipeline/pipe_task.h>
+#include <cflow/common/scheduler.h>
 
 int main()
 {
@@ -18,5 +18,6 @@ int main()
         std::shared_ptr<cflow::pipeline::PipeTask> task =
             std::make_shared<cflow::pipeline::PipeTask>(0, false);
         scheduler.emplace(task);
+        cnt++;
     }
 }

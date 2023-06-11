@@ -6,10 +6,10 @@
  * @LastEditors: Yeonon
  * @LastEditTime: 2022-12-25 19:08:30
  */
-#include <cflow/core/task/task_flow_ctl.hpp>
-#include <cflow/core/utils/queue/blocking_queue.hpp>
-#include <cflow/core/utils/time_util.hpp>
-#include <cflow/core/type.hpp>
+#include <cflow/task/task_flow_ctl.h>
+#include <cflow/utils/blocking_queue.h>
+#include <cflow/utils/time_util.h>
+#include <cflow/common/type.h>
 #include <chrono>
 
 using namespace cflow::utils::memory;

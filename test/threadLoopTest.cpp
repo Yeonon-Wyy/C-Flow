@@ -10,7 +10,5 @@
 
 int main()
 {
-    while (true)
-    {
-    }
+
 }

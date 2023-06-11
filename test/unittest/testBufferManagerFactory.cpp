@@ -9,10 +9,10 @@
  * 2022-05-29 15:54:57
  */
 
-#include "../../src/core/utils/memory/buffer_manager.hpp"
-#include "../../src/core/utils/memory/buffer_manager_factory.hpp"
+#include <cflow/utils/buffer_manager.h>
+#include <cflow/utils/buffer_manager_factory.h>
 
-#include "testUtils.hpp"
+#include "testUtils.h"
 
 using namespace cflow::utils::memory;
 

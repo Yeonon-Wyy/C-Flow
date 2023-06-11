@@ -8,17 +8,17 @@
  */
 
 #include <mutex>
-#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.h>
 
-#include "../../src/core/notifier.hpp"
-#include "../../src/core/pipeline/pipeline.hpp"
-#include "../../src/core/utils/log/trace_log.hpp"
+#include "../../src/core/notifier.h"
+#include "../../src/core/pipeline/pipeline.h"
+#include "../../src/core/utils/log/trace_log.h"
 
-#include "watermark.hpp"
-#include "FrameRequest.hpp"
-#include "faceDected.hpp"
-#include "resultProcess.hpp"
-#include "baseConfig.hpp"
+#include "watermark.h"
+#include "FrameRequest.h"
+#include "faceDected.h"
+#include "resultProcess.h"
+#include "baseConfig.h"
 
 using namespace cv;
 

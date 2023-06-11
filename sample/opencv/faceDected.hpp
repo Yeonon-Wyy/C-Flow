@@ -11,12 +11,12 @@
 #include <opencv2/imgproc/types_c.h>
 
 #include <mutex>
-#include <opencv2/dnn/dnn.hpp>
-#include <opencv2/opencv.hpp>
+#include <opencv2/dnn/dnn.h>
+#include <opencv2/opencv.h>
 
-#include "../../src/core/utils/time_util.hpp"
-#include "../../src/core/utils/log/log.hpp"
-#include "FrameRequest.hpp"
+#include "../../src/core/utils/time_util.h"
+#include "../../src/core/utils/log/log.h"
+#include "FrameRequest.h"
 
 using namespace cv;
 

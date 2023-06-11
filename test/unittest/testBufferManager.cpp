@@ -8,8 +8,8 @@
  * Copyright 2022 Yeonon, All Rights Reserved.
  * 2022-05-21 20:08:02
  */
-#include "../../src/core/utils/memory/buffer_manager.hpp"
-#include "testUtils.hpp"
+#include <cflow/utils/buffer_manager.h>
+#include "testUtils.h"
 #include <queue>
 
 void testBufferManagerBasic()
